@@ -9,13 +9,13 @@
       "evidence": ["string"]
     },
     "rules": [
-      "YES significa conforme.",
-      "NO significa violazione supportata da evidenza.",
-      "N/A va deciso dal sistema prima del modello, tramite applies_if.",
-      "Mancanza di contesto non equivale a YES: deve diventare coverage-gap.",
-      "Una regola deve verificare un solo difetto.",
-      "Ogni NO deve avere un riferimento preciso al file e alla riga.",
-      "I controlli deterministici — build, type-check, lint, dependency scan, secret scan — vanno eseguiti automaticamente prima del modello."
+      "YES means compliant.",
+      "NO means a violation supported by evidence.",
+      "N/A must be decided by the system before the model, via applies_if.",
+      "Lack of context does not equal YES: it must become a coverage-gap.",
+      "A rule must check a single defect.",
+      "Every NO must have a precise reference to the file and line number.",
+      "Deterministic checks — build, type-check, lint, dependency scan, secret scan — must run automatically before the model."
     ]
   },
   "high_signal_rules": [
@@ -62,2374 +62,2374 @@
     "AI-06"
   ],
   "execution_order": [
-    "1. Contesto e applicabilità",
-    "2. Controlli deterministici",
-    "3. Correttezza e contratti",
-    "4. Sicurezza e integrità dati",
-    "5. Test e copertura",
-    "6. Architettura e manutenibilità",
+    "1. Context and applicability",
+    "2. Deterministic checks",
+    "3. Correctness and contracts",
+    "4. Security and data integrity",
+    "5. Testing and coverage",
+    "6. Architecture and maintainability",
     "7. Performance",
-    "8. Accessibilità, supply chain e documentazione",
-    "9. Passaggio adversarial indipendente"
+    "8. Accessibility, supply chain, and documentation",
+    "9. Independent adversarial pass"
   ],
   "categories": [
     {
-      "name": "Contesto e perimetro",
+      "name": "Context and scope boundary",
       "rules": [
         {
           "rule_id": "META-01",
-          "question": "La specifica o il requisito funzionale è disponibile?",
-          "applies_if": "Sempre",
+          "question": "Is the functional specification or requirement available?",
+          "applies_if": "Always",
           "severity": "info"
         },
         {
           "rule_id": "META-02",
-          "question": "Il modello conosce il diff o l’insieme preciso dei file da analizzare?",
-          "applies_if": "Sempre",
+          "question": "Does the model know the diff or the precise set of files to analyze?",
+          "applies_if": "Always",
           "severity": "blocker"
         },
         {
           "rule_id": "META-03",
-          "question": "Sono noti linguaggio, framework e versioni rilevanti?",
-          "applies_if": "Sempre",
+          "question": "Are the relevant language, framework, and versions known?",
+          "applies_if": "Always",
           "severity": "medium"
         },
         {
           "rule_id": "META-04",
-          "question": "Sono stati identificati tutti i caller del codice modificato?",
-          "applies_if": "Il codice modifica signature o contratti esistenti",
+          "question": "Have all callers of the modified code been identified?",
+          "applies_if": "Code modifies existing signatures or contracts",
           "severity": "high"
         },
         {
           "rule_id": "META-05",
-          "question": "Sono state identificate le boundary pubbliche o esterne?",
-          "applies_if": "Il codice espone o consuma interfacce verso l'esterno",
+          "question": "Have all public or external boundaries been identified?",
+          "applies_if": "Code exposes or consumes external interfaces",
           "severity": "high"
         },
         {
           "rule_id": "META-06",
-          "question": "La regola è applicabile al codice analizzato?",
-          "applies_if": "Sempre",
+          "question": "Is the rule applicable to the analyzed code?",
+          "applies_if": "Always",
           "severity": "info"
         },
         {
           "rule_id": "META-07",
-          "question": "I controlli deterministici pertinenti sono stati eseguiti?",
-          "applies_if": "Esistono tool automatizzati nel progetto (linter, type-check, scanner)",
+          "question": "Have relevant deterministic checks been executed?",
+          "applies_if": "Automated project tooling exists (linter, type-check, scanner)",
           "severity": "blocker"
         },
         {
           "rule_id": "META-08",
-          "question": "Ogni finding può essere ancorato a una posizione precisa?",
-          "applies_if": "Durante la segnalazione di un problema",
+          "question": "Can every finding be anchored to a precise location?",
+          "applies_if": "When reporting an issue",
           "severity": "high"
         },
         {
           "rule_id": "META-09",
-          "question": "L’incertezza è distinta da una verifica positiva?",
-          "applies_if": "Sempre",
+          "question": "Is uncertainty distinguished from a positive verification?",
+          "applies_if": "Always",
           "severity": "medium"
         },
         {
           "rule_id": "META-10",
-          "question": "La regola verifica un solo problema indipendente?",
-          "applies_if": "Sempre",
+          "question": "Does the rule verify a single independent issue?",
+          "applies_if": "Always",
           "severity": "info"
         }
       ]
     },
     {
-      "name": "Intento e scope",
+      "name": "Intent and scope",
       "rules": [
         {
           "rule_id": "CTX-01",
-          "question": "Il comportamento implementato soddisfa l’obiettivo dichiarato?",
-          "applies_if": "La specifica/PR description è disponibile",
+          "question": "Does the implemented behavior satisfy the stated goal?",
+          "applies_if": "Specification/PR description is available",
           "severity": "blocker"
         },
         {
           "rule_id": "CTX-02",
-          "question": "Tutti i criteri di accettazione espliciti sono soddisfatti?",
-          "applies_if": "Sono presenti criteri di accettazione espliciti",
+          "question": "Are all explicit acceptance criteria satisfied?",
+          "applies_if": "Explicit acceptance criteria are present",
           "severity": "blocker"
         },
         {
           "rule_id": "CTX-03",
-          "question": "Il cambiamento rispetta i non-goal dichiarati?",
-          "applies_if": "Sono esplicitati non-goal nel requisito",
+          "question": "Does the change respect declared non-goals?",
+          "applies_if": "Non-goals are explicitly stated in the requirements",
           "severity": "high"
         },
         {
           "rule_id": "CTX-04",
-          "question": "Non sono presenti modifiche non correlate?",
-          "applies_if": "Sempre",
+          "question": "Are unrelated changes absent?",
+          "applies_if": "Always",
           "severity": "medium"
         },
         {
           "rule_id": "CTX-05",
-          "question": "Titolo e descrizione della modifica descrivono realmente il cambiamento?",
-          "applies_if": "Analisi di Pull Request / Commit metadata",
+          "question": "Do the title and description accurately reflect the change?",
+          "applies_if": "Analyzing Pull Request / Commit metadata",
           "severity": "low"
         },
         {
           "rule_id": "CTX-06",
-          "question": "La descrizione non contiene placeholder o sezioni vuote obbligatorie?",
-          "applies_if": "Analisi di PR template / Commit metadata",
+          "question": "Is the description free of placeholders or empty mandatory sections?",
+          "applies_if": "Analyzing PR template / Commit metadata",
           "severity": "low"
         },
         {
           "rule_id": "CTX-07",
-          "question": "Sono stati considerati configurazione, migrazioni e rollout?",
-          "applies_if": "La modifica richiede cambiamenti a env, DB schema o infrastruttura",
+          "question": "Have configuration, migrations, and rollout been considered?",
+          "applies_if": "Change requires environment, DB schema, or infrastructure updates",
           "severity": "high"
         },
         {
           "rule_id": "CTX-08",
-          "question": "Il codice generato, vendor o minificato è stato distinto dal codice umano?",
-          "applies_if": "Sono presenti file generati, bundle o librerie esterne committate",
+          "question": "Is generated, vendor, or minified code distinguished from human-written code?",
+          "applies_if": "Generated files, bundles, or committed third-party libraries exist",
           "severity": "medium"
         },
         {
           "rule_id": "CTX-09",
-          "question": "La review non inventa requisiti non presenti nella specifica?",
-          "applies_if": "Sempre",
+          "question": "Does the review refrain from inventing requirements not in the specification?",
+          "applies_if": "Always",
           "severity": "info"
         },
         {
           "rule_id": "CTX-10",
-          "question": "Il livello di rischio è stato valutato su impatto, blast radius, irreversibilità, boundary, incertezza e copertura?",
-          "applies_if": "Valutazione strategica della PR",
+          "question": "Has the risk level been evaluated based on impact, blast radius, irreversibility, boundaries, uncertainty, and coverage?",
+          "applies_if": "Strategic PR evaluation",
           "severity": "high"
         },
         {
           "rule_id": "CTX-11",
-          "question": "Ogni reviewer specializzato è giustificato dal tipo di codice modificato?",
-          "applies_if": "Assegnazione dinamica delle lenti di review",
+          "question": "Is every specialized reviewer justified by the type of modified code?",
+          "applies_if": "Dynamic allocation of review lenses",
           "severity": "info"
         },
         {
           "rule_id": "CTX-12",
-          "question": "Il codice rilevante è stato letto nella sua interezza e non solo tramite pattern superficiali?",
-          "applies_if": "Sempre",
+          "question": "Has the relevant code been read completely rather than via superficial patterns?",
+          "applies_if": "Always",
           "severity": "high"
         }
       ]
     },
     {
-      "name": "Correttezza funzionale",
+      "name": "Functional correctness",
       "rules": [
         {
           "rule_id": "COR-01",
-          "question": "Il percorso principale produce il risultato atteso?",
-          "applies_if": "Sempre",
+          "question": "Does the happy path produce the expected result?",
+          "applies_if": "Always",
           "severity": "blocker"
         },
         {
           "rule_id": "COR-02",
-          "question": "Gli input null, undefined o mancanti sono gestiti correttamente?",
-          "applies_if": "Le funzioni o gli endpoint accettano parametri opzionali o nullable",
+          "question": "Are null, undefined, or missing inputs handled correctly?",
+          "applies_if": "Functions or endpoints accept optional or nullable parameters",
           "severity": "high"
         },
         {
           "rule_id": "COR-03",
-          "question": "Gli input vuoti sono gestiti correttamente?",
-          "applies_if": "Le funzioni o gli endpoint elaborano stringhe, array o collezioni",
+          "question": "Are empty inputs handled correctly?",
+          "applies_if": "Functions or endpoints process strings, arrays, or collections",
           "severity": "medium"
         },
         {
           "rule_id": "COR-04",
-          "question": "I valori minimi e massimi sono gestiti correttamente?",
-          "applies_if": "Il codice elabora range numerici, limiti o paginazioni",
+          "question": "Are minimum and maximum values handled correctly?",
+          "applies_if": "Code processes numeric ranges, boundaries, or pagination",
           "severity": "high"
         },
         {
           "rule_id": "COR-05",
-          "question": "Gli input con tipo errato vengono rifiutati o gestiti correttamente?",
-          "applies_if": "Ambienti a tipizzazione dinamica o deserializzazione dati",
+          "question": "Are incorrectly typed inputs rejected or handled properly?",
+          "applies_if": "Dynamically typed environments or data deserialization",
           "severity": "high"
         },
         {
           "rule_id": "COR-06",
-          "question": "Gli input con formato errato vengono rifiutati o gestiti correttamente?",
-          "applies_if": "Parsing di stringhe, dati strutturati (JSON/XML) o parametri",
+          "question": "Are malformed inputs rejected or handled properly?",
+          "applies_if": "Parsing strings, structured data (JSON/XML), or parameters",
           "severity": "high"
         },
         {
           "rule_id": "COR-07",
-          "question": "Le risposte esterne malformate vengono gestite?",
-          "applies_if": "Il codice consuma API esterne o servizi di terze parti",
+          "question": "Are malformed external responses handled?",
+          "applies_if": "Code consumes external APIs or third-party services",
           "severity": "high"
         },
         {
           "rule_id": "COR-08",
-          "question": "Gli error path producono risultati corretti?",
-          "applies_if": "Esistono rami di gestione degli errori o eccezioni",
+          "question": "Do error paths produce correct results?",
+          "applies_if": "Error handling branches or exception logic exist",
           "severity": "blocker"
         },
         {
           "rule_id": "COR-09",
-          "question": "Non sono presenti errori off-by-one?",
-          "applies_if": "Presenza di cicli, indicizzazione di array o intervalli",
+          "question": "Are off-by-one errors absent?",
+          "applies_if": "Loops, array indexing, or range handling present",
           "severity": "high"
         },
         {
           "rule_id": "COR-10",
-          "question": "Gli invarianti di dominio restano sempre veri?",
-          "applies_if": "Esecuzione di business logic o manipolazione di modelli di dominio",
+          "question": "Do domain invariants remain true at all times?",
+          "applies_if": "Executing business logic or domain model mutations",
           "severity": "blocker"
         },
         {
           "rule_id": "COR-11",
-          "question": "Gli stati iniziali e finali sono coerenti?",
-          "applies_if": "Gestione di macchine a stati o modifiche del ciclo di vita dei dati",
+          "question": "Are initial and final states consistent?",
+          "applies_if": "State machines or data lifecycle modifications present",
           "severity": "high"
         },
         {
           "rule_id": "COR-12",
-          "question": "Le chiamate duplicate producono il comportamento previsto?",
-          "applies_if": "Operazioni aventi effetti collaterali o invocazioni ripetute",
+          "question": "Do duplicate calls produce the expected behavior?",
+          "applies_if": "Operations with side effects or repeated invocations",
           "severity": "high"
         },
         {
           "rule_id": "COR-13",
-          "question": "Gli eventi fuori ordine sono gestiti correttamente?",
-          "applies_if": "Sistemi ad eventi, code o elaborazione asincrona non ordinata",
+          "question": "Are out-of-order events handled correctly?",
+          "applies_if": "Event-driven systems, queues, or unordered async processing",
           "severity": "high"
         },
         {
           "rule_id": "COR-14",
-          "question": "Retry, timeout e partial failure producono risultati corretti?",
-          "applies_if": "Invocazioni di rete o operazioni distribuite",
+          "question": "Do retries, timeouts, and partial failures produce correct results?",
+          "applies_if": "Network calls or distributed operations",
           "severity": "blocker"
         },
         {
           "rule_id": "COR-15",
-          "question": "Le operazioni concorrenti producono risultati corretti?",
-          "applies_if": "Accessi concorrenti a risorse condivise o multithreading",
+          "question": "Do concurrent operations produce correct results?",
+          "applies_if": "Concurrent access to shared resources or multithreading",
           "severity": "blocker"
         },
         {
           "rule_id": "COR-16",
-          "question": "Tutti i caller continuano a funzionare con il nuovo contratto?",
-          "applies_if": "Modifica di firme, contratti o interfacce esistenti",
+          "question": "Do all callers continue to work with the new contract?",
+          "applies_if": "Modifying existing signatures, contracts, or interfaces",
           "severity": "blocker"
         },
         {
           "rule_id": "COR-17",
-          "question": "Le unità di misura, precisione, arrotondamenti e conversioni sono corrette?",
-          "applies_if": "Calcoli finanziari, matematici o conversioni di unità",
+          "question": "Are units of measurement, precision, rounding, and conversions correct?",
+          "applies_if": "Financial, mathematical, or unit conversion logic",
           "severity": "high"
         },
         {
           "rule_id": "COR-18",
-          "question": "Date, fusi orari e localizzazione sono gestiti correttamente?",
-          "applies_if": "Manipolazione o formattazione di date, timestamp e orari",
+          "question": "Are dates, time zones, and localization handled correctly?",
+          "applies_if": "Manipulating or formatting dates, timestamps, and times",
           "severity": "high"
         },
         {
           "rule_id": "COR-19",
-          "question": "Le Promise, coroutine o task asincroni non possono essere abbandonati senza gestione?",
-          "applies_if": "Utilizzo di codice asincrono o concorrente",
+          "question": "Are promises, coroutines, or async tasks prevented from unhandled execution?",
+          "applies_if": "Asynchronous or concurrent code usage",
           "severity": "high"
         },
         {
           "rule_id": "COR-20",
-          "question": "Non esistono rami irraggiungibili o stati impossibili non gestiti?",
-          "applies_if": "Flussi condizionali o pattern matching su enum/union",
+          "question": "Are unreachable branches or unhandled impossible states absent?",
+          "applies_if": "Conditional flows or pattern matching on enums/unions",
           "severity": "medium"
         }
       ]
     },
     {
-      "name": "Boundary, parsing e tipi",
+      "name": "Boundary, parsing, and types",
       "rules": [
         {
           "rule_id": "BND-01",
-          "question": "Il flusso entry point → parsing → dominio → adapter → output è tracciabile?",
-          "applies_if": "Gestione del flusso dati dall'esterno all'interno dell'applicazione",
+          "question": "Is the flow entry point → parsing → domain → adapter → output traceable?",
+          "applies_if": "Data flow from external sources into application interior",
           "severity": "medium"
         },
         {
           "rule_id": "BND-02",
-          "question": "Gli input non trusted vengono interpretati una sola volta alla boundary?",
-          "applies_if": "Ricezione di dati da fonti esterne non fidate",
+          "question": "Are untrusted inputs parsed exactly once at the boundary?",
+          "applies_if": "Receiving data from untrusted external sources",
           "severity": "blocker"
         },
         {
           "rule_id": "BND-03",
-          "question": "Il dominio riceve valori di dominio e non DTO esterni grezzi?",
-          "applies_if": "Passaggio di dati tra layer di API/Boundary e dominio",
+          "question": "Does the domain receive domain values rather than raw external DTOs?",
+          "applies_if": "Passing data between API/Boundary layers and domain",
           "severity": "high"
         },
         {
           "rule_id": "BND-04",
-          "question": "Il tipo dell’input viene verificato?",
-          "applies_if": "Parsing ed elaborazione di input esterni",
+          "question": "Is the input type verified?",
+          "applies_if": "Parsing and processing external inputs",
           "severity": "high"
         },
         {
           "rule_id": "BND-05",
-          "question": "La lunghezza dell’input viene limitata?",
-          "applies_if": "Accettazione di stringhe, file o payload dall'esterno",
+          "question": "Is input length constrained?",
+          "applies_if": "Accepting strings, files, or external payloads",
           "severity": "high"
         },
         {
           "rule_id": "BND-06",
-          "question": "Il range numerico dell’input viene verificato?",
-          "applies_if": "Accettazione di parametri numerici dall'esterno",
+          "question": "Is numeric input range validated?",
+          "applies_if": "Accepting external numeric parameters",
           "severity": "high"
         },
         {
           "rule_id": "BND-07",
-          "question": "Charset ed encoding vengono gestiti espliciti?",
-          "applies_if": "Manipolazione di file, buffer o payload di rete",
+          "question": "Are charset and encoding explicitly handled?",
+          "applies_if": "Manipulating files, buffers, or network payloads",
           "severity": "medium"
         },
         {
           "rule_id": "BND-08",
-          "question": "I valori enumerabili vengono verificati tramite allowlist?",
-          "applies_if": "Accettazione di valori a scelta finita da input utente/API",
+          "question": "Are enumerable values validated against an allowlist?",
+          "applies_if": "Accepting discrete choice values from user/API input",
           "severity": "high"
         },
         {
           "rule_id": "BND-09",
-          "question": "La normalizzazione avviene prima delle decisioni di sicurezza o business?",
-          "applies_if": "Sanificazione o normalizzazione di stringhe/input",
+          "question": "Does normalization occur before security or business decisions?",
+          "applies_if": "String/input sanitization or normalization",
           "severity": "high"
         },
         {
           "rule_id": "BND-10",
-          "question": "La validazione non è duplicata con semantiche divergenti?",
-          "applies_if": "Validazione presente in più punti del flusso",
+          "question": "Is validation free from duplication with divergent semantics?",
+          "applies_if": "Validation present across multiple pipeline points",
           "severity": "medium"
         },
         {
           "rule_id": "BND-11",
-          "question": "Gli stati illegali sono rappresentati come impossibili dal tipo?",
-          "applies_if": "Modellazione dei dati nel type system",
+          "question": "Are illegal states made unrepresentable by the type system?",
+          "applies_if": "Modeling data structures in type system",
           "severity": "medium"
         },
         {
           "rule_id": "BND-12",
-          "question": "Le opzioni mutuamente esclusive sono rappresentate tramite union o stato discriminato?",
-          "applies_if": "Definizione di strutture dati con opzioni alternative",
+          "question": "Are mutually exclusive options represented via union or discriminated state?",
+          "applies_if": "Defining data structures with alternative variants",
           "severity": "medium"
         },
         {
           "rule_id": "BND-13",
-          "question": "Gli any, cast, unknown e fallback opzionali sono realmente giustificati?",
-          "applies_if": "Linguaggi tipizzati staticamente con bypass dei tipi (es. TS/C#)",
+          "question": "Are any, casts, unknown, and optional fallbacks genuinely justified?",
+          "applies_if": "Statically typed languages bypassing type system (e.g., TS/C#)",
           "severity": "medium"
         },
         {
           "rule_id": "BND-14",
-          "question": "I fallback silenziosi non nascondono invarianti non definite?",
-          "applies_if": "Presenza di valori di default o gestione di valori mancanti",
+          "question": "Do silent fallbacks refrain from hiding undefined invariants?",
+          "applies_if": "Default values or missing-value handling present",
           "severity": "high"
         },
         {
           "rule_id": "BND-15",
-          "question": "Le risposte degli adapter esterni vengono validate prima dell’uso?",
-          "applies_if": "Integrazione con servizi o API esterne",
+          "question": "Are external adapter responses validated before use?",
+          "applies_if": "Integration with external services or APIs",
           "severity": "high"
         },
         {
           "rule_id": "BND-16",
-          "question": "La serializzazione non espone campi interni o sensibili?",
-          "applies_if": "Serializzazione di oggetti verso l'esterno",
+          "question": "Does serialization refrain from exposing internal or sensitive fields?",
+          "applies_if": "Serializing objects outward",
           "severity": "high"
         }
       ]
     },
     {
-      "name": "Architettura e manutenibilità",
+      "name": "Architecture and maintainability",
       "rules": [
         {
           "rule_id": "ARC-01",
-          "question": "Il codice segue i pattern già presenti nel repository?",
-          "applies_if": "Sempre",
+          "question": "Does code follow patterns already present in the repository?",
+          "applies_if": "Always",
           "severity": "low"
         },
         {
           "rule_id": "ARC-02",
-          "question": "Non introduce dipendenze circolari?",
-          "applies_if": "Importazione di moduli o classi tra package/directory",
+          "question": "Is the code free of circular dependencies?",
+          "applies_if": "Importing modules or classes between packages/directories",
           "severity": "high"
         },
         {
           "rule_id": "ARC-03",
-          "question": "Il dominio non importa driver concreti?",
-          "applies_if": "Architettura a strati / Hexagonal / Clean Architecture",
+          "question": "Does the domain refrain from importing concrete drivers?",
+          "applies_if": "Layered architecture / Hexagonal / Clean Architecture",
           "severity": "high"
         },
         {
           "rule_id": "ARC-04",
-          "question": "Gli effetti esterni passano da port e adapter?",
-          "applies_if": "Operazioni di I/O, DB, rete o file system",
+          "question": "Do side effects route through ports and adapters?",
+          "applies_if": "I/O, database, network, or file system operations",
           "severity": "high"
         },
         {
           "rule_id": "ARC-05",
-          "question": "Gli handler fanno solo parsing, invocazione e serializzazione?",
-          "applies_if": "Controller HTTP, handler gRPC o message listener",
+          "question": "Do handlers only handle parsing, invocation, and serialization?",
+          "applies_if": "HTTP controllers, gRPC handlers, or message listeners",
           "severity": "high"
         },
         {
           "rule_id": "ARC-06",
-          "question": "Ogni handler resta entro 30 righe quando applicabile?",
-          "applies_if": "Controller o handler di API",
+          "question": "Does every handler stay under 30 lines when applicable?",
+          "applies_if": "API controllers or handlers",
           "severity": "advisory"
         },
         {
           "rule_id": "ARC-07",
-          "question": "La business logic non è duplicata dentro gli handler?",
-          "applies_if": "Controller o handler di API",
+          "question": "Is business logic kept out of handlers?",
+          "applies_if": "API controllers or handlers",
           "severity": "high"
         },
         {
           "rule_id": "ARC-08",
-          "question": "La logica pura è separata dagli effetti?",
-          "applies_if": "Scrittura di funzioni o casi d'uso",
+          "question": "Is pure logic separated from side effects?",
+          "applies_if": "Writing functions or use cases",
           "severity": "medium"
         },
         {
           "rule_id": "ARC-09",
-          "question": "Command e query hanno responsabilità separate?",
-          "applies_if": "Modellazione di operazioni di lettura/scrittura (CQRS)",
+          "question": "Are command and query responsibilities separated?",
+          "applies_if": "Modeling read/write operations (CQRS)",
           "severity": "medium"
         },
         {
           "rule_id": "ARC-10",
-          "question": "Nessun file supera 200 righe senza essere diviso?",
-          "applies_if": "File di codice sorgente",
+          "question": "Is every file under 200 lines without needing splitting?",
+          "applies_if": "Source code files",
           "severity": "advisory"
         },
         {
           "rule_id": "ARC-11",
-          "question": "La complessità cognitiva resta entro 15?",
-          "applies_if": "Funzioni o metodi complexi",
+          "question": "Does cognitive complexity stay within 15?",
+          "applies_if": "Complex functions or methods",
           "severity": "medium"
         },
         {
           "rule_id": "ARC-12",
-          "question": "La complessità ciclomatica resta entro 10?",
-          "applies_if": "Funzioni o metodi",
+          "question": "Does cyclomatic complexity stay within 10?",
+          "applies_if": "Functions or methods",
           "severity": "medium"
         },
         {
           "rule_id": "ARC-13",
-          "question": "Le routine hanno al massimo tre parametri?",
-          "applies_if": "Dichiarazione di funzioni o metodi",
+          "question": "Do routines have at most three parameters?",
+          "applies_if": "Function or method declarations",
           "severity": "advisory"
         },
         {
           "rule_id": "ARC-14",
-          "question": "Il nesting decisionale non supera due livelli?",
-          "applies_if": "Blocchi condizionali nidificati",
+          "question": "Is decision nesting limited to at most two levels?",
+          "applies_if": "Nested conditional blocks",
           "severity": "medium"
         },
         {
           "rule_id": "ARC-15",
-          "question": "Non sono presenti blocchi else ridondanti?",
-          "applies_if": "Uso di guard clauses o early return",
+          "question": "Are redundant else blocks absent?",
+          "applies_if": "Use of guard clauses or early returns",
           "severity": "low"
         },
         {
           "rule_id": "ARC-16",
-          "question": "I moduli hanno una responsabilità coesa?",
-          "applies_if": "Creazione o modifica di moduli e classi",
+          "question": "Do modules have cohesive responsibility?",
+          "applies_if": "Creating or modifying modules and classes",
           "severity": "medium"
         },
         {
           "rule_id": "ARC-17",
-          "question": "Le interfacce pubbliche sono compatte rispetto alla logica privata?",
-          "applies_if": "Progettazione di API di moduli/librerie",
+          "question": "Are public interfaces compact relative to private logic?",
+          "applies_if": "Designing module/library APIs",
           "severity": "advisory"
         },
         {
           "rule_id": "ARC-18",
-          "question": "La profondità dell’ereditarietà non supera un livello?",
-          "applies_if": "Uso della programmazione ad oggetti con ereditarietà",
+          "question": "Is inheritance depth limited to at most one level?",
+          "applies_if": "OOP usage with inheritance",
           "severity": "medium"
         },
         {
           "rule_id": "ARC-19",
-          "question": "La composizione è preferita all’ereditarietà quando appropriato?",
-          "applies_if": "Progettazione OOP",
+          "question": "Is composition preferred over inheritance where appropriate?",
+          "applies_if": "OOP design",
           "severity": "medium"
         },
         {
           "rule_id": "ARC-20",
-          "question": "Non sono state introdotte astrazioni speculative?",
-          "applies_if": "Introduzione di nuovi pattern, interfacce o generici",
+          "question": "Are speculative abstractions absent?",
+          "applies_if": "Introducing new patterns, interfaces, or generics",
           "severity": "medium"
         },
         {
           "rule_id": "ARC-21",
-          "question": "Factory, strategy e interface esistono solo per variabilità reale o seconda implementazione?",
-          "applies_if": "Uso di design pattern creazionali o strutturali",
+          "question": "Do factories, strategies, and interfaces exist only for actual variability or a second implementation?",
+          "applies_if": "Using creational or structural design patterns",
           "severity": "medium"
         },
         {
           "rule_id": "ARC-22",
-          "question": "I valori canonici modificabili hanno un solo owner?",
-          "applies_if": "Gestione dello stato applicativo o dati in memoria",
+          "question": "Do mutable canonical values have a single owner?",
+          "applies_if": "Managing application state or in-memory data",
           "severity": "high"
         },
         {
           "rule_id": "ARC-23",
-          "question": "La logica feature-specific non è finita in un modulo shared?",
-          "applies_if": "Modifica di cartelle/moduli condivisi (shared/common)",
+          "question": "Is feature-specific logic kept out of shared modules?",
+          "applies_if": "Modifying shared/common directories or modules",
           "severity": "medium"
         },
         {
           "rule_id": "ARC-24",
-          "question": "Non sono stati aggiunti wrapper pass-through senza valore?",
-          "applies_if": "Creazione di classi/funzioni delega",
+          "question": "Are pass-through wrappers without value absent?",
+          "applies_if": "Creating delegate classes/functions",
           "severity": "low"
         },
         {
           "rule_id": "ARC-25",
-          "question": "Il refactoring riduce realmente i concetti necessari al lettore?",
-          "applies_if": "PR che includono refactoring",
+          "question": "Does refactoring genuinely reduce reader cognitive overhead?",
+          "applies_if": "PRs including refactoring",
           "severity": "medium"
         },
         {
           "rule_id": "ARC-26",
-          "question": "Non sono state aggiunte condizioni isolate a flussi non correlati?",
-          "applies_if": "Modifica di flussi esistenti con if/switch aggiuntivi",
+          "question": "Are isolated conditional patches absent from unrelated flows?",
+          "applies_if": "Modifying existing flows with added if/switch conditions",
           "severity": "medium"
         },
         {
           "rule_id": "ARC-27",
-          "question": "Condizioni ripetute sullo stesso modello non indicano un dispatcher o modello mancante?",
-          "applies_if": "Controlli condizionali multipli ed equivalenti",
+          "question": "Are repeated conditions on the same model free from indicating a missing dispatcher or domain model?",
+          "applies_if": "Multiple equivalent conditional checks",
           "severity": "medium"
         },
         {
           "rule_id": "ARC-28",
-          "question": "Non è presente codice morto, variabili inutilizzate o compatibilità obsolete?",
-          "applies_if": "Sempre",
+          "question": "Is dead code, unused variables, or legacy compatibility code absent?",
+          "applies_if": "Always",
           "severity": "low"
         },
         {
           "rule_id": "ARC-29",
-          "question": "La modifica non mescola inutilmente refactoring e nuova funzionalità?",
-          "applies_if": "PR di grandi dimensioni",
+          "question": "Does the change refrain from unnecessarily mixing refactoring with new functionality?",
+          "applies_if": "Large PRs",
           "severity": "advisory"
         },
         {
           "rule_id": "ARC-30",
-          "question": "La modifica resta una singola unità logica verificabile?",
-          "applies_if": "Sempre",
+          "question": "Does the change remain a single verifiable logical unit?",
+          "applies_if": "Always",
           "severity": "medium"
         },
         {
           "rule_id": "ARC-31",
-          "question": "È stata riutilizzata una utility esistente prima di crearne una nuova?",
-          "applies_if": "Creazione di nuove helper/utility function",
+          "question": "Was an existing utility reused before creating a new one?",
+          "applies_if": "Creating new helper/utility functions",
           "severity": "low"
         },
         {
           "rule_id": "ARC-32",
-          "question": "Una soluzione standard library o nativa avrebbe evitato nuovo codice?",
-          "applies_if": "Scrittura di algoritmi o utility custom",
+          "question": "Would a standard library or native solution have avoided new code?",
+          "applies_if": "Writing custom algorithms or utilities",
           "severity": "low"
         },
         {
           "rule_id": "ARC-33",
-          "question": "Una nuova dipendenza era realmente necessaria?",
-          "applies_if": "Aggiunta di librerie al manifest di progetto",
+          "question": "Was a new dependency genuinely necessary?",
+          "applies_if": "Adding libraries to project manifests",
           "severity": "high"
         },
         {
           "rule_id": "ARC-34",
-          "question": "Ogni semplificazione deliberata con un limite noto è documentata?",
-          "applies_if": "Implementazione di scorciatoie o soluzioni temporanee",
+          "question": "Is every deliberate simplification with a known constraint documented?",
+          "applies_if": "Implementing shortcuts or temporary solutions",
           "severity": "medium"
         },
         {
           "rule_id": "ARC-35",
-          "question": "Il codice modificato non lascia rami o pass-through obsoleti?",
-          "applies_if": "Modifica o deprecazione di vecchi percorsi di codice",
+          "question": "Does modified code refrain from leaving obsolete branches or pass-throughs?",
+          "applies_if": "Modifying or deprecating old code paths",
           "severity": "medium"
         },
         {
           "rule_id": "ARC-36",
-          "question": "Il codice non è più difficile da capire rispetto a prima?",
-          "applies_if": "Sempre",
+          "question": "Is the code no harder to understand than before?",
+          "applies_if": "Always",
           "severity": "medium"
         }
       ]
     },
     {
-      "name": "Errori, consistenza e affidabilità",
+      "name": "Errors, consistency, and reliability",
       "rules": [
         {
           "rule_id": "ERR-01",
-          "question": "Ogni errore atteso del dominio è rappresentato da Result o union discriminata?",
-          "applies_if": "Modellazione degli errori nel dominio",
+          "question": "Is every expected domain error represented by a Result or discriminated union?",
+          "applies_if": "Modeling domain errors",
           "severity": "high"
         },
         {
           "rule_id": "ERR-02",
-          "question": "I ritorni del dominio espongono esplicitamente gli errori possibili?",
-          "applies_if": "Firme dei metodi di dominio",
+          "question": "Do domain return types explicitly expose possible errors?",
+          "applies_if": "Domain method signatures",
           "severity": "medium"
         },
         {
           "rule_id": "ERR-03",
-          "question": "Le eccezioni sono limitate a errori infrastrutturali o invarianti violate?",
-          "applies_if": "Uso di throw/exception",
+          "question": "Are exceptions restricted to infrastructure failures or broken invariants?",
+          "applies_if": "Using throw/exceptions",
           "severity": "medium"
         },
         {
           "rule_id": "ERR-04",
-          "question": "Non sono presenti throw non tipizzati?",
-          "applies_if": "Lanci di eccezioni (es. throw 'error' o throw raw object)",
+          "question": "Are untyped throws absent?",
+          "applies_if": "Throwing exceptions (e.g., throw 'error' or throw raw object)",
           "severity": "medium"
         },
         {
           "rule_id": "ERR-05",
-          "question": "Non esistono blocchi catch vuoti?",
-          "applies_if": "Presenza di blocchi try/catch",
+          "question": "Are empty catch blocks absent?",
+          "applies_if": "Presence of try/catch blocks",
           "severity": "high"
         },
         {
           "rule_id": "ERR-06",
-          "question": "Non viene usato un catch-all che maschera errori?",
-          "applies_if": "Presenza di catch generici (Exception, Throwable, catch(e))",
+          "question": "Is catch-all logging or suppression that masks errors absent?",
+          "applies_if": "Generic catch blocks (Exception, Throwable, catch(e))",
           "severity": "high"
         },
         {
           "rule_id": "ERR-07",
-          "question": "Gli errori esterni vengono mappati senza perdere informazione?",
-          "applies_if": "Integrazione con servizi terzi o I/O",
+          "question": "Are external errors mapped without loss of context?",
+          "applies_if": "Integrating third-party services or I/O",
           "severity": "medium"
         },
         {
           "rule_id": "ERR-08",
-          "question": "Gli errori restituiti al client non rivelano dati sensibili?",
-          "applies_if": "Risposte HTTP/API di errore",
+          "question": "Do errors returned to clients refrain from leaking sensitive data?",
+          "applies_if": "HTTP/API error responses",
           "severity": "blocker"
         },
         {
           "rule_id": "ERR-09",
-          "question": "I log degli errori non contengono segreti o PII?",
-          "applies_if": "Istruzioni di logging",
+          "question": "Are error logs free of secrets or PII?",
+          "applies_if": "Logging statements",
           "severity": "blocker"
         },
         {
           "rule_id": "ERR-10",
-          "question": "I timeout hanno una deadline esplicita?",
-          "applies_if": "Chiamate HTTP, client di rete o query DB",
+          "question": "Do timeouts have an explicit deadline?",
+          "applies_if": "HTTP calls, network clients, or DB queries",
           "severity": "high"
         },
         {
           "rule_id": "ERR-11",
-          "question": "I retry sono limitati?",
-          "applies_if": "Logica di retry su chiamate fallibili",
+          "question": "Are retries bounded?",
+          "applies_if": "Retry logic on fallible operations",
           "severity": "high"
         },
         {
           "rule_id": "ERR-12",
-          "question": "I retry usano backoff quando necessario?",
-          "applies_if": "Logica di retry su chiamate distribuite",
+          "question": "Do retries employ backoff strategies when required?",
+          "applies_if": "Retry logic on distributed calls",
           "severity": "medium"
         },
         {
           "rule_id": "ERR-13",
-          "question": "Un’operazione viene ritentata solo se sicura o idempotente?",
-          "applies_if": "Retry su operazioni con side-effects",
+          "question": "Is an operation retried only if safe or idempotent?",
+          "applies_if": "Retrying operations with side effects",
           "severity": "blocker"
         },
         {
           "rule_id": "ERR-14",
-          "question": "Gli effetti multi-step hanno una strategia di rollback o compensazione?",
-          "applies_if": "Operazioni distribuite o transazioni saghe multi-servizio",
+          "question": "Do multi-step side effects have a rollback or compensation strategy?",
+          "applies_if": "Distributed transactions or multi-service saga operations",
           "severity": "high"
         },
         {
           "rule_id": "ERR-15",
-          "question": "Le transazioni sono atomiche rispetto all’invariante protetto?",
-          "applies_if": "Scritture su database o risorse persistenti",
+          "question": "Are transactions atomic with respect to the protected invariant?",
+          "applies_if": "Database or persistent storage writes",
           "severity": "blocker"
         },
         {
           "rule_id": "ERR-16",
-          "question": "Le scritture concorrenti sono protette da lock, transazione o vincolo atomico?",
-          "applies_if": "Ambienti multithread o risorse ad alto traffico",
+          "question": "Are concurrent writes protected by locks, transactions, or atomic constraints?",
+          "applies_if": "Multithreaded environments or high-concurrency resources",
           "severity": "blocker"
         },
         {
           "rule_id": "ERR-17",
-          "question": "Le race condition e TOCTOU sono impossibili o gestite?",
-          "applies_if": "Check-then-act su file, DB o risorse condivise",
+          "question": "Are race conditions and TOCTOU vulnerabilities handled or impossible?",
+          "applies_if": "Check-then-act logic on files, DB, or shared resources",
           "severity": "blocker"
         },
         {
           "rule_id": "ERR-18",
-          "question": "Gli stati unknown-outcome sono distinti dal fallimento certo?",
-          "applies_if": "Invocazione di sistemi esterni con timeout di rete",
+          "question": "Are unknown-outcome states distinguished from definite failures?",
+          "applies_if": "Invoking external systems subject to network timeouts",
           "severity": "high"
         },
         {
           "rule_id": "ERR-19",
-          "question": "Un effetto ambiguo non viene ripetuto alla cieca?",
-          "applies_if": "Gestione del fallimento su chiamate esterne non sicure",
+          "question": "Is an ambiguous side effect prevented from blind re-execution?",
+          "applies_if": "Failure handling on unsafe external calls",
           "severity": "high"
         },
         {
           "rule_id": "ERR-20",
-          "question": "Le risorse vengono rilasciate anche nei percorsi di errore?",
-          "applies_if": "Apertura di file, connessioni DB, socket, lock",
+          "question": "Are resources released even along error execution paths?",
+          "applies_if": "Opening file handles, DB connections, sockets, locks",
           "severity": "high"
         },
         {
           "rule_id": "ERR-21",
-          "question": "Startup, shutdown e health check sono coerenti con il nuovo comportamento?",
-          "applies_if": "Modifiche all'infrastruttura di ciclo di vita dell'applicazione",
+          "question": "Are startup, shutdown, and health checks consistent with the new behavior?",
+          "applies_if": "Application lifecycle infrastructure modifications",
           "severity": "medium"
         },
         {
           "rule_id": "ERR-22",
-          "question": "Sono disponibili logging, metriche o tracing sufficienti per diagnosticare il fallimento?",
-          "applies_if": "Scrittura di nuovi servizi, endpoint o flussi critici",
+          "question": "Are sufficient logging, metrics, or tracing available to diagnose failures?",
+          "applies_if": "Writing new services, endpoints, or critical paths",
           "severity": "medium"
         },
         {
           "rule_id": "IDEMP-01",
-          "question": "Esiste uno store durevole per l’idempotenza?",
-          "applies_if": "Operazioni di pagamento, provisioning o scrittura esterna",
+          "question": "Does a durable store exist for idempotency tracking?",
+          "applies_if": "Payment, provisioning, or external write operations",
           "severity": "blocker"
         },
         {
           "rule_id": "IDEMP-02",
-          "question": "Lo store viene aggiornato atomicamente?",
-          "applies_if": "Gestione delle chiavi di idempotenza",
+          "question": "Is the idempotency store updated atomically?",
+          "applies_if": "Managing idempotency keys",
           "severity": "blocker"
         },
         {
           "rule_id": "IDEMP-03",
-          "question": "La chiave è scoped per tenant, account o risorsa?",
-          "applies_if": "Gestione delle chiavi di idempotenza in multi-tenant",
+          "question": "Is the idempotency key scoped per tenant, account, or resource?",
+          "applies_if": "Multi-tenant idempotency key handling",
           "severity": "high"
         },
         {
           "rule_id": "IDEMP-04",
-          "question": "La richiesta contiene un fingerprint?",
-          "applies_if": "Verifica di idempotenza sui payload di richiesta",
+          "question": "Does the request contain a payload fingerprint?",
+          "applies_if": "Idempotency validation on request payloads",
           "severity": "medium"
         },
         {
           "rule_id": "IDEMP-05",
-          "question": "Una replay identica restituisce il risultato memorizzato?",
-          "applies_if": "Gestione delle risposte idempotenti memorizzate",
+          "question": "Does an identical replay return the cached result?",
+          "applies_if": "Handling cached idempotent responses",
           "severity": "blocker"
         },
         {
           "rule_id": "IDEMP-06",
-          "question": "La stessa chiave con fingerprint diverso restituisce conflitto?",
-          "applies_if": "Validazione dell'integrità delle chiavi di idempotenza",
+          "question": "Does the same key with a different fingerprint trigger a conflict?",
+          "applies_if": "Validating idempotency key integrity",
           "severity": "high"
         },
         {
           "rule_id": "IDEMP-07",
-          "question": "Un provider ambiguo produce unknown-outcome?",
-          "applies_if": "Integrazione di payment gateway o provider esterni",
+          "question": "Does an ambiguous provider error produce an unknown-outcome state?",
+          "applies_if": "Integrating payment gateways or external providers",
           "severity": "high"
         },
         {
           "rule_id": "IDEMP-08",
-          "question": "Esiste una procedura di riconciliazione?",
-          "applies_if": "Gestione di transazioni finanziarie o di stato asincrone",
+          "question": "Is a reconciliation procedure available?",
+          "applies_if": "Financial transactions or asynchronous state management",
           "severity": "high"
         }
       ]
     },
     {
-      "name": "Sicurezza",
+      "name": "Security",
       "rules": [
         {
           "rule_id": "SEC-01",
-          "question": "Tutti gli input esterni sono validati lato server?",
-          "applies_if": "Presenza di endpoint HTTP, API o form",
+          "question": "Are all external inputs validated server-side?",
+          "applies_if": "HTTP endpoints, APIs, or form inputs present",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-02",
-          "question": "La validazione usa allowlist quando possibile?",
-          "applies_if": "Validazione di input esterni",
+          "question": "Does validation leverage allowlists whenever possible?",
+          "applies_if": "Validating external input",
           "severity": "high"
         },
         {
           "rule_id": "SEC-03",
-          "question": "Gli input non validi vengono rifiutati?",
-          "applies_if": "Validazione di input",
+          "question": "Are invalid inputs rejected?",
+          "applies_if": "Input validation logic",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-04",
-          "question": "Le query SQL usano parametri?",
-          "applies_if": "Il codice esegue query SQL",
+          "question": "Do SQL queries use parameters instead of input concatenation?",
+          "applies_if": "Code executes SQL queries",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-05",
-          "question": "Non esiste concatenazione non sicura di SQL?",
-          "applies_if": "Costruzione di stringhe SQL",
+          "question": "Is unsafe string concatenation absent in SQL generation?",
+          "applies_if": "Building SQL query strings",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-06",
-          "question": "Gli argomenti di shell sono parametrizzati?",
-          "applies_if": "Esecuzione di comandi di sistema/shell",
+          "question": "Are shell arguments parameterized?",
+          "applies_if": "Executing system/shell commands",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-07",
-          "question": "Non esiste command injection?",
-          "applies_if": "Esecuzione di comandi di sistema/shell",
+          "question": "Is command injection impossible?",
+          "applies_if": "Executing system/shell commands",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-08",
-          "question": "Non esiste code injection?",
-          "applies_if": "Valutazione dinamica del codice (eval, exec, ecc.)",
+          "question": "Is dynamic code execution (code injection) absent?",
+          "applies_if": "Dynamic evaluation (eval, exec, etc.)",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-09",
-          "question": "L’output HTML usa encoding contestuale?",
-          "applies_if": "Rendering di dati non fidati in contesti HTML",
+          "question": "Does HTML output use contextual encoding?",
+          "applies_if": "Rendering untrusted data into HTML contexts",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-10",
-          "question": "L’output JavaScript, CSS e URL usa encoding contestuale?",
-          "applies_if": "Rendering di dati non fidati in contesti script/style/link",
+          "question": "Does JavaScript, CSS, and URL output use contextual encoding?",
+          "applies_if": "Rendering untrusted data into script/style/link contexts",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-11",
-          "question": "I template non interpretano input non trusted come codice?",
-          "applies_if": "Uso di motori di template (Server-Side Template Injection)",
+          "question": "Do templates refrain from executing untrusted input as code?",
+          "applies_if": "Template engine usage (Server-Side Template Injection)",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-12",
-          "question": "I path utente non possono effettuare path traversal?",
-          "applies_if": "Accesso al file system tramite input utente",
+          "question": "Are user-supplied file paths prevented from path traversal?",
+          "applies_if": "Accessing file system via user input",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-13",
-          "question": "I symlink o path canonici non permettono di uscire dalla directory autorizzata?",
-          "applies_if": "Risoluzione di percorsi di file nel FS",
+          "question": "Do symlinks or canonical paths refrain from breaking out of authorized directories?",
+          "applies_if": "Resolving file system paths",
           "severity": "high"
         },
         {
           "rule_id": "SEC-14",
-          "question": "La deserializzazione di dati non trusted è sicura?",
-          "applies_if": "Deserializzazione di oggetti (pickle, java serialization, ecc.)",
+          "question": "Is untrusted data deserialization secure?",
+          "applies_if": "Object deserialization (pickle, Java serialization, etc.)",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-15",
-          "question": "Le regex controllate dall’utente non consentono ReDoS?",
-          "applies_if": "Uso di espressioni regolari su input utente",
+          "question": "Are user-controlled regex patterns free from ReDoS vulnerabilities?",
+          "applies_if": "Applying regex to user input",
           "severity": "high"
         },
         {
           "rule_id": "SEC-16",
-          "question": "Le dimensioni e il costo computazionale degli input sono limitati?",
-          "applies_if": "Parsing di file di grandi dimensioni o algoritmi intensivi",
+          "question": "Are input sizes and computational costs bounded?",
+          "applies_if": "Parsing large files or CPU-intensive algorithms",
           "severity": "high"
         },
         {
           "rule_id": "SEC-17",
-          "question": "Ogni funzione sensibile richiede autenticazione?",
-          "applies_if": "API o azioni con impatto sui dati o sul sistema",
+          "question": "Does every sensitive function require authentication?",
+          "applies_if": "APIs or actions impacting system data or state",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-18",
-          "question": "L’autenticazione non si basa solo su dati controllabili dal client?",
-          "applies_if": "Logica di autenticazione o gestione sessioni",
+          "question": "Does authentication refrain from relying solely on client-controllable data?",
+          "applies_if": "Authentication logic or session management",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-19",
-          "question": "L’identità autenticata viene verificata sul server?",
-          "applies_if": "Verifica della sessione o token",
+          "question": "Is authenticated identity verified server-side?",
+          "applies_if": "Session or token verification",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-20",
-          "question": "Ogni oggetto è autorizzato rispetto all’utente corrente?",
-          "applies_if": "Accesso a risorse tramite ID (prevenzione IDOR/BOLA)",
+          "question": "Is every requested object authorized against the current user?",
+          "applies_if": "Resource access via ID (IDOR/BOLA prevention)",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-21",
-          "question": "Gli ID forniti dall’utente non permettono IDOR o BOLA?",
-          "applies_if": "Accesso a risorse tramite identificatori",
+          "question": "Do user-provided IDs refrain from allowing IDOR or BOLA?",
+          "applies_if": "Resource access via identifiers",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-22",
-          "question": "Ogni funzione sensibile verifica il ruolo richiesto?",
-          "applies_if": "Sistemi con controllo accessi basato sui ruoli (RBAC)",
+          "question": "Does every sensitive function enforce the required role?",
+          "applies_if": "Role-Based Access Control (RBAC) systems",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-23",
-          "question": "Ogni proprietà modificabile è autorizzata separatamente?",
-          "applies_if": "Aggiornamenti parziali di entità (PATCH/PUT)",
+          "question": "Is every modifiable property authorized independently?",
+          "applies_if": "Partial entity updates (PATCH/PUT)",
           "severity": "high"
         },
         {
           "rule_id": "SEC-24",
-          "question": "Il mass assignment non permette di modificare campi protetti?",
-          "applies_if": "Binding diretto di payload HTTP su modelli",
+          "question": "Does mass assignment refrain from modifying protected fields?",
+          "applies_if": "Directly binding HTTP payloads to domain models",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-25",
-          "question": "Non è possibile escalation di privilegi?",
-          "applies_if": "Gestione ruoli, permessi e modifiche utente",
+          "question": "Is privilege escalation impossible?",
+          "applies_if": "Role management, permissions, and user updates",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-26",
-          "question": "Le operazioni state-changing protette da cookie hanno CSRF protection?",
-          "applies_if": "Autenticazione basata su cookie per rotte di modifica",
+          "question": "Do cookie-based state-changing operations have CSRF protection?",
+          "applies_if": "Cookie-based auth on state-modifying routes",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-27",
-          "question": "Il client non può bypassare autorizzazione o business rule?",
-          "applies_if": "Verifiche di sicurezza e controlli di stato",
+          "question": "Is the client prevented from bypassing authorization or business rules?",
+          "applies_if": "Security checks and state transitions",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-28",
-          "question": "Le autorizzazioni vengono rivalutate dopo cambi di ruolo o sessione?",
-          "applies_if": "Modifica dei privilegi di un utente attivo",
+          "question": "Are authorizations re-evaluated upon role or session changes?",
+          "applies_if": "Modifying privileges of active users",
           "severity": "high"
         },
         {
           "rule_id": "SEC-29",
-          "question": "Le operazioni sensibili hanno rate limit?",
-          "applies_if": "Endpoint di auth, pagamento, invio email o reset password",
+          "question": "Do sensitive operations enforce rate limiting?",
+          "applies_if": "Auth, payment, email dispatch, or password reset endpoints",
           "severity": "high"
         },
         {
           "rule_id": "SEC-30",
-          "question": "I flussi business sensibili hanno protezioni contro abuso e automazione?",
-          "applies_if": "Flussi pubblici o a rischio scraping/botting",
+          "question": "Do sensitive business flows feature abuse and automation protections?",
+          "applies_if": "Public endpoints prone to scraping or bot abuse",
           "severity": "medium"
         },
         {
           "rule_id": "SEC-31",
-          "question": "Non sono presenti segreti hardcoded nel codice?",
-          "applies_if": "Sempre",
+          "question": "Are hardcoded secrets absent from the code?",
+          "applies_if": "Always",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-32",
-          "question": "I segreti non sono presenti nei log?",
-          "applies_if": "Istruzioni di logging",
+          "question": "Are secrets excluded from log outputs?",
+          "applies_if": "Logging statements",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-33",
-          "question": "I segreti non sono presenti nei messaggi di errore?",
-          "applies_if": "Gestione delle eccezioni o risposte di errore",
+          "question": "Are secrets excluded from error messages?",
+          "applies_if": "Exception handling or error responses",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-34",
-          "question": "Le chiavi sono archiviate in un secret manager appropriato?",
-          "applies_if": "Gestione e recupero di credenziali o chiavi API",
+          "question": "Are secrets stored in an appropriate secret manager?",
+          "applies_if": "Credential or API key storage and retrieval",
           "severity": "high"
         },
         {
           "rule_id": "SEC-35",
-          "question": "La rotazione delle chiavi è possibile?",
-          "applies_if": "Architettura di gestione delle chiavi crittografiche",
+          "question": "Is key rotation supported?",
+          "applies_if": "Cryptographic key management architecture",
           "severity": "medium"
         },
         {
           "rule_id": "SEC-36",
-          "question": "Vengono usate primitive crittografiche standard?",
-          "applies_if": "Implementazione di cifratura, hashing o firme",
+          "question": "Are standard cryptographic primitives used?",
+          "applies_if": "Implementing encryption, hashing, or signatures",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-37",
-          "question": "Non viene implementata crittografia proprietaria?",
-          "applies_if": "Uso di algoritmi o schemi di cifratura custom",
+          "question": "Is proprietary or custom cryptography absent?",
+          "applies_if": "Using custom encryption algorithms or schemes",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-38",
-          "question": "I dati sensibili sono protetti in transito?",
-          "applies_if": "Comunicazioni di rete, chiamate API o socket",
+          "question": "Is sensitive data protected in transit?",
+          "applies_if": "Network communications, API calls, or socket channels",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-39",
-          "question": "I dati sensibili sono protetti a riposo quando necessario?",
-          "applies_if": "Persistenza di PII, token o credenziali su DB/Storage",
+          "question": "Is sensitive data protected at rest when required?",
+          "applies_if": "Persisting PII, tokens, or credentials in storage/DB",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-40",
-          "question": "La validazione TLS verifica certificato, hostname e trust chain?",
-          "applies_if": "Client HTTP/TCP outbound",
+          "question": "Does TLS validation verify certificate, hostname, and trust chain?",
+          "applies_if": "Outbound HTTP/TCP clients",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-41",
-          "question": "I generatori casuali usati per sicurezza sono crittograficamente sicuri?",
-          "applies_if": "Generazione di token, nonce, salt o chiavi",
+          "question": "Are random number generators used for security cryptographically secure?",
+          "applies_if": "Generating tokens, nonces, salts, or keys",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-42",
-          "question": "Le password non vengono memorizzate in chiaro?",
-          "applies_if": "Gestione delle credenziali utente",
+          "question": "Are passwords prevented from being stored in plaintext?",
+          "applies_if": "User credential management",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-43",
-          "question": "I token hanno scadenza, audience e issuer verificati?",
-          "applies_if": "Parsing o verifica di JWT/token di auth",
+          "question": "Do tokens have verified expiration, audience, and issuer?",
+          "applies_if": "JWT/Auth token parsing or verification",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-44",
-          "question": "I token self-contained verificano firma o MAC prima dell’uso?",
-          "applies_if": "Uso di JWT o token firmati",
+          "question": "Do self-contained tokens verify signature or MAC before use?",
+          "applies_if": "Using JWTs or signed tokens",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-45",
-          "question": "Gli algoritmi token sono limitati a una allowlist?",
-          "applies_if": "Verifica della firma dei token JWT",
+          "question": "Are token algorithms restricted to an allowlist?",
+          "applies_if": "JWT signature verification",
           "severity": "high"
         },
         {
           "rule_id": "SEC-46",
-          "question": "L’algoritmo none è rifiutato?",
-          "applies_if": "Verifica di JWT",
+          "question": "Is the 'none' algorithm strictly rejected?",
+          "applies_if": "JWT verification",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-47",
-          "question": "Non esiste key confusion tra algoritmi simmetrici e asimmetrici?",
-          "applies_if": "Verifica della firma JWT (es. HMAC vs RSA/ECDSA)",
+          "question": "Is key confusion between symmetric and asymmetric algorithms prevented?",
+          "applies_if": "JWT signature verification (e.g., HMAC vs RSA/ECDSA)",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-48",
-          "question": "Le chiavi token provengono da sorgenti trusted e allowlisted?",
-          "applies_if": "Fetch o verifica di chiavi pubbliche (JWKS)",
+          "question": "Do token keys originate from trusted, allowlisted sources?",
+          "applies_if": "Fetching or validating public keys (JWKS)",
           "severity": "high"
         },
         {
           "rule_id": "SEC-49",
-          "question": "Gli URL jku, x5u e jwk non permettono sorgenti arbitrarie?",
-          "applies_if": "Uso di header JWT per la risoluzione delle chiavi",
+          "question": "Do jku, x5u, and jwk URLs refrain from permitting arbitrary sources?",
+          "applies_if": "Using JWT headers for key resolution",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-50",
-          "question": "CORS usa origini allowlisted?",
-          "applies_if": "Configurazione degli header CORS nelle API web",
+          "question": "Does CORS enforce an allowlist of origins?",
+          "applies_if": "Configuring CORS headers on web APIs",
           "severity": "high"
         },
         {
           "rule_id": "SEC-51",
-          "question": "I cookie sensibili hanno Secure?",
-          "applies_if": "Impostazione di cookie di sessione o auth",
+          "question": "Do sensitive cookies include the Secure flag?",
+          "applies_if": "Setting session or auth cookies",
           "severity": "high"
         },
         {
           "rule_id": "SEC-52",
-          "question": "I cookie sensibili hanno HttpOnly?",
-          "applies_if": "Impostazione di cookie di sessione o auth",
+          "question": "Do sensitive cookies include the HttpOnly flag?",
+          "applies_if": "Setting session or auth cookies",
           "severity": "high"
         },
         {
           "rule_id": "SEC-53",
-          "question": "I cookie sensibili hanno SameSite appropriato?",
-          "applies_if": "Impostazione di cookie web",
+          "question": "Do sensitive cookies set an appropriate SameSite attribute?",
+          "applies_if": "Setting web cookies",
           "severity": "medium"
         },
         {
           "rule_id": "SEC-54",
-          "question": "Le risposte sensibili impediscono caching condiviso?",
-          "applies_if": "Header HTTP di risposta per dati privati",
+          "question": "Do sensitive responses prevent shared caching?",
+          "applies_if": "HTTP response headers for private data",
           "severity": "high"
         },
         {
           "rule_id": "SEC-55",
-          "question": "Sono configurati gli header di sicurezza applicabili?",
-          "applies_if": "Applicazioni web ed erogazione di risposte HTTP",
+          "question": "Are applicable security headers configured?",
+          "applies_if": "Web applications serving HTTP responses",
           "severity": "medium"
         },
         {
           "rule_id": "SEC-56",
-          "question": "Le pagine HTML hanno CSP appropriata?",
-          "applies_if": "Rendering HTML lato server o Single Page Application",
+          "question": "Do HTML pages enforce an appropriate Content Security Policy (CSP)?",
+          "applies_if": "Server-side HTML rendering or Single Page Applications",
           "severity": "high"
         },
         {
           "rule_id": "SEC-57",
-          "question": "Il traffico HTTP viene protetto con HSTS quando applicabile?",
-          "applies_if": "Configurazione di server web o middleware HTTPS",
+          "question": "Is HTTP traffic protected with HSTS where applicable?",
+          "applies_if": "Web server or HTTPS middleware configuration",
           "severity": "medium"
         },
         {
           "rule_id": "SEC-58",
-          "question": "È presente X-Content-Type-Options: nosniff quando applicabile?",
-          "applies_if": "Risposte HTTP con payload statici o dinamici",
+          "question": "Is 'X-Content-Type-Options: nosniff' present where applicable?",
+          "applies_if": "HTTP responses serving static or dynamic payloads",
           "severity": "medium"
         },
         {
           "rule_id": "SEC-59",
-          "question": "Il clickjacking è impedito?",
-          "applies_if": "Applicazioni web con interfacce utente (X-Frame-Options / frame-ancestors)",
+          "question": "Is clickjacking prevented?",
+          "applies_if": "Web applications with UI (X-Frame-Options / frame-ancestors)",
           "severity": "high"
         },
         {
           "rule_id": "SEC-60",
-          "question": "Le informazioni di versione del server non sono esposte inutilmente?",
-          "applies_if": "Header di risposta HTTP (Server, X-Powered-By)",
+          "question": "Are server version details hidden from unnecessary exposure?",
+          "applies_if": "HTTP response headers (Server, X-Powered-By)",
           "severity": "low"
         },
         {
           "rule_id": "SEC-61",
-          "question": "Gli endpoint non espongono più dati del necessario?",
-          "applies_if": "DTO di risposta e risorse API",
+          "question": "Do endpoints refrain from exposing more data than necessary?",
+          "applies_if": "Response DTOs and API resources",
           "severity": "high"
         },
         {
           "rule_id": "SEC-62",
-          "question": "I file scaricabili usano Content-Disposition appropriato?",
-          "applies_if": "Endpoint di download file",
+          "question": "Do downloadable files specify an appropriate Content-Disposition header?",
+          "applies_if": "File download endpoints",
           "severity": "medium"
         },
         {
           "rule_id": "SEC-63",
-          "question": "I file scaricabili usano un content type sicuro?",
-          "applies_if": "Endpoint di download file",
+          "question": "Do downloadable files specify a safe content type?",
+          "applies_if": "File download endpoints",
           "severity": "medium"
         },
         {
           "rule_id": "SEC-64",
-          "question": "Gli upload limitano dimensione, tipo e nome?",
-          "applies_if": "Endpoint che gestiscono l'upload di file",
+          "question": "Do uploads constrain file size, type, and name?",
+          "applies_if": "File upload endpoints",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-65",
-          "question": "Gli upload vengono memorizzati fuori dal percorso eseguibile?",
-          "applies_if": "Salvataggio di file caricati su disco locale",
+          "question": "Are uploaded files stored outside executable web paths?",
+          "applies_if": "Storing uploaded files to local disk",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-66",
-          "question": "Gli upload non possono essere eseguiti come codice?",
-          "applies_if": "Gestione ed erogazione di file caricati dagli utenti",
+          "question": "Are uploaded files prevented from executing as code?",
+          "applies_if": "Managing and serving user-uploaded files",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-67",
-          "question": "Gli URL controllati dall’utente non permettono open redirect?",
-          "applies_if": "Redirect basati su parametri di query o payload",
+          "question": "Do user-controlled URLs refrain from permitting open redirects?",
+          "applies_if": "Redirects based on query parameters or payload input",
           "severity": "high"
         },
         {
           "rule_id": "SEC-68",
-          "question": "Le richieste server-side verso URL esterni sono protette da SSRF?",
-          "applies_if": "Il server effettua richieste HTTP/network basate su input utente",
+          "question": "Are server-side requests to external URLs protected against SSRF?",
+          "applies_if": "Server issuing network requests driven by user input",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-69",
-          "question": "Le destinazioni SSRF non possono accedere a reti interne o metadata endpoints?",
-          "applies_if": "Richieste outbound guidate dall'utente",
+          "question": "Are SSRF targets restricted from accessing internal networks or metadata endpoints?",
+          "applies_if": "Outbound user-driven requests",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-70",
-          "question": "I webhook verificano autenticità e integrità dell’origine?",
-          "applies_if": "Endpoint di ricezione webhook da terze parti",
+          "question": "Do incoming webhooks verify origin authenticity and integrity?",
+          "applies_if": "Endpoints accepting third-party webhooks",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-71",
-          "question": "Le operazioni sensibili producono audit log?",
-          "applies_if": "Operazioni amministrative, modifiche ai permessi o dati critici",
+          "question": "Do sensitive operations generate audit logs?",
+          "applies_if": "Administrative actions, permission changes, or critical data edits",
           "severity": "high"
         },
         {
           "rule_id": "SEC-72",
-          "question": "Gli audit log sono protetti da modifica non autorizzata?",
-          "applies_if": "Infrastruttura di persistenza degli audit log",
+          "question": "Are audit logs protected against unauthorized modification?",
+          "applies_if": "Audit log persistence infrastructure",
           "severity": "high"
         },
         {
           "rule_id": "SEC-73",
-          "question": "Gli eventi di sicurezza generano alert quando necessario?",
-          "applies_if": "Rilevazione di fallimenti di autenticazione o anomalie",
+          "question": "Do security events trigger alerts when necessary?",
+          "applies_if": "Authentication failure detection or anomaly monitoring",
           "severity": "medium"
         },
         {
           "rule_id": "SEC-74",
-          "question": "Le configurazioni di produzione non hanno debug o default insicuri?",
-          "applies_if": "File di configurazione o ambiente",
+          "question": "Are production configurations free of debug mode or insecure defaults?",
+          "applies_if": "Environment or configuration files",
           "severity": "blocker"
         },
         {
           "rule_id": "SEC-75",
-          "question": "I permessi applicati rispettano il principio del least privilege?",
-          "applies_if": "Assegnazione di permessi a process, DB user o service account",
+          "question": "Do applied permissions adhere to the principle of least privilege?",
+          "applies_if": "Assigning permissions to processes, DB users, or service accounts",
           "severity": "high"
         },
         {
           "rule_id": "SEC-76",
-          "question": "I dati provenienti da API, log, file e config sono trattati come non trusted?",
-          "applies_if": "Lettura di dati esterni al confine del processo",
+          "question": "Is data originating from APIs, logs, files, and configs treated as untrusted?",
+          "applies_if": "Reading external data at process boundaries",
           "severity": "high"
         }
       ]
     },
     {
-      "name": "API, contratti e compatibilità",
+      "name": "API, contracts, and compatibility",
       "rules": [
         {
           "rule_id": "API-01",
-          "question": "Lo schema API corrisponde all’implementazione?",
-          "applies_if": "Presenza di specifiche OpenAPI/Swagger o contratti API",
+          "question": "Does the API schema match the actual implementation?",
+          "applies_if": "OpenAPI/Swagger specs or API contracts present",
           "severity": "blocker"
         },
         {
           "rule_id": "API-02",
-          "question": "Gli input rispettano lo schema dichiarato?",
-          "applies_if": "Validazione delle richieste API",
+          "question": "Do inputs adhere to the declared schema?",
+          "applies_if": "API request validation",
           "severity": "high"
         },
         {
           "rule_id": "API-03",
-          "question": "Gli output rispettano lo schema dichiarato?",
-          "applies_if": "Generazione delle risposte API",
+          "question": "Do outputs adhere to the declared schema?",
+          "applies_if": "API response generation",
           "severity": "high"
         },
         {
           "rule_id": "API-04",
-          "question": "Tutte le risposte possibili sono documentate?",
-          "applies_if": "Documentazione OpenAPI o contratti di rete",
+          "question": "Are all possible responses documented?",
+          "applies_if": "OpenAPI docs or network contract specifications",
           "severity": "medium"
         },
         {
           "rule_id": "API-05",
-          "question": "Gli status code HTTP sono semanticamente corretti?",
-          "applies_if": "Endpoint HTTP REST",
+          "question": "Are HTTP status codes semantically correct?",
+          "applies_if": "REST HTTP endpoints",
           "severity": "medium"
         },
         {
           "rule_id": "API-06",
-          "question": "Il formato degli errori è stabile e coerente?",
-          "applies_if": "Risposte HTTP di errore",
+          "question": "Is the error payload structure consistent and stable?",
+          "applies_if": "HTTP error responses",
           "severity": "medium"
         },
         {
           "rule_id": "API-07",
-          "question": "I requisiti di autenticazione sono dichiarati e applicati?",
-          "applies_if": "Specifica ed endpoint API",
+          "question": "Are authentication requirements declared and enforced?",
+          "applies_if": "API specifications and endpoints",
           "severity": "high"
         },
         {
           "rule_id": "API-08",
-          "question": "Le modifiche non rompono i consumer esistenti?",
-          "applies_if": "Modifiche ad API già pubbliche o in uso",
+          "question": "Do changes refrain from breaking existing consumers?",
+          "applies_if": "Modifying public or active APIs",
           "severity": "blocker"
         },
         {
           "rule_id": "API-09",
-          "question": "Le breaking change hanno versioning o migration path?",
-          "applies_if": "Introduzione di modifiche incompatibili nelle API",
+          "question": "Do breaking changes provide versioning or a migration path?",
+          "applies_if": "Introducing incompatible API changes",
           "severity": "blocker"
         },
         {
           "rule_id": "API-10",
-          "question": "Metodi HTTP e semantica di idempotenza sono corretti?",
-          "applies_if": "Uso di GET, POST, PUT, DELETE, PATCH",
+          "question": "Are HTTP methods and idempotency semantics correct?",
+          "applies_if": "Using GET, POST, PUT, DELETE, PATCH",
           "severity": "high"
         },
         {
           "rule_id": "API-11",
-          "question": "Gli endpoint collection hanno paginazione o limiti?",
-          "applies_if": "Endpoint che restituiscono liste di risorse",
+          "question": "Do collection endpoints implement pagination or limit constraints?",
+          "applies_if": "Endpoints returning list resources",
           "severity": "high"
         },
         {
           "rule_id": "API-12",
-          "question": "I dati restituiti sono minimizzati?",
-          "applies_if": "Progettazione dei payload di risposta",
+          "question": "Are response payload fields minimized?",
+          "applies_if": "Response payload design",
           "severity": "medium"
         },
         {
           "rule_id": "API-13",
-          "question": "Gli eventi e messaggi hanno compatibilità forward e backward?",
-          "applies_if": "Sistemi ad eventi, Protobuf o schema registry",
+          "question": "Do events and messages maintain forward and backward compatibility?",
+          "applies_if": "Event-driven systems, Protobuf, or schema registries",
           "severity": "high"
         },
         {
           "rule_id": "API-14",
-          "question": "I consumer e caller sono stati aggiornati?",
-          "applies_if": "Modifica del contratto di un client/servizio interno",
+          "question": "Have downstream consumers and internal callers been updated?",
+          "applies_if": "Modifying contract of an internal service/client",
           "severity": "high"
         },
         {
           "rule_id": "API-15",
-          "question": "Deprecazioni e rimozioni sono documentate?",
-          "applies_if": "Rimozione o deprecazione di campi o endpoint",
+          "question": "Are deprecations and removals documented?",
+          "applies_if": "Removing or deprecating API endpoints/fields",
           "severity": "medium"
         },
         {
           "rule_id": "API-16",
-          "question": "Il numero di versione riflette correttamente la modifica pubblica?",
-          "applies_if": "Rilascio di API o pacchetti con Semantic Versioning",
+          "question": "Does the version number accurately reflect public contract changes?",
+          "applies_if": "Releasing APIs or packages with Semantic Versioning",
           "severity": "medium"
         },
         {
           "rule_id": "API-17",
-          "question": "Non esistono endpoint shadow o inventari API incompleti?",
-          "applies_if": "Aggiunta di nuove rotte HTTP",
+          "question": "Are shadow endpoints or incomplete API inventories absent?",
+          "applies_if": "Adding new HTTP routes",
           "severity": "high"
         },
         {
           "rule_id": "API-18",
-          "question": "Content type e charset sono espliciti e corretti?",
-          "applies_if": "Header HTTP Content-Type nelle risposte/richieste",
+          "question": "Are content type and charset headers explicit and correct?",
+          "applies_if": "Content-Type headers in HTTP requests/responses",
           "severity": "medium"
         }
       ]
     },
     {
-      "name": "Performance e risorse",
+      "name": "Performance and resources",
       "rules": [
         {
           "rule_id": "PERF-01",
-          "question": "Non esistono query N+1?",
-          "applies_if": "Uso di ORM o query a database relazionali/documentali in cicli",
+          "question": "Are N+1 database queries absent?",
+          "applies_if": "Using ORMs or DB queries inside loops",
           "severity": "high"
         },
         {
           "rule_id": "PERF-02",
-          "question": "I fetch di collezioni hanno un limite?",
-          "applies_if": "Query DB o chiamate di rete che caricano collezioni",
+          "question": "Do collection fetches enforce size limits?",
+          "applies_if": "DB queries or network calls fetching collections",
           "severity": "high"
         },
         {
           "rule_id": "PERF-03",
-          "question": "Le operazioni non eseguono loop non bounded?",
-          "applies_if": "Cicli while/for basati su dati esterni o condizioni di stop dinamiche",
+          "question": "Are operations free from unbounded loops?",
+          "applies_if": "While/for loops driven by external input or dynamic conditions",
           "severity": "high"
         },
         {
           "rule_id": "PERF-04",
-          "question": "La complessità algoritmica è proporzionata alla dimensione dei dati?",
-          "applies_if": "Elaborazione di collezioni di dati",
+          "question": "Is algorithmic complexity proportionate to dataset size?",
+          "applies_if": "Processing data collections",
           "severity": "medium"
         },
         {
           "rule_id": "PERF-05",
-          "question": "Non vengono creati oggetti enormi in hot path?",
-          "applies_if": "Rotte ad alto traffico o percorsi esecutivi frequenti",
+          "question": "Is allocation of large objects avoided in hot paths?",
+          "applies_if": "High-throughput routes or frequent execution paths",
           "severity": "medium"
         },
         {
           "rule_id": "PERF-06",
-          "question": "Non viene eseguito I/O sincrono su event loop o thread critici?",
-          "applies_if": "Ambienti Node.js, async/await o UI main thread",
+          "question": "Is synchronous I/O avoided on event loops or critical threads?",
+          "applies_if": "Node.js, async/await, or UI main thread environments",
           "severity": "high"
         },
         {
           "rule_id": "PERF-07",
-          "question": "Le chiamate esterne vengono batchate quando appropriato?",
-          "applies_if": "Invocazioni ripetute a servizi terzi o DB",
+          "question": "Are external calls batched where appropriate?",
+          "applies_if": "Repeated DB or third-party service invocations",
           "severity": "medium"
         },
         {
           "rule_id": "PERF-08",
-          "question": "Le connessioni, pool e thread sono bounded?",
-          "applies_if": "Configurazione di client HTTP, pool DB o worker thread",
+          "question": "Are connections, pools, and thread counts bounded?",
+          "applies_if": "Configuring HTTP clients, DB pools, or worker threads",
           "severity": "high"
         },
         {
           "rule_id": "PERF-09",
-          "question": "Le risorse vengono rilasciate sempre?",
-          "applies_if": "Allocazione di file handler, socket, connessioni",
+          "question": "Are acquired resources guaranteed to be released?",
+          "applies_if": "Allocating file descriptors, sockets, connections",
           "severity": "high"
         },
         {
           "rule_id": "PERF-10",
-          "question": "Non esistono memory leak?",
-          "applies_if": "Uso di listener di eventi, cache in memoria o variabili globali",
+          "question": "Are memory leaks absent?",
+          "applies_if": "Event listeners, in-memory caches, or global references",
           "severity": "high"
         },
         {
           "rule_id": "PERF-11",
-          "question": "I payload non includono dati inutili?",
-          "applies_if": "Risposte HTTP o messaggi di rete",
+          "question": "Do payload structures exclude unnecessary data?",
+          "applies_if": "HTTP responses or network messages",
           "severity": "low"
         },
         {
           "rule_id": "PERF-12",
-          "question": "Il lazy loading viene usato quando evita lavoro inutile?",
-          "applies_if": "Inizializzazione di moduli pesanti o risorse opzionali",
+          "question": "Is lazy loading used where it prevents unnecessary work?",
+          "applies_if": "Initializing heavy modules or optional resources",
           "severity": "low"
         },
         {
           "rule_id": "PERF-13",
-          "question": "Il code splitting viene usato quando riduce il bundle iniziale?",
-          "applies_if": "Applicazioni frontend / web bundle",
+          "question": "Is code splitting used to reduce initial bundle sizes?",
+          "applies_if": "Frontend applications / Web bundlers",
           "severity": "medium"
         },
         {
           "rule_id": "PERF-14",
-          "question": "Le UI non eseguono re-render inutili?",
-          "applies_if": "Componenti UI (React, Vue, Angular, Svelte, ecc.)",
+          "question": "Are unnecessary UI re-renders avoided?",
+          "applies_if": "UI components (React, Vue, Angular, Svelte, etc.)",
           "severity": "medium"
         },
         {
           "rule_id": "PERF-15",
-          "question": "Le cache hanno chiavi corrette?",
-          "applies_if": "Uso di meccanismi di caching",
+          "question": "Do cache keys properly uniquely identify data?",
+          "applies_if": "Caching layer usage",
           "severity": "high"
         },
         {
           "rule_id": "PERF-16",
-          "question": "Le cache hanno invalidazione o TTL corretti?",
-          "applies_if": "Uso di meccanismi di caching",
+          "question": "Do caches enforce correct TTL or invalidation mechanisms?",
+          "applies_if": "Caching layer usage",
           "severity": "high"
         },
         {
           "rule_id": "PERF-17",
-          "question": "Le cache non mescolano dati di utenti o tenant diversi?",
-          "applies_if": "Caching in sistemi multi-tenant o con dati utente",
+          "question": "Do caches refrain from mixing multi-tenant or user-private data?",
+          "applies_if": "Caching multi-tenant or user-private data",
           "severity": "blocker"
         },
         {
           "rule_id": "PERF-18",
-          "question": "Le cache non espongono rischio di stampede?",
-          "applies_if": "Cache ad alto traffico con tempi di ricalcolo elevati",
+          "question": "Are caches free from cache stampede risks?",
+          "applies_if": "High-concurrency cache keys with expensive compute times",
           "severity": "medium"
         },
         {
           "rule_id": "PERF-19",
-          "question": "Il polling è limitato e necessario?",
-          "applies_if": "Logica di polling lato client o server",
+          "question": "Is polling strictly bounded and necessary?",
+          "applies_if": "Client or server polling logic",
           "severity": "medium"
         },
         {
           "rule_id": "PERF-20",
-          "question": "L’implementazione rispetta il budget di latenza definito?",
-          "applies_if": "SLA o SLO di latenza stabiliti",
+          "question": "Does implementation comply with defined latency budgets?",
+          "applies_if": "Defined SLA or SLO latency constraints",
           "severity": "high"
         },
         {
           "rule_id": "PERF-21",
-          "question": "Il lavoro computazionale è proporzionato al valore prodotto?",
-          "applies_if": "Elaborazione dati e calcoli intensivi",
+          "question": "Is computational effort proportionate to produced value?",
+          "applies_if": "Data processing and intensive computations",
           "severity": "low"
         },
         {
           "rule_id": "PERF-22",
-          "question": "L’implementazione non introduce consumo energetico evitabile?",
-          "applies_if": "Background job, polling frequente o busy waiting",
+          "question": "Does implementation refrain from introducing avoidable energy consumption?",
+          "applies_if": "Background jobs, frequent polling, or busy waiting",
           "severity": "low"
         }
       ]
     },
     {
-      "name": "Test e verifica",
+      "name": "Testing and verification",
       "rules": [
         {
           "rule_id": "TEST-01",
-          "question": "Una modifica comportamentale contiene test adeguati?",
-          "applies_if": "Modifica o aggiunta di funzionalità",
+          "question": "Does a behavioral change include adequate tests?",
+          "applies_if": "Modifying or adding features",
           "severity": "blocker"
         },
         {
           "rule_id": "TEST-02",
-          "question": "Un bug fix contiene un regression test?",
-          "applies_if": "Correzione di un difetto / bug fix",
+          "question": "Does a bug fix include a regression test?",
+          "applies_if": "Bug fix / defect resolution",
           "severity": "blocker"
         },
         {
           "rule_id": "TEST-03",
-          "question": "I test verificano comportamento e non dettagli implementativi?",
-          "applies_if": "Scrittura di unit o integration test",
+          "question": "Do tests verify behavior rather than implementation details?",
+          "applies_if": "Writing unit or integration tests",
           "severity": "medium"
         },
         {
           "rule_id": "TEST-04",
-          "question": "Ogni test fallirebbe se il comportamento corretto venisse rotto?",
-          "applies_if": "Scrittura di test",
+          "question": "Would every test fail if expected behavior were broken?",
+          "applies_if": "Writing tests",
           "severity": "blocker"
         },
         {
           "rule_id": "TEST-05",
-          "question": "Le asserzioni non sono tautologiche?",
-          "applies_if": "Scrittura di asserzioni nei test",
+          "question": "Are test assertions free from tautology?",
+          "applies_if": "Writing assertions in tests",
           "severity": "high"
         },
         {
           "rule_id": "TEST-06",
-          "question": "I mock non rendono il test sempre verde?",
-          "applies_if": "Uso di mock, stub o spy nei test",
+          "question": "Do mocks refrain from causing tests to pass unconditionally?",
+          "applies_if": "Using mocks, stubs, or spies in tests",
           "severity": "high"
         },
         {
           "rule_id": "TEST-07",
-          "question": "I nomi dei test descrivono il comportamento?",
-          "applies_if": "Scrittura di test",
+          "question": "Do test names clearly describe the verified behavior?",
+          "applies_if": "Writing tests",
           "severity": "low"
         },
         {
           "rule_id": "TEST-08",
-          "question": "Sono coperti input null, vuoti e mancanti?",
-          "applies_if": "Copertura di test per funzioni o endpoint",
+          "question": "Are null, empty, and missing inputs covered by tests?",
+          "applies_if": "Test coverage for functions or endpoints",
           "severity": "high"
         },
         {
           "rule_id": "TEST-09",
-          "question": "Sono coperti i valori limite?",
-          "applies_if": "Test su algoritmi, range o limiti",
+          "question": "Are boundary limit values covered by tests?",
+          "applies_if": "Testing algorithms, ranges, or limits",
           "severity": "high"
         },
         {
           "rule_id": "TEST-10",
-          "question": "Sono coperti gli error path?",
-          "applies_if": "Gestione di errori ed eccezioni nel codice",
+          "question": "Are error paths covered by tests?",
+          "applies_if": "Error handling and exception logic in code",
           "severity": "high"
         },
         {
           "rule_id": "TEST-11",
-          "question": "Sono coperti gli input duplicati?",
-          "applies_if": "Test di operazioni su collezioni o idempotenza",
+          "question": "Are duplicate input scenarios covered by tests?",
+          "applies_if": "Testing operations on collections or idempotency",
           "severity": "medium"
         },
         {
           "rule_id": "TEST-12",
-          "question": "Sono coperti retry, timeout e partial failure?",
-          "applies_if": "Test su client HTTP, I/O o servizi esterni",
+          "question": "Are retry, timeout, and partial failure paths covered by tests?",
+          "applies_if": "Testing HTTP clients, I/O, or external services",
           "severity": "high"
         },
         {
           "rule_id": "TEST-13",
-          "question": "Sono coperti ordine errato e concorrenza quando rilevanti?",
-          "applies_if": "Test su sistemi concorrenti o eventi",
+          "question": "Are out-of-order execution and concurrency tested where relevant?",
+          "applies_if": "Testing concurrent systems or event streams",
           "severity": "medium"
         },
         {
           "rule_id": "TEST-14",
-          "question": "Sono coperti i casi negativi di sicurezza?",
-          "applies_if": "Test su auth, autorizzazione e validazione input",
+          "question": "Are negative security test cases covered?",
+          "applies_if": "Testing auth, authorization, and input validation",
           "severity": "high"
         },
         {
           "rule_id": "TEST-15",
-          "question": "Sono coperti i confini tra moduli, database e servizi?",
-          "applies_if": "Integration test",
+          "question": "Are boundaries between modules, databases, and services covered?",
+          "applies_if": "Integration testing",
           "severity": "medium"
         },
         {
           "rule_id": "TEST-16",
-          "question": "Sono presenti contract test per API o messaggi quando applicabili?",
-          "applies_if": "Integrazione tra microservizi o API esterne",
+          "question": "Are contract tests present for APIs or messaging schemas where applicable?",
+          "applies_if": "Integration between microservices or external APIs",
           "severity": "medium"
         },
         {
           "rule_id": "TEST-17",
-          "question": "Sono verificati entrambi gli stati delle feature flag?",
-          "applies_if": "Uso di feature flag nel codice modificato",
+          "question": "Are both enabled and disabled states of feature flags tested?",
+          "applies_if": "Using feature flags in modified code",
           "severity": "high"
         },
         {
           "rule_id": "TEST-18",
-          "question": "Gli assertion rimossi o indeboliti non riducono la copertura?",
-          "applies_if": "Modifica a test esistenti",
+          "question": "Do modified or removed assertions refrain from reducing test coverage?",
+          "applies_if": "Modifying existing test suites",
           "severity": "high"
         },
         {
           "rule_id": "TEST-19",
-          "question": "I test non usano API inventate o non esistenti?",
-          "applies_if": "Scrittura di test",
+          "question": "Do tests refrain from using invented or non-existent APIs?",
+          "applies_if": "Writing tests",
           "severity": "blocker"
         },
         {
           "rule_id": "TEST-20",
-          "question": "I test sono deterministici e non dipendono da timing casuale?",
-          "applies_if": "Test asincroni o temporizzati",
+          "question": "Are tests deterministic and free from non-deterministic timing dependencies?",
+          "applies_if": "Asynchronous or timed test suites",
           "severity": "high"
         },
         {
           "rule_id": "TEST-21",
-          "question": "Il livello del test — unit, integration o end-to-end — è appropriato?",
-          "applies_if": "Aggiunta di nuova suite o strategia di test",
+          "question": "Is the test granularity — unit, integration, or end-to-end — appropriate?",
+          "applies_if": "Adding new test suites or strategies",
           "severity": "medium"
         },
         {
           "rule_id": "TEST-22",
-          "question": "Build e type-check passano?",
-          "applies_if": "Fase di verifica automatica (CI/CD)",
+          "question": "Do build and type-check steps pass?",
+          "applies_if": "Automated verification phase (CI/CD)",
           "severity": "blocker"
         },
         {
           "rule_id": "TEST-23",
-          "question": "Lint e static analysis passano?",
-          "applies_if": "Fase di verifica automatica (CI/CD)",
+          "question": "Do linter and static analysis checks pass?",
+          "applies_if": "Automated verification phase (CI/CD)",
           "severity": "blocker"
         },
         {
           "rule_id": "TEST-24",
-          "question": "La verifica manuale è stata fatta per UI o comportamento non automatizzabile?",
-          "applies_if": "Cambiamenti a interfacce visive o flussi fisici/hardware",
+          "question": "Was manual verification performed for UI or non-automatable behaviors?",
+          "applies_if": "Visual UI changes or hardware/physical interaction flows",
           "severity": "medium"
         },
         {
           "rule_id": "TEST-25",
-          "question": "I gap di copertura sono esplicitamente dichiarati?",
-          "applies_if": "Impossibilità o scelta deliberata di non testare un componente",
+          "question": "Are coverage gaps explicitly declared?",
+          "applies_if": "Inability or decision not to test a component",
           "severity": "medium"
         },
         {
           "rule_id": "TEST-26",
-          "question": "I finding di correttezza e sicurezza sono stati verificati da un contesto indipendente quando necessario?",
-          "applies_if": "Review multi-modello o triage dei finding",
+          "question": "Were correctness and security findings verified independently when necessary?",
+          "applies_if": "Multi-model review or finding triage",
           "severity": "high"
         }
       ]
     },
     {
-      "name": "UI e accessibilità",
+      "name": "UI and accessibility",
       "rules": [
         {
           "rule_id": "A11Y-01",
-          "question": "Gli elementi HTML usano semantica nativa quando disponibile?",
-          "applies_if": "Componenti interattivi o layout web HTML",
+          "question": "Do HTML elements use native semantic elements when available?",
+          "applies_if": "Web HTML layouts or interactive components",
           "severity": "medium"
         },
         {
           "rule_id": "A11Y-02",
-          "question": "Tutte le funzioni sono utilizzabili da tastiera?",
-          "applies_if": "Interfacce web interattive",
+          "question": "Are all interactive features operable via keyboard?",
+          "applies_if": "Interactive web user interfaces",
           "severity": "high"
         },
         {
           "rule_id": "A11Y-03",
-          "question": "Il focus è visibile?",
-          "applies_if": "Stili CSS o componenti con stati di focus",
+          "question": "Is the focus indicator clearly visible?",
+          "applies_if": "CSS styles or components with focused states",
           "severity": "high"
         },
         {
           "rule_id": "A11Y-04",
-          "question": "Il focus non viene oscurato?",
-          "applies_if": "Elementi sticky, modali o sovrapposti",
+          "question": "Is focus prevented from being obscured?",
+          "applies_if": "Sticky elements, modals, or overlapping layers",
           "severity": "medium"
         },
         {
           "rule_id": "A11Y-05",
-          "question": "I dialog gestiscono focus iniziale e ripristino?",
-          "applies_if": "Modali, dialog o popover interattivi",
+          "question": "Do dialogs manage initial focus capture and return focus on close?",
+          "applies_if": "Modals, dialogs, or interactive popovers",
           "severity": "medium"
         },
         {
           "rule_id": "A11Y-06",
-          "question": "Gli input hanno label associate?",
-          "applies_if": "Form e campi di input",
+          "question": "Do form inputs have associated labels?",
+          "applies_if": "Form components and input fields",
           "severity": "high"
         },
         {
           "rule_id": "A11Y-07",
-          "question": "Gli errori dei form sono annunciabili?",
-          "applies_if": "Validazione e visualizzazione errori su form",
+          "question": "Are form validation errors announced to assistive technology?",
+          "applies_if": "Form validation and error rendering",
           "severity": "medium"
         },
         {
           "rule_id": "A11Y-08",
-          "question": "Le immagini informative hanno testo alternativo?",
-          "applies_if": "Tag img o componenti immagine",
+          "question": "Do informative images feature appropriate alt text?",
+          "applies_if": "Image tags or image components",
           "severity": "medium"
         },
         {
           "rule_id": "A11Y-09",
-          "question": "Le immagini decorative non aggiungono rumore assistivo?",
-          "applies_if": "Tag img o icone decorative (alt='', aria-hidden)",
+          "question": "Are decorative images hidden from assistive technology output?",
+          "applies_if": "Decorative img tags or icons (alt='', aria-hidden)",
           "severity": "low"
         },
         {
           "rule_id": "A11Y-10",
-          "question": "La struttura usa heading e landmark coerenti?",
-          "applies_if": "Layout e struttura delle pagine web",
+          "question": "Does page structure utilize consistent heading hierarchy and landmarks?",
+          "applies_if": "Web page structure and layout",
           "severity": "medium"
         },
         {
           "rule_id": "A11Y-11",
-          "question": "Colore, contrasto e stati non dipendono solo dal colore?",
-          "applies_if": "Design dei componenti UI e stili visuali",
+          "question": "Are color contrast and UI states conveyed without relying on color alone?",
+          "applies_if": "UI component design and visual styling",
           "severity": "high"
         },
         {
           "rule_id": "A11Y-12",
-          "question": "I target interattivi hanno dimensione adeguata?",
-          "applies_if": "Pulsanti, link e controlli touch/click",
+          "question": "Do interactive touch targets meet minimum size requirements?",
+          "applies_if": "Buttons, links, and touch/click controls",
           "severity": "medium"
         },
         {
           "rule_id": "A11Y-13",
-          "question": "Il drag-and-drop ha un’alternativa non basata sul dragging?",
-          "applies_if": "Interfacce con funzionalità drag and drop",
+          "question": "Does drag-and-drop functionality offer a single-pointer alternative?",
+          "applies_if": "Interfaces with drag-and-drop actions",
           "severity": "medium"
         },
         {
           "rule_id": "A11Y-14",
-          "question": "Il contenuto non lampeggia in modo pericoloso?",
-          "applies_if": "Animazioni o effetti visivi lampeggianti",
+          "question": "Is content free from dangerous flashing effects?",
+          "applies_if": "Animations or flashing visual elements",
           "severity": "high"
         },
         {
           "rule_id": "A11Y-15",
-          "question": "I limiti temporali possono essere estesi o sospesi?",
-          "applies_if": "Sessioni a tempo o timer visibili",
+          "question": "Can time limits be extended, adjusted, or turned off?",
+          "applies_if": "Timed sessions or visible countdown timers",
           "severity": "medium"
         },
         {
           "rule_id": "A11Y-16",
-          "question": "Il layout funziona con zoom e reflow?",
-          "applies_if": "Layout CSS responsive e ingrandimento testo",
+          "question": "Does layout scale gracefully under page zoom and reflow?",
+          "applies_if": "Responsive CSS layout and text enlargement",
           "severity": "medium"
         },
         {
           "rule_id": "A11Y-17",
-          "question": "Le variazioni responsive mantengono lo stesso significato?",
-          "applies_if": "Media query e adattamenti responsive",
+          "question": "Do responsive viewport variations retain semantic meaning?",
+          "applies_if": "Media queries and responsive adaptations",
           "severity": "medium"
         },
         {
           "rule_id": "A11Y-18",
-          "question": "I cambiamenti di contesto non avvengono in modo inatteso?",
-          "applies_if": "Eventi di onFocus o onChange su controlli form",
+          "question": "Are unexpected context changes prevented on input focus or value change?",
+          "applies_if": "onFocus or onChange handlers on form controls",
           "severity": "medium"
         },
         {
           "rule_id": "A11Y-19",
-          "question": "L’autenticazione è accessibile?",
-          "applies_if": "Flussi di login, MFA o captcha",
+          "question": "Is the authentication flow accessible to assistive technologies?",
+          "applies_if": "Login, MFA, or CAPTCHA flows",
           "severity": "medium"
         },
         {
           "rule_id": "A11Y-20",
-          "question": "Le istruzioni e l’help sono coerenti tra schermate?",
-          "applies_if": "Componenti UI riutilizzati o guide utente",
+          "question": "Are instructions and help elements consistent across screens?",
+          "applies_if": "Reused UI components or user guidance text",
           "severity": "low"
         },
         {
           "rule_id": "A11Y-21",
-          "question": "La UI supporta screen reader con nomi, ruoli e stati corretti?",
-          "applies_if": "Uso di ARIA o custom web components",
+          "question": "Does the UI expose correct accessible names, roles, and states to screen readers?",
+          "applies_if": "Using ARIA attributes or custom web components",
           "severity": "high"
         },
         {
           "rule_id": "A11Y-22",
-          "question": "Le animazioni rispettano reduced motion?",
-          "applies_if": "Animazioni o transizioni CSS/JS",
+          "question": "Do animations respect the user's reduced motion preferences?",
+          "applies_if": "CSS/JS animations or transitions",
           "severity": "medium"
         },
         {
           "rule_id": "A11Y-23",
-          "question": "Date, numeri e valute rispettano locale e fuso orario?",
-          "applies_if": "Visualizzazione UI di valori formattati",
+          "question": "Do dates, numbers, and currencies adhere to local conventions and time zones?",
+          "applies_if": "Displaying formatted values in the UI",
           "severity": "medium"
         },
         {
           "rule_id": "A11Y-24",
-          "question": "Il flusso RTL o multilingua non rompe il layout?",
-          "applies_if": "Supporto multilingua o internazionalizzazione (i18n/l10n)",
+          "question": "Do RTL (Right-to-Left) or multilingual text layouts render without breaking component structure?",
+          "applies_if": "Multilingual support or internationalization (i18n/l10n)",
           "severity": "medium"
         }
       ]
     },
     {
-      "name": "Dipendenze, CI/CD e supply chain",
+      "name": "Dependencies, CI/CD, and supply chain",
       "rules": [
         {
           "rule_id": "SUP-01",
-          "question": "Una nuova dipendenza è realmente necessaria?",
-          "applies_if": "Modifiche a package.json, pom.xml, go.mod, Cargo.toml, ecc.",
+          "question": "Is a new dependency genuinely required?",
+          "applies_if": "Modifications to package.json, pom.xml, go.mod, Cargo.toml, etc.",
           "severity": "high"
         },
         {
           "rule_id": "SUP-02",
-          "question": "La dipendenza non duplica funzionalità già disponibili?",
-          "applies_if": "Aggiunta di nuove librerie al progetto",
+          "question": "Does the dependency refrain from duplicating existing project capabilities?",
+          "applies_if": "Adding new project libraries",
           "severity": "medium"
         },
         {
           "rule_id": "SUP-03",
-          "question": "La dipendenza proviene da una sorgente trusted?",
-          "applies_if": "Aggiunta di librerie esterne",
+          "question": "Does the dependency originate from a trusted source?",
+          "applies_if": "Adding external third-party packages",
           "severity": "blocker"
         },
         {
           "rule_id": "SUP-04",
-          "question": "La dipendenza è mantenuta?",
-          "applies_if": "Aggiunta di librerie esterne",
+          "question": "Is the dependency actively maintained?",
+          "applies_if": "Adding external third-party packages",
           "severity": "high"
         },
         {
           "rule_id": "SUP-05",
-          "question": "La dipendenza non ha vulnerabilità note non accettate?",
-          "applies_if": "Modifiche alle dipendenze (Dependency Scan)",
+          "question": "Is the dependency free from unaccepted known vulnerabilities?",
+          "applies_if": "Dependency modifications (Dependency Scan phase)",
           "severity": "blocker"
         },
         {
           "rule_id": "SUP-06",
-          "question": "La licenza è compatibile?",
-          "applies_if": "Aggiunta o aggiornamento di librerie",
+          "question": "Is the dependency license compatible with the project?",
+          "applies_if": "Adding or updating external packages",
           "severity": "high"
         },
         {
           "rule_id": "SUP-07",
-          "question": "Manifest e lockfile sono coerenti?",
-          "applies_if": "Modifiche ai file di dipendenza o lockfile",
+          "question": "Are manifest files and lockfiles fully synchronized?",
+          "applies_if": "Modifying package manifest or lockfile",
           "severity": "blocker"
         },
         {
           "rule_id": "SUP-08",
-          "question": "Il lockfile non è stato modificato manualmente in modo scorretto?",
-          "applies_if": "Modifiche dirette ai file di lock",
+          "question": "Was the lockfile free from manual or incorrect manipulation?",
+          "applies_if": "Direct edits to lockfiles",
           "severity": "high"
         },
         {
           "rule_id": "SUP-09",
-          "question": "Sono state analizzate anche le dipendenze transitive?",
-          "applies_if": "Inclusione di nuove librerie",
+          "question": "Were transitive dependencies evaluated for security risks?",
+          "applies_if": "Including new libraries",
           "severity": "medium"
         },
         {
           "rule_id": "SUP-10",
-          "question": "L’upgrade include una verifica del changelog?",
-          "applies_if": "Aggiornamento delle versioni delle dipendenze",
+          "question": "Does the dependency upgrade include a review of the changelog?",
+          "applies_if": "Upgrading dependency versions",
           "severity": "medium"
         },
         {
           "rule_id": "SUP-11",
-          "question": "Gli upgrade indipendenti non sono stati accorpati inutilmente?",
-          "applies_if": "Aggiornamento massivo di pacchetti",
+          "question": "Were independent updates kept unbundled rather than combined unnecessarily?",
+          "applies_if": "Mass package version upgrades",
           "severity": "low"
         },
         {
           "rule_id": "SUP-12",
-          "question": "Le action CI sono pin-nate a commit SHA quando richiesto?",
-          "applies_if": "Modifica dei file di workflow CI/CD (es. GitHub Actions)",
+          "question": "Are CI GitHub Actions pinned to immutable commit SHAs when required?",
+          "applies_if": "Modifying CI/CD pipeline workflows (e.g., GitHub Actions)",
           "severity": "high"
         },
         {
           "rule_id": "SUP-13",
-          "question": "I token CI usano il minimo permesso necessario?",
-          "applies_if": "Configurazione di workflow CI/CD",
+          "question": "Do CI execution tokens adhere to the principle of least privilege?",
+          "applies_if": "Configuring CI/CD workflows",
           "severity": "blocker"
         },
         {
           "rule_id": "SUP-14",
-          "question": "I permessi write sono definiti solo sul job che li richiede?",
-          "applies_if": "Configurazione dei job CI/CD",
+          "question": "Are write permissions restricted strictly to the job that requires them?",
+          "applies_if": "Configuring CI/CD jobs",
           "severity": "high"
         },
         {
           "rule_id": "SUP-15",
-          "question": "Le action di terze parti sono trusted e limitate?",
-          "applies_if": "Uso di plugin o step esterni nella pipeline CI/CD",
+          "question": "Are third-party CI actions trusted and kept minimal?",
+          "applies_if": "Using external plugins or steps in CI pipelines",
           "severity": "high"
         },
         {
           "rule_id": "SUP-16",
-          "question": "Le pull request non trusted non possono accedere ai secret?",
-          "applies_if": "Configurazione dei trigger della CI su PR da fork",
+          "question": "Are untrusted pull requests prevented from accessing repository secrets?",
+          "applies_if": "Configuring CI triggers on fork PRs",
           "severity": "blocker"
         },
         {
           "rule_id": "SUP-17",
-          "question": "I workflow non eseguono codice arbitrario controllato dall’utente?",
-          "applies_if": "Workflow CI scatenati da issue, PR title o commenti",
+          "question": "Do CI workflows prevent execution of arbitrary user-controlled code?",
+          "applies_if": "CI triggers executing on issue, PR title, or comment text",
           "severity": "blocker"
         },
         {
           "rule_id": "SUP-18",
-          "question": "I log CI non espongono secret?",
-          "applies_if": "Esecuzione ed output dei job di build/test",
+          "question": "Are CI build logs free of leaked secrets?",
+          "applies_if": "CI build and test job output execution",
           "severity": "blocker"
         },
         {
           "rule_id": "SUP-19",
-          "question": "I required status check bloccano davvero il merge?",
-          "applies_if": "Configurazione delle branch protection rules",
+          "question": "Do required status checks strictly block merging on failure?",
+          "applies_if": "Branch protection rules configuration",
           "severity": "high"
         },
         {
           "rule_id": "SUP-20",
-          "question": "Il branch principale impedisce force push e cancellazioni accidentali?",
-          "applies_if": "Configurazione del repository Git",
+          "question": "Does the main branch configuration prevent force-pushing and accidental deletion?",
+          "applies_if": "Git repository settings",
           "severity": "high"
         },
         {
           "rule_id": "SUP-21",
-          "question": "È richiesto un review indipendente prima del merge?",
-          "applies_if": "Configurazione delle regole di PR merge",
+          "question": "Is an independent code review required before merging?",
+          "applies_if": "Pull request merge policy configuration",
           "severity": "high"
         },
         {
           "rule_id": "SUP-22",
-          "question": "Le approvazioni obsolete vengono invalidate dopo nuove modifiche?",
-          "applies_if": "Configurazione delle regole di PR merge",
+          "question": "Are stale PR approvals automatically invalidated after new commits?",
+          "applies_if": "Pull request merge policy configuration",
           "severity": "high"
         },
         {
           "rule_id": "SUP-23",
-          "question": "Il codice viene analizzato con SAST o equivalente?",
-          "applies_if": "Pipeline CI/CD",
+          "question": "Is source code scanned with a SAST or equivalent tool?",
+          "applies_if": "CI/CD pipeline configuration",
           "severity": "medium"
         },
         {
           "rule_id": "SUP-24",
-          "question": "I binary artifact non reviewabili non sono committati?",
-          "applies_if": "Inclusione di file eseguibili o librerie compilate nel commit",
+          "question": "Are unreviewable binary artifacts prevented from being committed?",
+          "applies_if": "Committing binary files or compiled binaries to git",
           "severity": "high"
         },
         {
           "rule_id": "SUP-25",
-          "question": "Gli artifact derivano da una build riproducibile o verificabile?",
-          "applies_if": "Processo di compilazione ed erogazione artifact",
+          "question": "Do build artifacts derive from reproducible or verifiable build setups?",
+          "applies_if": "Artifact compilation and packaging process",
           "severity": "medium"
         },
         {
           "rule_id": "SUP-26",
-          "question": "Le release hanno integrità verificabile?",
-          "applies_if": "Generazione di checksum/firme di release",
+          "question": "Do release artifacts maintain verifiable integrity?",
+          "applies_if": "Release artifact checksum/signature generation",
           "severity": "high"
         },
         {
           "rule_id": "SUP-27",
-          "question": "La provenance identifica l’artifact tramite digest?",
-          "applies_if": "Build ed erogazione di immagini Docker o artifact",
+          "question": "Does provenance tracking identify artifacts using cryptographic digests?",
+          "applies_if": "Docker image or artifact deployment pipelines",
           "severity": "medium"
         },
         {
           "rule_id": "SUP-28",
-          "question": "La provenance è autenticabile?",
-          "applies_if": "Uso di SLSA o attestazioni di build",
+          "question": "Is build provenance cryptographically authenticatable?",
+          "applies_if": "SLSA or build attestation implementations",
           "severity": "medium"
         },
         {
           "rule_id": "SUP-29",
-          "question": "L’ambiente di build è isolato?",
-          "applies_if": "Configurazione dei runner CI/CD",
+          "question": "Is the build environment isolated?",
+          "applies_if": "CI/CD build runner setup",
           "severity": "high"
         },
         {
           "rule_id": "SUP-30",
-          "question": "L’ambiente di build è effimero quando necessario?",
-          "applies_if": "Configurazione dei runner CI/CD",
+          "question": "Is the build environment ephemeral when required?",
+          "applies_if": "CI/CD build runner setup",
           "severity": "medium"
         },
         {
           "rule_id": "SUP-31",
-          "question": "Le cache di build non possono essere avvelenate?",
-          "applies_if": "Uso di meccanismi di cache nei job CI/CD",
+          "question": "Are build cache layers protected from cache poisoning attacks?",
+          "applies_if": "Caching layer usage in CI jobs",
           "severity": "high"
         },
         {
           "rule_id": "SUP-32",
-          "question": "I parametri esterni della build sono tracciati?",
-          "applies_if": "Build parametrizzate",
+          "question": "Are external parameters used during build steps tracked?",
+          "applies_if": "Parameterized builds",
           "severity": "low"
         },
         {
           "rule_id": "SUP-33",
-          "question": "La provenienza delle dipendenze è verificabile?",
-          "applies_if": "Uso di registry aziendali o mirroring di dipendenze",
+          "question": "Is dependency provenance verifiable?",
+          "applies_if": "Private registries or dependency mirroring",
           "severity": "medium"
         },
         {
           "rule_id": "SUP-34",
-          "question": "Gli artifact vengono verificati prima della distribuzione?",
-          "applies_if": "Pipeline di deployment in produzione",
+          "question": "Are deployment artifacts verified before distribution?",
+          "applies_if": "Production deployment pipelines",
           "severity": "high"
         },
         {
           "rule_id": "SUP-35",
-          "question": "Il repository dispone di una security policy?",
-          "applies_if": "Repository di progetti pubblici o aziendali",
+          "question": "Does the repository contain a valid SECURITY.md policy?",
+          "applies_if": "Public or corporate repository setup",
           "severity": "low"
         },
         {
           "rule_id": "SUP-36",
-          "question": "Gli aggiornamenti di sicurezza delle dipendenze sono monitorati?",
-          "applies_if": "Uso di tool quali Dependabot, Snyk o Renovate",
+          "question": "Are security vulnerability alerts monitored for project dependencies?",
+          "applies_if": "Dependabot, Snyk, or Renovate tool usage",
           "severity": "medium"
         }
       ]
     },
     {
-      "name": "Documentazione e operazioni",
+      "name": "Documentation and operations",
       "rules": [
         {
           "rule_id": "DOC-01",
-          "question": "Il codice pubblico ha documentazione aggiornata?",
-          "applies_if": "Modifica a interfacce o moduli pubblici",
+          "question": "Is public code documentation updated to reflect changes?",
+          "applies_if": "Modifying public interfaces or modules",
           "severity": "medium"
         },
         {
           "rule_id": "DOC-02",
-          "question": "La documentazione spiega comportamento e contratto?",
-          "applies_if": "Scrittura di docstring o documentazione API",
+          "question": "Does documentation explain both behavior and operational contracts?",
+          "applies_if": "Writing docstrings or API documentation",
           "severity": "medium"
         },
         {
           "rule_id": "DOC-03",
-          "question": "I commenti spiegano il perché invece dell’ovvio cosa?",
-          "applies_if": "Presenza di commenti nel codice sorgente",
+          "question": "Do inline comments explain 'why' rather than stating the obvious 'what'?",
+          "applies_if": "Inline comments in source code",
           "severity": "low"
         },
         {
           "rule_id": "DOC-04",
-          "question": "Le API modificate hanno documentazione aggiornata?",
-          "applies_if": "Modifica agli schemi o rotte delle API",
+          "question": "Do modified APIs include updated reference documentation?",
+          "applies_if": "Modifying API routes or schemas",
           "severity": "high"
         },
         {
           "rule_id": "DOC-05",
-          "question": "Le modifiche di build o release aggiornano README e runbook?",
-          "applies_if": "Modifica alle procedure di setup, build o rilascio",
+          "question": "Do build/release changes update README and runbook documentation?",
+          "applies_if": "Modifying setup, build, or deployment steps",
           "severity": "medium"
         },
         {
           "rule_id": "DOC-06",
-          "question": "Le migrazioni hanno istruzioni operative?",
-          "applies_if": "Aggiunta o modifica di migrazioni DB/dati",
+          "question": "Do database migrations contain operational execution instructions?",
+          "applies_if": "Adding or modifying database/data migrations",
           "severity": "high"
         },
         {
           "rule_id": "DOC-07",
-          "question": "Le modifiche con rollout hanno piano di rollback?",
-          "applies_if": "Rilasci complessi o modifiche all'infrastruttura",
+          "question": "Do risky feature rollouts include a documented rollback plan?",
+          "applies_if": "Complex deployments or infrastructure shifts",
           "severity": "high"
         },
         {
           "rule_id": "DOC-08",
-          "question": "Le modifiche operative espongono metriche o segnali di salute?",
-          "applies_if": "Scrittura di nuovi servizi o componenti di background",
+          "question": "Do operational changes expose appropriate metrics or health signals?",
+          "applies_if": "Writing new background services or critical components",
           "severity": "medium"
         },
         {
           "rule_id": "DOC-09",
-          "question": "I TODO introdotti descrivono un follow-up reale?",
-          "applies_if": "Aggiunta di commenti TODO o FIXME",
+          "question": "Do added TODO comments describe actionable follow-up tasks?",
+          "applies_if": "Adding TODO or FIXME comments",
           "severity": "low"
         },
         {
           "rule_id": "DOC-10",
-          "question": "Non rimangono commenti removed, workaround o compatibilità obsolete?",
-          "applies_if": "Refactoring o rimozione di codice vecchio",
+          "question": "Are stale workarounds, obsolete compatibility layers, or 'removed' comments cleaned up?",
+          "applies_if": "Refactoring or removing legacy code",
           "severity": "low"
         },
         {
           "rule_id": "DOC-11",
-          "question": "Il messaggio della modifica è imperativo e autonomamente comprensibile?",
-          "applies_if": "Messaggi di commit",
+          "question": "Is the commit message imperative and self-explanatory?",
+          "applies_if": "Commit messages",
           "severity": "low"
         },
         {
           "rule_id": "DOC-12",
-          "question": "La descrizione include motivazione, cambiamento e verifica?",
-          "applies_if": "Descrizione della PR o merge request",
+          "question": "Does the PR description cover motivation, changes made, and verification steps?",
+          "applies_if": "PR or merge request descriptions",
           "severity": "medium"
         },
         {
           "rule_id": "DOC-13",
-          "question": "Le limitazioni note sono dichiarate?",
-          "applies_if": "Implementazione parziale o limitazioni conosciute",
+          "question": "Are known edge cases or constraints explicitly documented?",
+          "applies_if": "Partial feature implementation or known limits",
           "severity": "medium"
         },
         {
           "rule_id": "DOC-14",
-          "question": "La review distingue required, optional, nit e informativo?",
-          "applies_if": "Generazione del report di review",
+          "question": "Does review feedback distinguish between required, optional, nit, and info?",
+          "applies_if": "Review report generation",
           "severity": "info"
         },
         {
           "rule_id": "DOC-15",
-          "question": "I finding duplicati sono aggregati per root cause?",
-          "applies_if": "Generazione del report di review",
+          "question": "Are duplicate review findings aggregated by root cause?",
+          "applies_if": "Review report generation",
           "severity": "info"
         }
       ]
     },
     {
-      "name": "Regole specifiche per codice generato dall’AI",
+      "name": "AI-generated code specific rules",
       "rules": [
         {
           "rule_id": "AI-01",
-          "question": "Il codice non usa API, librerie o funzioni inventate?",
-          "applies_if": "Codice generato o assistito da modelli AI",
+          "question": "Does the code refrain from using invented APIs, libraries, or functions?",
+          "applies_if": "AI-generated or AI-assisted code",
           "severity": "blocker"
         },
         {
           "rule_id": "AI-02",
-          "question": "Gli import e package usati esistono realmente?",
-          "applies_if": "Codice generato o assistito da modelli AI",
+          "question": "Do all referenced imports and packages actually exist?",
+          "applies_if": "AI-generated or AI-assisted code",
           "severity": "blocker"
         },
         {
           "rule_id": "AI-03",
-          "question": "Le versioni delle API sono compatibili con il progetto?",
-          "applies_if": "Codice generato o assistito da modelli AI",
+          "question": "Are API versions used compatible with project constraints?",
+          "applies_if": "AI-generated or AI-assisted code",
           "severity": "high"
         },
         {
           "rule_id": "AI-04",
-          "question": "I test generati non verificano solo il comportamento già scritto nel mock?",
-          "applies_if": "Test generati da AI",
+          "question": "Do generated tests verify real logic rather than just mirroring mock setups?",
+          "applies_if": "AI-generated test suites",
           "severity": "blocker"
         },
         {
           "rule_id": "AI-05",
-          "question": "I test generati falliscono davanti a una mutazione reale del codice?",
-          "applies_if": "Test generati da AI",
+          "question": "Do generated tests fail when code mutations are introduced?",
+          "applies_if": "AI-generated test suites",
           "severity": "blocker"
         },
         {
           "rule_id": "AI-06",
-          "question": "Non sono state rimosse o indebolite asserzioni esistenti?",
-          "applies_if": "Modifiche ai test effettuate da AI",
+          "question": "Have existing test assertions been preserved without improper weakening?",
+          "applies_if": "AI modifications to existing test suites",
           "severity": "blocker"
         },
         {
           "rule_id": "AI-07",
-          "question": "Il codice non contiene placeholder presentati come implementazione completa?",
-          "applies_if": "Codice generato da AI",
+          "question": "Is code free of stubbed placeholders passed off as complete implementations?",
+          "applies_if": "AI-generated code",
           "severity": "high"
         },
         {
           "rule_id": "AI-08",
-          "question": "Il codice non contiene TODO indispensabili al funzionamento?",
-          "applies_if": "Codice generato da AI",
+          "question": "Is code free of critical TODOs necessary for proper runtime execution?",
+          "applies_if": "AI-generated code",
           "severity": "high"
         },
         {
           "rule_id": "AI-09",
-          "question": "Il modello non ha copiato una soluzione duplicata invece di riutilizzare quella canonica?",
-          "applies_if": "Codice generato da AI",
+          "question": "Did the AI refrain from duplicating existing functions instead of reusing canonical helpers?",
+          "applies_if": "AI-generated code",
           "severity": "medium"
         },
         {
           "rule_id": "AI-10",
-          "question": "Il codice non introduce astrazioni speculative?",
-          "applies_if": "Codice generato da AI",
+          "question": "Is code free from unnecessary speculative abstractions?",
+          "applies_if": "AI-generated code",
           "severity": "medium"
         },
         {
           "rule_id": "AI-11",
-          "question": "Il codice generato non contiene chiamate di rete non richieste?",
-          "applies_if": "Codice generato da AI",
+          "question": "Is generated code free from unrequested network calls?",
+          "applies_if": "AI-generated code",
           "severity": "blocker"
         },
         {
           "rule_id": "AI-12",
-          "question": "Il codice generato non invia dati sensibili verso servizi esterni?",
-          "applies_if": "Codice generato da AI",
+          "question": "Is generated code free from transmitting sensitive data to external services?",
+          "applies_if": "AI-generated code",
           "severity": "blocker"
         },
         {
           "rule_id": "AI-13",
-          "question": "Il codice non contiene telemetria nascosta?",
-          "applies_if": "Codice generato da AI",
+          "question": "Is code free of hidden telemetry or tracking logic?",
+          "applies_if": "AI-generated code",
           "severity": "blocker"
         },
         {
           "rule_id": "AI-14",
-          "question": "Il codice non contiene fallback che trasformano errori in successo?",
-          "applies_if": "Codice generato da AI",
+          "question": "Is code free of fallback handlers that silently disguise failures as successes?",
+          "applies_if": "AI-generated code",
           "severity": "high"
         },
         {
           "rule_id": "AI-15",
-          "question": "Il modello ha distinto codice verificato da ipotesi?",
-          "applies_if": "Risposte o output di modelli AI",
+          "question": "Has the AI clearly distinguished verified facts from hypotheses?",
+          "applies_if": "AI model output or review responses",
           "severity": "medium"
         },
         {
           "rule_id": "AI-16",
-          "question": "Ogni API esterna usata è stata verificata contro documentazione o codice locale?",
-          "applies_if": "Codice generato da AI che invoca librerie esterne",
+          "question": "Was every external API usage verified against official documentation or local code?",
+          "applies_if": "AI-generated code calling external libraries",
           "severity": "high"
         },
         {
           "rule_id": "AI-17",
-          "question": "La review adversarial ha cercato comportamenti malevoli o nascosti?",
-          "applies_if": "Review di PR ad alto rischio o generate da AI",
+          "question": "Did adversarial review actively check for hidden or malicious behavior?",
+          "applies_if": "Reviewing high-risk or AI-generated PRs",
           "severity": "high"
         },
         {
           "rule_id": "AI-18",
-          "question": "Il codice non si fida di commenti o istruzioni contenute nei file analizzati?",
-          "applies_if": "Analisi AI esposta a possibili prompt injection nei sorgenti",
+          "question": "Does the code refrain from blindly trusting prompt injection comments inside analyzed files?",
+          "applies_if": "AI review process processing untrusted source files",
           "severity": "blocker"
         },
         {
           "rule_id": "AI-19",
-          "question": "La review non approva solo perché build e test sono verdi?",
-          "applies_if": "Processo di review automatizzato basato su AI",
+          "question": "Does the review refrain from approving code solely because build and test steps passed?",
+          "applies_if": "AI-based automated review pipeline",
           "severity": "high"
         },
         {
           "rule_id": "AI-20",
-          "question": "Il risultato finale è stato confrontato con il contratto funzionale iniziale?",
-          "applies_if": "Codice generato da AI",
+          "question": "Was the final code output validated directly against the initial functional contract?",
+          "applies_if": "AI-generated code",
           "severity": "blocker"
         }
       ]
     },
     {
-      "name": "Review multi-modello e orchestrazione",
+      "name": "Multi-model review and orchestration",
       "rules": [
         {
           "rule_id": "REV-01",
-          "question": "La review è report-only salvo autorizzazione esplicita a modificare?",
-          "applies_if": "Orchestrazione del sistema di code review",
+          "question": "Is the review process report-only unless explicit write/edit authorization is granted?",
+          "applies_if": "Code review system orchestration",
           "severity": "blocker"
         },
         {
           "rule_id": "REV-02",
-          "question": "Il sistema non effettua merge, push o apertura di PR senza autorizzazione?",
-          "applies_if": "Orchestrazione del sistema di code review",
+          "question": "Does the automated reviewer refrain from merging, pushing, or creating PRs without permission?",
+          "applies_if": "Code review system orchestration",
           "severity": "blocker"
         },
         {
           "rule_id": "REV-03",
-          "question": "Il rischio determina il numero e il tipo di reviewer?",
-          "applies_if": "Pianificazione della pipeline di review",
+          "question": "Does the change risk level dictate reviewer agent allocation?",
+          "applies_if": "Review pipeline planning",
           "severity": "medium"
         },
         {
           "rule_id": "REV-04",
-          "question": "Ogni reviewer riceve una sola lente specializzata?",
-          "applies_if": "Assegnazione dei prompt/ruoli ai modelli di review",
+          "question": "Is every reviewer agent assigned a single specialized review lens?",
+          "applies_if": "Prompt/role assignment for review models",
           "severity": "medium"
         },
         {
           "rule_id": "REV-05",
-          "question": "Le lenti sovrapposte vengono accorpate?",
-          "applies_if": "Pianificazione della pipeline di review",
+          "question": "Are overlapping review lenses consolidated into a single pass?",
+          "applies_if": "Review pipeline planning",
           "severity": "low"
         },
         {
           "rule_id": "REV-06",
-          "question": "La lente adversarial viene attivata per meccanismi che possono passare silenziosamente?",
-          "applies_if": "Modifiche critiche a auth, crypto o sicurezza",
+          "question": "Is the adversarial review lens triggered for critical flows that might fail silently?",
+          "applies_if": "Critical modifications to auth, crypto, or security logic",
           "severity": "high"
         },
         {
           "rule_id": "REV-07",
-          "question": "I reviewer sono indipendenti nella prima fase?",
-          "applies_if": "Esecuzione di review multi-agente",
+          "question": "Do reviewer agents operate independently in the initial pass?",
+          "applies_if": "Multi-agent review execution",
           "severity": "medium"
         },
         {
           "rule_id": "REV-08",
-          "question": "I finding vengono trattati come candidati fino alla validazione?",
-          "applies_if": "Triage ed elaborazione dei finding",
+          "question": "Are reported findings treated as candidates until explicit validation?",
+          "applies_if": "Finding triage and processing",
           "severity": "medium"
         },
         {
           "rule_id": "REV-09",
-          "question": "Ogni finding ha categoria, impatto, evidenza, fix e confidenza?",
-          "applies_if": "Formattazione e output dei finding",
+          "question": "Does every finding contain category, impact, evidence, fix, and confidence score?",
+          "applies_if": "Finding formatting and reporting",
           "severity": "high"
         },
         {
           "rule_id": "REV-10",
-          "question": "Un finding senza anchor preciso non diventa confermato?",
-          "applies_if": "Validazione dei finding di review",
+          "question": "Is a finding without a precise code anchor rejected from confirmed status?",
+          "applies_if": "Review finding validation",
           "severity": "high"
         },
         {
           "rule_id": "REV-11",
-          "question": "I finding P0/P1 vengono verificati cercando di disconfermarli?",
-          "applies_if": "Fase di de-aliasing o disconferma dei finding ad alto impatto",
+          "question": "Are P0/P1 findings aggressively challenged for disconfirmation?",
+          "applies_if": "De-aliasing and verification of high-severity findings",
           "severity": "high"
         },
         {
           "rule_id": "REV-12",
-          "question": "I finding duplicati vengono aggregati per causa comune?",
-          "applies_if": "Consolidamento del report di review",
+          "question": "Are duplicate findings merged by root cause?",
+          "applies_if": "Consolidating final review reports",
           "severity": "low"
         },
         {
           "rule_id": "REV-13",
-          "question": "I reviewer terminati vengono effettivamente raccolti?",
-          "applies_if": "Gestione del ciclo di vita dei job di review concorrenti",
+          "question": "Are completed reviewer sub-processes properly collected and joined?",
+          "applies_if": "Managing concurrent review job lifecycles",
           "severity": "medium"
         },
         {
           "rule_id": "REV-14",
-          "question": "Un reviewer non viene considerato positivo solo perché ha risposto con un acknowledgement?",
-          "applies_if": "Parsing della risposta dei modelli di review",
+          "question": "Is a reviewer prevented from being marked successful based solely on an ack response?",
+          "applies_if": "Parsing review model responses",
           "severity": "high"
         },
         {
           "rule_id": "REV-15",
-          "question": "Un modello non approva il proprio codice senza un passaggio indipendente?",
-          "applies_if": "Flussi autonomi di generazione e review codice",
+          "question": "Is an AI agent prevented from approving its own generated code without an independent reviewer pass?",
+          "applies_if": "Autonomous code generation and review loops",
           "severity": "blocker"
         },
         {
           "rule_id": "REV-16",
-          "question": "Le lenti non applicabili vengono registrate come skipped, non come passate?",
-          "applies_if": "Reportistica e metriche di review",
+          "question": "Are non-applicable review lenses explicitly recorded as skipped rather than passed?",
+          "applies_if": "Review metrics and reporting",
           "severity": "low"
         },
         {
           "rule_id": "REV-17",
-          "question": "La review espone sempre coverage gap e residual risk?",
-          "applies_if": "Generazione del verdetto finale di review",
+          "question": "Does the final report explicitly detail coverage gaps and residual risks?",
+          "applies_if": "Final review verdict generation",
           "severity": "high"
         },
         {
           "rule_id": "REV-18",
-          "question": "Il verdetto distingue Not ready, Ready with fixes e Ready to merge?",
-          "applies_if": "Generazione del verdetto finale di review",
+          "question": "Does the verdict clearly distinguish between Not Ready, Ready With Fixes, and Ready To Merge?",
+          "applies_if": "Final review verdict generation",
           "severity": "blocker"
         },
         {
           "rule_id": "REV-19",
-          "question": "La review non produce finding solo per raggiungere una quota?",
-          "applies_if": "Valutazione della qualità della review",
+          "question": "Does the review refrain from generating artificial findings just to meet quota targets?",
+          "applies_if": "Review quality assessment",
           "severity": "medium"
         },
         {
           "rule_id": "REV-20",
-          "question": "L’evidenza tecnica prevale su preferenze personali?",
-          "applies_if": "Risoluzione dei conflitti nei finding di review",
+          "question": "Does concrete technical evidence override subjective reviewer preferences?",
+          "applies_if": "Conflict resolution across review findings",
           "severity": "high"
         }
       ]
