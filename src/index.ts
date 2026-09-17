@@ -54,6 +54,11 @@ async function fetchPr(prRef: string): Promise<{ meta: PrMeta; diff: string }> {
   let diff = await gh(['pr', 'diff', prRef]);
   // ponytail: hard truncate at ~30k tokens (TypeSafe request budget is ~32k including questions)
   if (diff.length > MAX_DIFF_CHARS) {
+    console.error(
+      `WARNING: diff is ${diff.length.toLocaleString()} chars, over the TypeSafe request budget (~${MAX_DIFF_CHARS.toLocaleString()}). ` +
+        'Truncating: rules will be evaluated on the first part of the diff only. ' +
+        'Split the diff into chunks across multiple calls if you need full coverage.',
+    );
     diff = `${diff.slice(0, MAX_DIFF_CHARS)}\n... [diff truncated]`;
   }
   return { meta, diff };
