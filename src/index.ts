@@ -1,18 +1,28 @@
 import { execFile } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { promisify } from 'node:util';
-import { choice, noul, TypeSafeClient } from '@typesafe-ai/sdk';
+import { choice, TypeSafeClient } from '@typesafe-ai/sdk';
 
 const run = promisify(execFile);
 
-const PASS_THRESHOLD = 0.5;
 // ~20k tokens worst case (code diffs tokenize at ~3 chars/token), leaving headroom
 // inside the ~32k TypeSafe request budget shared with the questions
 const CHUNK_CHARS = 60_000;
+// ~100 tokens per rule question; keep batches well inside the request budget
+const RULES_PER_CALL = 80;
+// exit code 1 severities
+const FAIL_SEVERITIES = new Set(['blocker']);
 
 interface Rule {
-  id: string;
-  check: string;
+  rule_id: string;
+  question: string;
+  applies_if: string;
+  severity: string;
+}
+
+interface RuleConfig {
+  contract: { rules: string[] };
+  categories: { name: string; rules: Rule[] }[];
 }
 
 interface PrMeta {
@@ -24,20 +34,21 @@ interface PrMeta {
 
 interface RuleResult {
   rule: Rule;
+  answer: string;
   probability: number;
-  passed: boolean;
-  worstChunkIndex: number;
+  confidence: number;
 }
 
 type PrState = {
   pr: { title: string; description: string; part: string; diff: string };
+  answer_rules: string[];
 };
 
-const severityQuestion = choice('How severe is this violation?', {
-  must_fix: 'Blocking: bug, security issue, data loss, or the change breaks its stated intent.',
-  recommended: 'Should be changed before merge, but the change still works.',
-  minor: 'Nitpick: style, naming, docs, or an optional improvement.',
-});
+const ANSWER_CRITERIA = {
+  YES: 'Compliant: the PR satisfies the rule.',
+  NO: 'Violation: the PR breaks the rule, supported by evidence in the diff.',
+  'N/A': 'The rule does not apply to this change given the applicability condition.',
+} as const;
 
 function sanitize(id: string): string {
   return id.replace(/[^a-zA-Z0-9_]/g, '_');
@@ -72,6 +83,14 @@ function chunkDiff(diff: string): string[] {
   return chunks;
 }
 
+function batchRules(rules: Rule[]): Map<Rule, number> {
+  const batchOf = new Map<Rule, number>();
+  rules.forEach((rule, index) => {
+    batchOf.set(rule, Math.floor(index / RULES_PER_CALL));
+  });
+  return batchOf;
+}
+
 async function main(): Promise<number> {
   const prRef = process.argv[2];
   if (!prRef) {
@@ -79,9 +98,10 @@ async function main(): Promise<number> {
     return 2;
   }
 
-  const rules = JSON.parse(await readFile('rules.json', 'utf8')) as Rule[];
-  if (!Array.isArray(rules) || rules.length === 0) {
-    console.error('rules.json must be a non-empty array of { id, check }');
+  const config = JSON.parse(await readFile('rules.json', 'utf8')) as RuleConfig;
+  const rules = config.categories.flatMap((category) => category.rules);
+  if (rules.length === 0) {
+    console.error('rules.json contains no rules');
     return 2;
   }
 
@@ -92,12 +112,13 @@ async function main(): Promise<number> {
   const diff = await gh(['pr', 'diff', prRef]);
 
   const chunks = chunkDiff(diff);
-  if (chunks.length > 1) {
-    console.error(
-      `Diff is ${diff.length.toLocaleString()} chars: split into ${chunks.length} chunks ` +
-        `(≤${CHUNK_CHARS.toLocaleString()} chars each), one TypeSafe call per chunk`,
-    );
-  }
+  const batchOf = batchRules(rules);
+  const batchCount = Math.max(...Array.from(batchOf.values())) + 1;
+  console.error(
+    `Diff is ${diff.length.toLocaleString()} chars -> ${chunks.length} chunk(s); ` +
+      `${rules.length} rules -> ${batchCount} batch(es) of ≤${RULES_PER_CALL}; ` +
+      `${chunks.length * batchCount} TypeSafe call(s) in parallel`,
+  );
   const states: PrState[] = chunks.map((chunk, i) => ({
     pr: {
       title: meta.title,
@@ -105,99 +126,101 @@ async function main(): Promise<number> {
       part: `${i + 1} of ${chunks.length}`,
       diff: chunk,
     },
+    answer_rules: config.contract.rules,
   }));
 
   const client = new TypeSafeClient({ timeout: 60_000 });
 
-  // One batched call per chunk: one Noul per rule over the same chunk state.
-  console.error(`Evaluating ${rules.length} rules on ${chunks.length} chunk(s) with TypeSafe...`);
-  const questions = Object.fromEntries(
-    rules.map((rule) => [
-      sanitize(rule.id),
-      noul(`Does \`pr\` (title, description, diff) pass this review check? Check: ${rule.check}`, {
-        true: 'The PR satisfies the check.',
-        false: 'The PR violates the check.',
-      }),
-    ]),
-  );
-  const responses = await Promise.all(
-    states.map((state) => client.systemOne({ state, questions })),
-  );
-
-  // A rule passes only if it passes in every chunk: merge with the worst (min) probability.
-  const results: RuleResult[] = rules.map((rule) => {
-    const probabilities = responses.map(
-      (response) => need(response.answers, sanitize(rule.id)).noul,
-    );
-    const probability = Math.min(...probabilities);
-    return {
-      rule,
-      probability,
-      passed: probability >= PASS_THRESHOLD,
-      worstChunkIndex: probabilities.indexOf(probability),
-    };
-  });
-  const failed = results.filter((result) => !result.passed);
-
-  // Second batched call, only for failed rules, against the chunk where each rule scored worst.
-  const severities: Record<string, string> = {};
-  let inputTokens = responses.reduce((sum, response) => sum + response.usage.input_tokens, 0);
-  let outputTokens = responses.reduce((sum, response) => sum + response.usage.output_tokens, 0);
-  if (failed.length > 0) {
-    console.error(`Categorizing ${failed.length} violations...`);
-    const severityQuestions = Object.fromEntries(
-      failed.map((result) => [
-        sanitize(result.rule.id),
-        choice(
-          `The PR violates this review check: ${result.rule.check} How severe is the violation found in \`pr\`?`,
-          severityQuestion.criteria,
-        ),
+  // One batched call per (chunk × rule batch); the answer contract travels in the state
+  // once per call instead of being repeated in every question.
+  console.error(`Evaluating ${rules.length} rules with TypeSafe...`);
+  const makeQuestions = (batch: Rule[]) =>
+    Object.fromEntries(
+      batch.map((rule) => [
+        sanitize(rule.rule_id),
+        choice({ question: rule.question, applies_if: rule.applies_if }, ANSWER_CRITERIA),
       ]),
     );
-    const sevResponses = await Promise.all(
-      states.map((state) => client.systemOne({ state, questions: severityQuestions })),
+  const responsesByChunk = await Promise.all(
+    states.map((state) =>
+      Promise.all(
+        Array.from({ length: batchCount }, (_, batchIndex) =>
+          client.systemOne({
+            state,
+            questions: makeQuestions(rules.filter((rule) => batchOf.get(rule) === batchIndex)),
+          }),
+        ),
+      ),
+    ),
+  );
+
+  // Merge across chunks: a rule takes its most severe outcome (NO beats N/A beats YES).
+  const rank = { NO: 0, 'N/A': 1, YES: 2 } as const;
+  const results: RuleResult[] = rules.map((rule) => {
+    const key = sanitize(rule.rule_id);
+    const batchIndex = batchOf.get(rule);
+    if (batchIndex === undefined) throw new Error(`No batch assigned for rule ${rule.rule_id}`);
+    const perChunk = responsesByChunk.map((responses) =>
+      need(responses[batchIndex]?.answers ?? {}, key),
     );
-    for (const response of sevResponses) {
-      inputTokens += response.usage.input_tokens;
-      outputTokens += response.usage.output_tokens;
+    let worst = perChunk[0];
+    if (!worst) throw new Error(`Missing answer for rule ${rule.rule_id}`);
+    for (const answer of perChunk) {
+      if (rank[answer.choice as keyof typeof rank] < rank[worst.choice as keyof typeof rank]) {
+        worst = answer;
+      }
     }
-    for (const result of failed) {
-      const response = sevResponses[result.worstChunkIndex];
-      if (!response)
-        throw new Error(`Missing severity response for chunk ${result.worstChunkIndex}`);
-      severities[result.rule.id] = need(response.answers, sanitize(result.rule.id)).choice;
-    }
-  }
+    return {
+      rule,
+      answer: worst.choice,
+      probability: worst.probabilities[worst.choice] ?? 0,
+      confidence: worst.confidence,
+    };
+  });
+
+  const violations = results.filter((result) => result.answer === 'NO');
+  const notApplicable = results.filter((result) => result.answer === 'N/A');
 
   const lines: string[] = [];
   lines.push(`PR #${meta.number} "${meta.title}" — ${meta.url}`);
   if (chunks.length > 1)
-    lines.push(`(${chunks.length} diff chunks evaluated, worst chunk per rule wins)`);
+    lines.push(`(${chunks.length} diff chunks evaluated, worst outcome per rule wins)`);
   lines.push('');
   for (const result of results) {
-    const mark = result.passed ? '✓' : '✗';
-    const tag = result.passed ? '' : ` → ${severities[result.rule.id]}`;
+    const mark = result.answer === 'YES' ? '✓' : result.answer === 'NO' ? '✗' : '–';
     lines.push(
-      `  ${mark} ${result.rule.id} (pass probability ${result.probability.toFixed(2)})${tag}`,
+      `  ${mark} ${result.rule.rule_id} [${result.rule.severity}] ${result.answer} ` +
+        `(p ${result.probability.toFixed(2)}, conf ${result.confidence.toFixed(2)})`,
     );
   }
-  for (const bucket of ['must_fix', 'recommended', 'minor'] as const) {
-    const inBucket = failed.filter((result) => severities[result.rule.id] === bucket);
-    if (inBucket.length === 0) continue;
+  for (const severity of ['blocker', 'high', 'medium', 'low', 'info', 'advisory']) {
+    const bucket = violations.filter((result) => result.rule.severity === severity);
+    if (bucket.length === 0) continue;
     lines.push('');
-    lines.push(bucket.replace('_', ' ').toUpperCase());
-    for (const result of inBucket) {
-      lines.push(`  - [${result.rule.id}] ${result.rule.check}`);
+    lines.push(severity.toUpperCase());
+    for (const result of bucket) {
+      lines.push(`  - [${result.rule.rule_id}] ${result.rule.question}`);
     }
+  }
+  if (notApplicable.length > 0) {
+    lines.push('');
+    lines.push(`N/A: ${notApplicable.map((result) => result.rule.rule_id).join(', ')}`);
   }
   lines.push('');
   lines.push(
-    `${results.length} rules checked, ${results.length - failed.length} passed, ${failed.length} failed`,
+    `${results.length} rules checked: ${results.length - violations.length - notApplicable.length} yes, ` +
+      `${violations.length} no, ${notApplicable.length} n/a`,
   );
+  const inputTokens = responsesByChunk
+    .flat()
+    .reduce((sum, response) => sum + response.usage.input_tokens, 0);
+  const outputTokens = responsesByChunk
+    .flat()
+    .reduce((sum, response) => sum + response.usage.output_tokens, 0);
   lines.push(`Usage: ${inputTokens} input / ${outputTokens} output tokens`);
   console.log(lines.join('\n'));
 
-  return failed.some((result) => severities[result.rule.id] === 'must_fix') ? 1 : 0;
+  return violations.some((result) => FAIL_SEVERITIES.has(result.rule.severity)) ? 1 : 0;
 }
 
 main()
