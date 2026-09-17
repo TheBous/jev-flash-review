@@ -6,7 +6,9 @@ import { choice, noul, TypeSafeClient } from '@typesafe-ai/sdk';
 const run = promisify(execFile);
 
 const PASS_THRESHOLD = 0.5;
-const MAX_DIFF_CHARS = 120_000;
+// ~20k tokens worst case (code diffs tokenize at ~3 chars/token), leaving headroom
+// inside the ~32k TypeSafe request budget shared with the questions
+const CHUNK_CHARS = 60_000;
 
 interface Rule {
   id: string;
@@ -24,7 +26,12 @@ interface RuleResult {
   rule: Rule;
   probability: number;
   passed: boolean;
+  worstChunkIndex: number;
 }
+
+type PrState = {
+  pr: { title: string; description: string; part: string; diff: string };
+};
 
 const severityQuestion = choice('How severe is this violation?', {
   must_fix: 'Blocking: bug, security issue, data loss, or the change breaks its stated intent.',
@@ -47,21 +54,22 @@ async function gh(args: string[]): Promise<string> {
   return stdout;
 }
 
-async function fetchPr(prRef: string): Promise<{ meta: PrMeta; diff: string }> {
-  const meta = JSON.parse(
-    await gh(['pr', 'view', prRef, '--json', 'number,title,body,url']),
-  ) as PrMeta;
-  let diff = await gh(['pr', 'diff', prRef]);
-  // ponytail: hard truncate at ~30k tokens (TypeSafe request budget is ~32k including questions)
-  if (diff.length > MAX_DIFF_CHARS) {
-    console.error(
-      `WARNING: diff is ${diff.length.toLocaleString()} chars, over the TypeSafe request budget (~${MAX_DIFF_CHARS.toLocaleString()}). ` +
-        'Truncating: rules will be evaluated on the first part of the diff only. ' +
-        'Split the diff into chunks across multiple calls if you need full coverage.',
-    );
-    diff = `${diff.slice(0, MAX_DIFF_CHARS)}\n... [diff truncated]`;
+function chunkDiff(diff: string): string[] {
+  if (diff.length <= CHUNK_CHARS) return [diff];
+  const chunks: string[] = [];
+  let lines: string[] = [];
+  let size = 0;
+  for (const line of diff.split('\n')) {
+    if (size + line.length + 1 > CHUNK_CHARS && lines.length > 0) {
+      chunks.push(lines.join('\n'));
+      lines = [];
+      size = 0;
+    }
+    lines.push(line);
+    size += line.length + 1;
   }
-  return { meta, diff };
+  if (lines.length > 0) chunks.push(lines.join('\n'));
+  return chunks;
 }
 
 async function main(): Promise<number> {
@@ -78,62 +86,93 @@ async function main(): Promise<number> {
   }
 
   console.error(`Fetching PR ${prRef}...`);
-  const { meta, diff } = await fetchPr(prRef);
-  const state = { pr: { title: meta.title, description: meta.body ?? '', diff } };
+  const meta = JSON.parse(
+    await gh(['pr', 'view', prRef, '--json', 'number,title,body,url']),
+  ) as PrMeta;
+  const diff = await gh(['pr', 'diff', prRef]);
+
+  const chunks = chunkDiff(diff);
+  if (chunks.length > 1) {
+    console.error(
+      `Diff is ${diff.length.toLocaleString()} chars: split into ${chunks.length} chunks ` +
+        `(≤${CHUNK_CHARS.toLocaleString()} chars each), one TypeSafe call per chunk`,
+    );
+  }
+  const states: PrState[] = chunks.map((chunk, i) => ({
+    pr: {
+      title: meta.title,
+      description: meta.body ?? '',
+      part: `${i + 1} of ${chunks.length}`,
+      diff: chunk,
+    },
+  }));
 
   const client = new TypeSafeClient({ timeout: 60_000 });
 
-  // One batched call: one Noul per rule over the same state (parallel, ~12x cheaper than one call per rule).
-  console.error(`Evaluating ${rules.length} rules with TypeSafe...`);
-  const checks = await client.systemOne({
-    state,
-    questions: Object.fromEntries(
-      rules.map((rule) => [
-        sanitize(rule.id),
-        noul(
-          `Does \`pr\` (title, description, diff) pass this review check? Check: ${rule.check}`,
-          {
-            true: 'The PR satisfies the check.',
-            false: 'The PR violates the check.',
-          },
-        ),
-      ]),
-    ),
-  });
+  // One batched call per chunk: one Noul per rule over the same chunk state.
+  console.error(`Evaluating ${rules.length} rules on ${chunks.length} chunk(s) with TypeSafe...`);
+  const questions = Object.fromEntries(
+    rules.map((rule) => [
+      sanitize(rule.id),
+      noul(`Does \`pr\` (title, description, diff) pass this review check? Check: ${rule.check}`, {
+        true: 'The PR satisfies the check.',
+        false: 'The PR violates the check.',
+      }),
+    ]),
+  );
+  const responses = await Promise.all(
+    states.map((state) => client.systemOne({ state, questions })),
+  );
 
+  // A rule passes only if it passes in every chunk: merge with the worst (min) probability.
   const results: RuleResult[] = rules.map((rule) => {
-    const probability = need(checks.answers, sanitize(rule.id)).noul;
-    return { rule, probability, passed: probability >= PASS_THRESHOLD };
+    const probabilities = responses.map(
+      (response) => need(response.answers, sanitize(rule.id)).noul,
+    );
+    const probability = Math.min(...probabilities);
+    return {
+      rule,
+      probability,
+      passed: probability >= PASS_THRESHOLD,
+      worstChunkIndex: probabilities.indexOf(probability),
+    };
   });
   const failed = results.filter((result) => !result.passed);
 
-  // Second batched call, only for failed rules: severity depends on which checks failed.
+  // Second batched call, only for failed rules, against the chunk where each rule scored worst.
   const severities: Record<string, string> = {};
-  let inputTokens = checks.usage.input_tokens;
-  let outputTokens = checks.usage.output_tokens;
+  let inputTokens = responses.reduce((sum, response) => sum + response.usage.input_tokens, 0);
+  let outputTokens = responses.reduce((sum, response) => sum + response.usage.output_tokens, 0);
   if (failed.length > 0) {
     console.error(`Categorizing ${failed.length} violations...`);
-    const sev = await client.systemOne({
-      state,
-      questions: Object.fromEntries(
-        failed.map((result) => [
-          sanitize(result.rule.id),
-          choice(
-            `The PR violates this review check: ${result.rule.check} How severe is the violation found in \`pr\`?`,
-            severityQuestion.criteria,
-          ),
-        ]),
-      ),
-    });
-    inputTokens += sev.usage.input_tokens;
-    outputTokens += sev.usage.output_tokens;
+    const severityQuestions = Object.fromEntries(
+      failed.map((result) => [
+        sanitize(result.rule.id),
+        choice(
+          `The PR violates this review check: ${result.rule.check} How severe is the violation found in \`pr\`?`,
+          severityQuestion.criteria,
+        ),
+      ]),
+    );
+    const sevResponses = await Promise.all(
+      states.map((state) => client.systemOne({ state, questions: severityQuestions })),
+    );
+    for (const response of sevResponses) {
+      inputTokens += response.usage.input_tokens;
+      outputTokens += response.usage.output_tokens;
+    }
     for (const result of failed) {
-      severities[result.rule.id] = need(sev.answers, sanitize(result.rule.id)).choice;
+      const response = sevResponses[result.worstChunkIndex];
+      if (!response)
+        throw new Error(`Missing severity response for chunk ${result.worstChunkIndex}`);
+      severities[result.rule.id] = need(response.answers, sanitize(result.rule.id)).choice;
     }
   }
 
   const lines: string[] = [];
   lines.push(`PR #${meta.number} "${meta.title}" — ${meta.url}`);
+  if (chunks.length > 1)
+    lines.push(`(${chunks.length} diff chunks evaluated, worst chunk per rule wins)`);
   lines.push('');
   for (const result of results) {
     const mark = result.passed ? '✓' : '✗';
