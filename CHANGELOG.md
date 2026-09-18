@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.7.0](https://github.com/TheBous/review-blaster/compare/v0.6.0...v0.7.0) (2026-09-18)
+
+### Features
+
+* add new security and LLM-powered application security rules ([a122daf](https://github.com/TheBous/review-blaster/commit/a122dafa3b0f0e597c4686e570eac0e0d1a2dc10))
+* add security rule to ensure input validation integrity ([44bbfbb](https://github.com/TheBous/review-blaster/commit/44bbfbbbbcad2aa6c697671f4d487b3bef805f19))
+* **rules:** add agent-native capability parity and privacy compliance rules ([e4d9a00](https://github.com/TheBous/review-blaster/commit/e4d9a004aabe1cb1d17c88d637a6f808bcdbcd02))
+* **rules:** add frontend engineering rules and update meta references ([658a7bd](https://github.com/TheBous/review-blaster/commit/658a7bd52e30292daa21ca3941179429634371eb))
+* **rules:** enhance guidance for handling large reviews and PRs with coherent grouping ([0a3dda0](https://github.com/TheBous/review-blaster/commit/0a3dda015a7dcf18475ba97fb53da2df5914bd5a))
+* **rules:** lower severity of ARC-10 rule from high to low ([1a359f2](https://github.com/TheBous/review-blaster/commit/1a359f290b34a2bb8c0d7ca098bfb5244aab1fac))
+* **rules:** split in more files ([0529a32](https://github.com/TheBous/review-blaster/commit/0529a321e8906850c0382b849b8f68d92f00893d))
+
 ## [0.6.0](https://github.com/TheBous/review-blaster/compare/v0.5.0...v0.6.0) (2026-09-18)
 
 ### Features
