@@ -1,0 +1,25 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "review-blaster",
+  "version": "0.1.0",
+  "description": "Rule-based code review: review a PR, review anything, or loop until the rule engine reports clean",
+  "owner": {
+    "name": "Luca Valsecchi"
+  },
+  "homepage": "https://github.com/lucvalse/review-blaster",
+  "repository": "https://github.com/lucvalse/review-blaster",
+  "plugins": [
+    {
+      "name": "review-blaster",
+      "version": "0.1.0",
+      "description": "Review PRs, arbitrary code, or loop until clean — powered by the review-blaster MCP rule engine",
+      "author": {
+        "name": "Luca Valsecchi"
+      },
+      "keywords": ["code-review", "mcp", "typesafe"],
+      "homepage": "https://github.com/lucvalse/review-blaster",
+      "repository": "https://github.com/lucvalse/review-blaster",
+      "source": "./"
+    }
+  ]
+}

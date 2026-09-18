@@ -1,6 +1,6 @@
 {
   "name": "review-blaster",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "engines": {
@@ -16,7 +16,8 @@
     "review": "tsx --env-file-if-exists=.env src/index.ts",
     "prepare": "husky",
     "release": "release-it",
-    "test": "node --import tsx --test src/*.test.ts"
+    "test": "node --import tsx --test src/*.test.ts && node --test tests/skills-portability.test.cjs",
+    "bundle": "esbuild src/mcp/server.ts --bundle --platform=node --format=esm --target=node24 --outfile=dist/server.js"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,cjs,mjs,json,jsonc,css}": [
@@ -42,5 +43,17 @@
     "@modelcontextprotocol/sdk": "^1.30.0",
     "@typesafe-ai/sdk": "^0.6.0",
     "zod": "^4.6.5"
-  }
+  },
+  "files": [
+    ".claude-plugin/",
+    ".codex-plugin/",
+    ".cursor-plugin/",
+    ".opencode/",
+    "commands/",
+    "skills/",
+    "dist/server.js",
+    "mcp.json",
+    "plugin.json",
+    "rules.json"
+  ]
 }

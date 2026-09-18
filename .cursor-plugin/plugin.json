@@ -1,0 +1,17 @@
+{
+  "name": "review-blaster",
+  "displayName": "review-blaster",
+  "version": "0.1.0",
+  "description": "Rule-based code review skills backed by the review-blaster MCP engine — review PRs, arbitrary code, or loop until clean",
+  "author": {
+    "name": "Luca Valsecchi"
+  },
+  "homepage": "https://github.com/lucvalse/review-blaster",
+  "repository": "https://github.com/lucvalse/review-blaster",
+  "license": "MIT",
+  "keywords": ["code-review", "mcp", "typesafe"],
+  "category": "developer-tools",
+  "tags": ["code-review", "pull-requests", "quality-gates"],
+  "skills": "./skills/",
+  "commands": "./commands/"
+}
