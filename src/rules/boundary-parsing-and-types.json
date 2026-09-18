@@ -102,6 +102,12 @@
       "question": "Is JavaScript type coercion handled at trust boundaries?",
       "applies_if": "Reading query, body, or params in JavaScript or TypeScript",
       "severity": "high"
+    },
+    {
+      "rule_id": "BND-18",
+      "question": "Are presence-only checks (truthy or non-empty strings) used where the value's format or domain should be validated?",
+      "applies_if": "Accepting identifiers, codes, tokens, dates, or other strings with an expected format or domain",
+      "severity": "high"
     }
   ]
 }
