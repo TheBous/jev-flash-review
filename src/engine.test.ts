@@ -106,7 +106,7 @@ test('reviewDiff re-asks borderline rules with the missing counterpart', async (
   });
   const reviewed = await reviewDiff({ diff }, CONFIG.value, judge);
   assert.ok(reviewed.ok);
-  assert.equal(ruleAsks, 5, 'pass 1 asks 2 chunks × 2 rules, the pull re-asks R1 only');
+  assert.equal(ruleAsks, 7, 'pass 1 asks 3 files × 2 rules, the pull re-asks R1 only for a.ts');
   assert.ok(
     ruleDiffs.some((d) => d.includes('b/src/a.ts\n') && d.includes('b/src/b.ts\n')),
     'the pull state must carry both sides of the import',
@@ -135,7 +135,7 @@ test('reviewDiff skips the pull pass for confident answers', async () => {
   });
   const reviewed = await reviewDiff({ diff }, CONFIG.value, judge);
   assert.ok(reviewed.ok);
-  assert.equal(ruleAsks, 4, 'pass 1 only: 2 chunks × 2 rules, no re-ask when confident');
+  assert.equal(ruleAsks, 6, 'pass 1 only: 3 files × 2 rules, no re-ask when confident');
   assert.equal(reviewed.value.summary.no, 1);
 });
 

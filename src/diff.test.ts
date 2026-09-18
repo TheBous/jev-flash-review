@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { annotateHunks, chunkDiff, extraContext } from './diff.js';
+import { annotateHunks, chunkDiff, chunkPerFile, extraContext } from './diff.js';
 
 const SMALL_DIFF = [
   'diff --git a/src/a.ts b/src/a.ts',
@@ -150,4 +150,30 @@ test('chunkDiff splits an oversized single file by lines', () => {
   assert.ok(chunks.every((c) => c.length <= 60_000 + 40));
   const totalLines = chunks.flatMap((c) => c.split('\n')).length;
   assert.equal(totalLines, lines + 4);
+});
+
+test('chunkPerFile makes one chunk per file in diff order', () => {
+  const diff = [bigFile('src/a.ts', './b'), bigFile('src/b.ts'), bigFile('src/c.ts')].join('\n');
+  const chunks = chunkPerFile(diff);
+  assert.equal(chunks.length, 3);
+  ['src/a.ts', 'src/b.ts', 'src/c.ts'].forEach((p, i) => {
+    const chunk = chunks.at(i);
+    assert.ok(chunk, `missing chunk for ${p}`);
+    assert.match(chunk, new RegExp(`^diff --git a/${p.replaceAll('.', '\\.')} b/`));
+  });
+});
+
+test('chunkPerFile splits an oversized file by lines', () => {
+  const lines = 2_000;
+  const diff = [
+    'diff --git a/src/huge.ts b/src/huge.ts',
+    '--- a/src/huge.ts',
+    '+++ b/src/huge.ts',
+    `@@ -1,0 +1,${lines} @@`,
+    ...Array.from({ length: lines }, (_, i) => `+line ${i} ${'x'.repeat(40)}`),
+  ].join('\n');
+  const chunks = chunkPerFile(diff);
+  assert.ok(chunks.length > 1, 'the oversized file must be split');
+  assert.ok(chunks.every((c) => c.length <= 60_000 + 40));
+  assert.equal(chunks.flatMap((c) => c.split('\n')).length, lines + 4, 'no lines lost');
 });

@@ -3,7 +3,7 @@
 // for evidence location and adjudication.
 // No driver imports here — effects cross the Judge port.
 import { adjudicateViolations } from './adjudicate.js';
-import { annotateHunks, chunkDiff, extraContext } from './diff.js';
+import { annotateHunks, chunkPerFile, extraContext } from './diff.js';
 import { locateEvidence } from './evidence.js';
 import type {
   ChoiceSpec,
@@ -22,6 +22,28 @@ import type {
 
 // ~100 tokens per rule question; keep batches well inside the request budget
 const RULES_PER_CALL = 80;
+
+// ponytail: fixed pool size; per-file chunking means ~4 calls per file, so a
+// 100-file PR is ~400 requests — uncapped Promise.all would trip rate limits.
+// Tune if the provider allows more.
+const JUDGE_CONCURRENCY = 8;
+
+/** Maps items through fn with at most `limit` calls in flight, preserving order. */
+async function pooled<T, R>(items: T[], limit: number, fn: (item: T) => Promise<R>): Promise<R[]> {
+  const out: R[] = new Array(items.length);
+  let next = 0;
+  await Promise.all(
+    Array.from({ length: Math.min(limit, items.length) }, async () => {
+      while (next < items.length) {
+        const i = next++;
+        const item = items.at(i);
+        if (item === undefined) continue;
+        out[i] = await fn(item);
+      }
+    }),
+  );
+  return out;
+}
 
 // ponytail: judgments in this probability band get one re-ask with the related
 // diff files appended (imports both ways, test pairs). Widen the band if
@@ -81,7 +103,7 @@ export async function reviewDiff(
   const inBatch = (rule: (typeof rules)[number], batch: number): boolean =>
     Math.floor(rules.indexOf(rule) / RULES_PER_CALL) === batch;
 
-  const chunks = chunkDiff(input.diff).map((chunk) => annotateHunks(chunk));
+  const chunks = chunkPerFile(input.diff).map((chunk) => annotateHunks(chunk));
   const states = buildStates(chunks, input, config);
 
   const questionsFor = (selected: typeof rules): Record<string, ChoiceSpec> =>
@@ -97,12 +119,10 @@ export async function reviewDiff(
 
   // One batched call per (chunk × rule batch); the answer contract travels in the
   // state once per call instead of being repeated in every question.
-  const responses = await Promise.all(
-    states.map((state) =>
-      Promise.all(
-        Array.from({ length: batchCount }, (_, batch) =>
-          judge.ask(state, questionsFor(rules.filter((rule) => inBatch(rule, batch)))),
-        ),
+  const responses = await pooled(states, JUDGE_CONCURRENCY, (state) =>
+    Promise.all(
+      Array.from({ length: batchCount }, (_, batch) =>
+        judge.ask(state, questionsFor(rules.filter((rule) => inBatch(rule, batch)))),
       ),
     ),
   );
@@ -111,8 +131,12 @@ export async function reviewDiff(
   // files appended, so coupled rules are re-judged with both sides in view —
   // paid only where the first look was uncertain.
   const ruleIndexOf = new Map(rules.map((rule, i) => [sanitize(rule.rule_id), i]));
-  const enrichments = await Promise.all(
-    chunks.map(async (chunk, i) => {
+  const enrichments = await pooled(
+    chunks.map((_, i) => i),
+    JUDGE_CONCURRENCY,
+    async (i) => {
+      const chunk = chunks.at(i);
+      if (!chunk) return null;
       const uncertain = rules.filter((rule, r) => {
         const response = responses[i]?.[Math.floor(r / RULES_PER_CALL)];
         const answer = response?.answers[sanitize(rule.rule_id)];
@@ -137,7 +161,7 @@ export async function reviewDiff(
         usage = sumUsage(usage, res.usage);
       }
       return { index: i, answers, usage };
-    }),
+    },
   );
   const enrichmentUsage = enrichments.reduce<TokenUsage>(
     (total, e) => (e ? sumUsage(total, e.usage) : total),

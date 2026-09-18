@@ -35,6 +35,13 @@ export function chunkDiff(diff: string): string[] {
   return packUnits(splitFileUnits(diff));
 }
 
+/** One chunk per file, in diff order; oversized files are line-split. */
+export function chunkPerFile(diff: string): string[] {
+  return splitFileUnits(diff)
+    .flatMap(expand)
+    .map((u) => u.text);
+}
+
 function splitFileUnits(diff: string): FileUnit[] {
   const units: FileUnit[] = [];
   let path = '';

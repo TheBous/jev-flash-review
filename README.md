@@ -17,10 +17,10 @@ agent curates input → review_diff tool → structured JSON → agent acts
    business purpose, boundaries ("fence") and invariants of the task. The diff
    alone judges hygiene; the fence lets the engine judge business-logic fit.
 2. **The engine evaluates every rule in `src/rules/`**: the diff is chunked
-   into file-sized pieces (no duplication — every file is judged exactly
-   once); each rule becomes a typed Choice question (`YES` / `NO` / `N/A`
-   with `applies_if`), questions are batched per (chunk × rule set) and run in
-   parallel.
+   one file per chunk (no duplication — every file is judged exactly once,
+   oversized files are line-split); each rule becomes a typed Choice question
+   (`YES` / `NO` / `N/A` with `applies_if`), questions are batched per
+   (chunk × rule set) and run in parallel.
 3. **Pull pass**: a borderline judgment (probability in the 0.35–0.65 band) is
    re-asked once with the related diff files appended (files it imports or
    that import it, plus its test pair), so coupled rules are re-judged with
