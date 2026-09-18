@@ -1,6 +1,8 @@
 // Boundary parser for the rule configuration. The split rule files are
 // untrusted input: parse them once into the domain type, never cast inside
 // the domain.
+
+import agentNativeAndParity from './rules/agent-native-and-parity.json' with { type: 'json' };
 import aiGeneratedCodeRules from './rules/ai-generated-code-rules.json' with { type: 'json' };
 import apiContractsAndCompatibility from './rules/api-contracts-and-compatibility.json' with {
   type: 'json',
@@ -26,6 +28,7 @@ import llmApplicationSecurity from './rules/llm-application-security.json' with 
 import meta from './rules/meta.json' with { type: 'json' };
 import multiModelReview from './rules/multi-model-review.json' with { type: 'json' };
 import performanceAndResources from './rules/performance-and-resources.json' with { type: 'json' };
+import privacyAndCompliance from './rules/privacy-and-compliance.json' with { type: 'json' };
 import security from './rules/security.json' with { type: 'json' };
 import testingAndVerification from './rules/testing-and-verification.json' with { type: 'json' };
 import uiAndAccessibility from './rules/ui-and-accessibility.json' with { type: 'json' };
@@ -36,6 +39,7 @@ export const rawRules = {
   ...meta,
   categories: [
     contextAndScopeBoundary,
+    agentNativeAndParity,
     intentAndScope,
     functionalCorrectness,
     boundaryParsingAndTypes,
@@ -49,6 +53,7 @@ export const rawRules = {
     uiAndAccessibility,
     dependenciesCicdAndSupplyChain,
     documentationAndOperations,
+    privacyAndCompliance,
     aiGeneratedCodeRules,
     llmApplicationSecurity,
     multiModelReview,

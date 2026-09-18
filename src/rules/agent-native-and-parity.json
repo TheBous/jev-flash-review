@@ -1,0 +1,29 @@
+{
+  "name": "Agent-native capability parity",
+  "rules": [
+    {
+      "rule_id": "AGENT-01",
+      "question": "Do agent-facing actions provide the same essential capability, validation, and outcome as the corresponding user-facing workflow?",
+      "applies_if": "A user-facing workflow is added or changed in a product with agent, tool, command, or skill integrations",
+      "severity": "high"
+    },
+    {
+      "rule_id": "AGENT-02",
+      "question": "Can agents discover the capability through a documented tool, command, or skill surface without relying on hidden UI state?",
+      "applies_if": "Adding or changing an agent-facing capability",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "AGENT-03",
+      "question": "Do agent tools receive sufficient context and return structured, actionable results without requiring brittle UI scraping?",
+      "applies_if": "MCP, CLI, API, tool, or skill interfaces used by agents",
+      "severity": "high"
+    },
+    {
+      "rule_id": "AGENT-04",
+      "question": "Are agent-triggered mutations explicit, permission-checked, bounded, and safe to retry where retries are possible?",
+      "applies_if": "Agent-triggered writes, external side effects, or destructive actions",
+      "severity": "high"
+    }
+  ]
+}

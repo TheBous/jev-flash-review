@@ -32,6 +32,7 @@
     "ARC-05",
     "ARC-10",
     "ARC-11",
+    "ARC-39",
     "ERR-01",
     "ERR-06",
     "ERR-15",
@@ -68,7 +69,11 @@
     "SUP-13",
     "AI-01",
     "AI-04",
-    "AI-06"
+    "AI-06",
+    "AGENT-01",
+    "AGENT-03",
+    "CMP-02",
+    "CMP-04"
   ],
   "execution_order": [
     "1. Context and applicability",

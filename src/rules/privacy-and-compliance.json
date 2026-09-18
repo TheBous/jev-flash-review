@@ -1,0 +1,29 @@
+{
+  "name": "Privacy and compliance",
+  "rules": [
+    {
+      "rule_id": "CMP-01",
+      "question": "Does the change collect, expose, and retain only the personal or sensitive data required for its stated purpose?",
+      "applies_if": "Handling personal, sensitive, or regulated data",
+      "severity": "high"
+    },
+    {
+      "rule_id": "CMP-02",
+      "question": "Are consent, opt-out, and regional policy requirements enforced before non-essential tracking, cookies, or sharing?",
+      "applies_if": "Analytics, advertising, tracking, consent, cookies, or regulated data sharing",
+      "severity": "high"
+    },
+    {
+      "rule_id": "CMP-03",
+      "question": "Does the change preserve required deletion, export, retention, and subject-access behavior?",
+      "applies_if": "Changing personal-data storage, processing, or user-account lifecycle",
+      "severity": "high"
+    },
+    {
+      "rule_id": "CMP-04",
+      "question": "Do logs, telemetry, error reports, and review evidence avoid leaking personal or sensitive data?",
+      "applies_if": "Adding or changing observability around personal, sensitive, or regulated data",
+      "severity": "high"
+    }
+  ]
+}

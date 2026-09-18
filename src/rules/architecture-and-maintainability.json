@@ -57,9 +57,9 @@
     },
     {
       "rule_id": "ARC-10",
-      "question": "Is every file under 200 lines without needing splitting?",
-      "applies_if": "Source code files",
-      "severity": "advisory"
+      "question": "Are source files over 200 lines split before implementation rather than waived for urgency, legacy, or minimal-diff reasons?",
+      "applies_if": "Adding or modifying source files over 200 lines",
+      "severity": "high"
     },
     {
       "rule_id": "ARC-11",
@@ -215,6 +215,78 @@
       "rule_id": "ARC-36",
       "question": "Is the code no harder to understand than before?",
       "applies_if": "Always",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "ARC-37",
+      "question": "Do names communicate the role and domain meaning of modified functions, variables, and types?",
+      "applies_if": "Adding or renaming identifiers",
+      "severity": "low"
+    },
+    {
+      "rule_id": "ARC-38",
+      "question": "Is behavior kept near the data it primarily uses instead of reaching through another module's internals?",
+      "applies_if": "Methods or functions that traverse another object's data or services",
+      "severity": "low"
+    },
+    {
+      "rule_id": "ARC-39",
+      "question": "Is duplicated business or transformation logic avoided across modified modules?",
+      "applies_if": "Adding logic similar to existing logic in another location",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "ARC-40",
+      "question": "Does one logical change avoid scattering coordinated edits across unrelated files or layers?",
+      "applies_if": "A single behavior change requires repeated edits in multiple locations",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "ARC-41",
+      "question": "Does each modified module have one coherent reason to change?",
+      "applies_if": "Modules or classes changed for unrelated concerns",
+      "severity": "low"
+    },
+    {
+      "rule_id": "ARC-42",
+      "question": "Are long chains of object or service navigation hidden behind a meaningful boundary?",
+      "applies_if": "Deep chained property, method, or service access",
+      "severity": "low"
+    },
+    {
+      "rule_id": "ARC-43",
+      "question": "Do subclasses and implementations honor the contract they inherit instead of refusing most of it?",
+      "applies_if": "Inheritance or interface implementations",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "ARC-44",
+      "question": "Are repeatedly co-occurring parameters or fields represented as a meaningful value object when that reduces coupling?",
+      "applies_if": "The same group of values travels through multiple APIs or functions",
+      "severity": "advisory"
+    },
+    {
+      "rule_id": "ARC-45",
+      "question": "Do query methods avoid observable mutation?",
+      "applies_if": "Methods or interfaces with read/query responsibilities",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "ARC-46",
+      "question": "Do command methods return only acknowledgement instead of mixing mutation with read-model results?",
+      "applies_if": "Methods or interfaces with command/write responsibilities",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "ARC-47",
+      "question": "Before introducing a durable abstraction, was a viable simpler design compared?",
+      "applies_if": "Adding a new abstraction, interface, factory, strategy, or layer",
+      "severity": "advisory"
+    },
+    {
+      "rule_id": "ARC-48",
+      "question": "Does shared code serve the same domain model, ownership, and change cadence, with context mapping when those differ?",
+      "applies_if": "Sharing code or types across bounded contexts or independently owned modules",
       "severity": "medium"
     }
   ]
