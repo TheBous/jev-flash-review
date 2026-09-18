@@ -170,5 +170,6 @@ function sumUsage(total: TokenUsage, usage: TokenUsage): TokenUsage {
 }
 
 function toPublic({ worstChunkIndex, ...outcome }: Outcome): RuleOutcome {
-  return outcome;
+  // snippets are working material for the confirm pass, not public output
+  return { ...outcome, evidence: outcome.evidence.map(({ snippet, ...hit }) => hit) };
 }

@@ -65,7 +65,8 @@ type QuestionKind = 'rule' | 'evidence' | 'confirm' | 'impact';
 function kindOf(spec: ChoiceSpec): QuestionKind {
   if ('question' in spec.input) return 'rule';
   const instruction = spec.input.instruction ?? '';
-  if (instruction.includes('directly show')) return 'confirm';
+  if (instruction.includes('directly show') || instruction.includes('PR as a whole'))
+    return 'confirm';
   if (instruction.includes('production impact')) return 'impact';
   return 'evidence';
 }
@@ -84,6 +85,7 @@ test('reviewDiff rejects an empty diff', async () => {
 
 test('reviewDiff confirms violations and rates impact', async () => {
   assert.ok(CONFIG.ok);
+  let confirmSnippet: string | undefined;
   const judge = fakeJudge((state, key, spec) => {
     switch (kindOf(spec)) {
       case 'rule':
@@ -93,6 +95,7 @@ test('reviewDiff confirms violations and rates impact', async () => {
       case 'evidence':
         return AT('hunk_001', 0.72);
       case 'confirm':
+        confirmSnippet = spec.input.snippet;
         return SUPPORTED;
       case 'impact':
         return SIGNIFICANT;
@@ -118,6 +121,7 @@ test('reviewDiff confirms violations and rates impact', async () => {
   assert.equal(v!.impact, 'significant');
   assert.equal(v!.impactConfidence, 0.75);
   assert.deepEqual(v!.evidence, [{ location: 'src/a.ts:1 (+2 lines)', probability: 0.72 }]);
+  assert.equal(confirmSnippet, '+new line');
   assert.equal(reviewed.value.results.length, 2);
 });
 
@@ -176,6 +180,7 @@ test('reviewDiff drops violations the evidence does not support', async () => {
 
 test('reviewDiff merges chunk outcomes keeping the most severe', async () => {
   assert.ok(CONFIG.ok);
+  const confirmInstructions: string[] = [];
   const judge = fakeJudge((state, key, spec) => {
     switch (kindOf(spec)) {
       case 'rule':
@@ -183,6 +188,7 @@ test('reviewDiff merges chunk outcomes keeping the most severe', async () => {
       case 'evidence':
         return AT('absent', 1);
       case 'confirm':
+        confirmInstructions.push(spec.input.instruction ?? '');
         return SUPPORTED;
       case 'impact':
         return SIGNIFICANT;
@@ -206,4 +212,35 @@ test('reviewDiff merges chunk outcomes keeping the most severe', async () => {
   assert.equal(r2!.answer, 'NO');
   assert.equal(r2!.impact, 'significant');
   assert.match(r2!.evidence[0]!.location, /absence/);
+  // absent evidence has no quote: confirm must ask about the PR, not the code
+  assert.ok(confirmInstructions.length > 0);
+  assert.ok(confirmInstructions.every((i) => i.includes('PR as a whole')));
+});
+
+test('reviewDiff drops violations with an ambiguous pointer', async () => {
+  assert.ok(CONFIG.ok);
+  let confirmAsked = false;
+  const judge = fakeJudge((state, key, spec) => {
+    switch (kindOf(spec)) {
+      case 'rule':
+        return key === 'R1' ? NO(0.81) : YES(0.9);
+      case 'evidence':
+        // above the confidence gate, below the margin gate
+        return {
+          choice: 'hunk_001',
+          probabilities: { hunk_001: 0.6, absent: 0.56 },
+          confidence: 0.5,
+        };
+      case 'confirm':
+        confirmAsked = true;
+        return SUPPORTED;
+      case 'impact':
+        return SIGNIFICANT;
+    }
+  });
+  const reviewed = await reviewDiff({ diff: SMALL_DIFF }, CONFIG.value, judge);
+  assert.ok(reviewed.ok);
+  assert.deepEqual(reviewed.value.violations, []);
+  assert.equal(reviewed.value.summary.dropped, 1);
+  assert.equal(confirmAsked, false);
 });

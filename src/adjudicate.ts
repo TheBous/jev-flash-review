@@ -2,18 +2,42 @@
 // A NO whose best location is weak, or whose location does not support the
 // violation on second look, is dropped — never reported as a finding.
 import { EVIDENCE_PER_CALL, groupByChunk, need, sanitize } from './evidence.js';
-import type { ChoiceSpec, ImpactLevel, Judge, Outcome, PrState, TokenUsage } from './types.js';
+import type {
+  ChoiceSpec,
+  EvidenceHit,
+  ImpactLevel,
+  Judge,
+  Outcome,
+  PrState,
+  TokenUsage,
+} from './types.js';
 
 // Minimum top-location confidence for a violation to survive. Mirrors
 // devagrawal09's MIN_LOCATION_CONFIDENCE; tune from field data, not theory.
 const MIN_LOCATION_CONFIDENCE = 0.55;
 
+// Minimum lead of the best location over the runner-up. A 0.56-vs-0.54
+// pointer is a shrug, not evidence; tune from field data, not theory.
+const MIN_EVIDENCE_MARGIN = 0.1;
+
+function evidenceProb(evidence: EvidenceHit[], index: number): number {
+  return evidence[index]?.probability ?? 0;
+}
+
 const CONFIRM_INSTRUCTION =
-  'Does the stated location directly show the rule being broken? Choose `unsupported` when the location does not support a concrete violation.';
+  'Does the quoted code directly show the rule being broken? Choose `unsupported` when the quoted code does not support a concrete violation.';
 
 const CONFIRM_CRITERIA = {
-  supported: 'The location directly shows the rule being broken.',
-  unsupported: 'The location does not support a concrete violation of this rule.',
+  supported: 'The quoted code directly shows the rule being broken.',
+  unsupported: 'The quoted code does not support a concrete violation of this rule.',
+} as const;
+
+const CONFIRM_ABSENT_INSTRUCTION =
+  'Does the PR as a whole show the rule being broken? Choose `unsupported` when the diff does not support a concrete violation.';
+
+const CONFIRM_ABSENT_CRITERIA = {
+  supported: 'The PR as a whole shows the rule being broken.',
+  unsupported: 'The diff does not support a concrete violation of this rule.',
 } as const;
 
 const IMPACT_INSTRUCTION =
@@ -34,22 +58,30 @@ export async function adjudicateViolations(
   const usage: TokenUsage = { inputTokens: 0, outputTokens: 0 };
   const flagged = outcomes.filter((outcome) => outcome.answer === 'NO');
   const candidates = flagged.filter(
-    (outcome) => (outcome.evidence[0]?.probability ?? 0) >= MIN_LOCATION_CONFIDENCE,
+    (outcome) =>
+      evidenceProb(outcome.evidence, 0) >= MIN_LOCATION_CONFIDENCE &&
+      evidenceProb(outcome.evidence, 0) - evidenceProb(outcome.evidence, 1) >= MIN_EVIDENCE_MARGIN,
   );
 
   const confirmations = await batchedAsk(candidates, states, judge, (batch) =>
     Object.fromEntries(
-      batch.map((violation) => [
-        sanitize(violation.rule_id),
-        {
-          input: {
-            violation: violation.question,
-            location: violation.evidence[0]?.location ?? '',
-            instruction: CONFIRM_INSTRUCTION,
-          },
-          options: CONFIRM_CRITERIA,
-        } satisfies ChoiceSpec,
-      ]),
+      batch.map((violation) => {
+        // Absent evidence has no code to quote: ask about the PR, not the quote.
+        const quoted = violation.evidence[0]?.snippet ?? '';
+        const quotedConfirm = quoted.length > 0;
+        return [
+          sanitize(violation.rule_id),
+          {
+            input: {
+              violation: violation.question,
+              location: violation.evidence[0]?.location ?? '',
+              snippet: quoted,
+              instruction: quotedConfirm ? CONFIRM_INSTRUCTION : CONFIRM_ABSENT_INSTRUCTION,
+            },
+            options: quotedConfirm ? CONFIRM_CRITERIA : CONFIRM_ABSENT_CRITERIA,
+          } satisfies ChoiceSpec,
+        ];
+      }),
     ),
   );
   const confirmed = confirmations

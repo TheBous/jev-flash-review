@@ -93,6 +93,16 @@ export async function locateEvidence(
   return usage;
 }
 
+// Confirm questions quote the hunk body so the judge verifies against code,
+// not a pointer. Capped: the full diff already travels in the call state.
+const SNIPPET_LINES = 60;
+
+function snippetOf(hunk: Hunk | undefined): string {
+  if (!hunk) return '';
+  const quoted = hunk.lines.slice(0, SNIPPET_LINES).join('\n');
+  return hunk.lines.length > SNIPPET_LINES ? `${quoted}\n…(truncated)` : quoted;
+}
+
 function topEvidence(probabilities: Record<string, number>, hunks: Hunk[]): EvidenceHit[] {
   return Object.entries(probabilities)
     .sort((a, b) => b[1] - a[1])
@@ -105,6 +115,7 @@ function topEvidence(probabilities: Record<string, number>, hunks: Hunk[]): Evid
           ? `${hunk.file}:${hunk.start} (+${hunk.count} lines)`
           : 'absence / PR-level (not tied to a hunk)',
         probability: p,
+        snippet: snippetOf(hunk),
       };
     });
 }

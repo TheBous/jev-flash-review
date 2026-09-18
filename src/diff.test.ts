@@ -32,11 +32,17 @@ test('chunkDiff splits large diffs without losing lines', () => {
 test('annotateHunks numbers hunks and tracks the current file', () => {
   const { text, hunks } = annotateHunks(SMALL_DIFF);
   assert.equal(hunks.length, 1);
-  assert.deepEqual(hunks[0], { id: 'hunk_001', file: 'src/a.ts', start: '10', count: '4' });
+  assert.deepEqual(hunks[0], {
+    id: 'hunk_001',
+    file: 'src/a.ts',
+    start: '10',
+    count: '4',
+    lines: [' context', '-old line', '+new line'],
+  });
   assert.ok(text.includes('[hunk_001] @@ -10,3 +10,4 @@ fn'));
 });
 
 test('annotateHunks survives a malformed hunk header', () => {
   const { hunks } = annotateHunks('@@ garbage');
-  assert.deepEqual(hunks[0], { id: 'hunk_001', file: '', start: '?', count: '?' });
+  assert.deepEqual(hunks[0], { id: 'hunk_001', file: '', start: '?', count: '?', lines: [] });
 });

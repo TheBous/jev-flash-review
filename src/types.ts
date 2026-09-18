@@ -29,6 +29,8 @@ export type ReviewError = 'empty-diff';
 export interface EvidenceHit {
   location: string;
   probability: number;
+  /** Quoted hunk body for the confirm pass; stripped from public output. */
+  snippet?: string;
 }
 
 export interface RuleOutcome {
