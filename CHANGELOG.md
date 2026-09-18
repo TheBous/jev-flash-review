@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.0](https://github.com/TheBous/review-blaster/compare/v0.2.0...v0.3.0) (2026-09-18)
+
+### Features
+
+* implement frontmatter parsing and update MCP server version to 0.2.0 ([1f45f69](https://github.com/TheBous/review-blaster/commit/1f45f69664ebf2abac6df750a31e3e264d103c23))
+
 ## 0.2.0 (2026-09-18)
 
 ### Features
