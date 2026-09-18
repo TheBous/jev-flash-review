@@ -86,16 +86,13 @@ test('chunkDiff keeps a test file with its source file', () => {
   assert.equal(chunkOf(chunks, 'src/foo.ts'), chunkOf(chunks, 'src/foo.test.ts'));
 });
 
-test('chunkDiff duplicates a hub file into each dependent review unit', () => {
-  const diff = [
-    bigFile('src/a.ts', './hub'),
-    bigFile('src/b.ts', './hub'),
-    bigFile('src/c.ts', './hub'),
-    bigFile('src/hub.ts'),
-  ].join('\n');
+test('chunkDiff caps hub duplication across review units', () => {
+  const dependents = ['a', 'b', 'c', 'd', 'e', 'f'].map((n) => bigFile(`src/${n}.ts`, './hub'));
+  const diff = [...dependents, bigFile('src/hub.ts')].join('\n');
   const chunks = chunkDiff(diff);
   const hubChunks = chunks.filter((c) => c.includes('b/src/hub.ts\n')).length;
-  assert.ok(hubChunks >= 3, `expected hub duplicated across units, found ${hubChunks}`);
+  assert.ok(hubChunks >= 2, 'hub must appear in its own unit and at least one dependent');
+  assert.ok(hubChunks <= 1 + 2, `hub capped at own unit + 2 neighbors, found ${hubChunks}`);
 });
 
 test('chunkDiff packs unrelated files together', () => {

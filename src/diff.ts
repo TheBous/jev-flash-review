@@ -33,8 +33,7 @@ interface FileUnit {
 
 export function chunkDiff(diff: string): string[] {
   if (diff.length <= CHUNK_CHARS) return [diff];
-  const units = splitFileUnits(diff);
-  return packPieces(egoUnits(units));
+  return packUnits(egoUnits(splitFileUnits(diff)));
 }
 
 function splitFileUnits(diff: string): FileUnit[] {
@@ -114,10 +113,12 @@ function dirOf(path: string): string {
   return cut === -1 ? '' : path.slice(0, cut);
 }
 
-// ponytail: one-hop adjacency only — a hub imported by many files is duplicated
-// into every dependent unit (cost ~sum of degrees). Multi-hop chains or heavy
-// hub duplication are the upgrade path if review gaps or cost show up.
-function egoUnits(units: FileUnit[]): string[] {
+// ponytail: one-hop adjacency, neighbors capped — a hub imported everywhere
+// would otherwise be duplicated into every dependent unit. Raise NEIGHBOR_CAP
+// if cross-file findings seem to miss context.
+const NEIGHBOR_CAP = 2;
+
+function egoUnits(units: FileUnit[]): FileUnit[][] {
   const specs = units.map((u) => (u.path ? importSpecs(u) : []));
   const dirs = units.map((u) => dirOf(u.path));
   const neighbors = (i: number, j: number): boolean => {
@@ -134,28 +135,45 @@ function egoUnits(units: FileUnit[]): string[] {
       sb.some((spec) => matchesPath(resolveSpec(spec, db), a.path))
     );
   };
-  return units.map((u, i) =>
-    [u, ...units.filter((_, j) => neighbors(i, j))].map((v) => v.text).join('\n'),
-  );
+  const used = new Map<FileUnit, number>();
+  return units.map((center, i) => {
+    const group = [center];
+    for (const [j, other] of units.entries()) {
+      if (!neighbors(i, j)) continue;
+      const n = used.get(other) ?? 0;
+      if (n >= NEIGHBOR_CAP) continue;
+      used.set(other, n + 1);
+      group.push(other);
+    }
+    return group;
+  });
 }
 
-/** Greedy packing under the budget; oversized pieces are line-split. */
-function packPieces(pieces: string[]): string[] {
+/** Greedy packing under the budget; a file lands once per chunk. */
+function packUnits(groups: FileUnit[][]): string[] {
   const chunks: string[] = [];
-  let buf: string[] = [];
+  let buf: FileUnit[] = [];
+  let seen = new Set<FileUnit>();
   let size = 0;
-  for (const piece of pieces) {
-    for (const part of piece.length > CHUNK_CHARS ? lineSplit(piece) : [piece]) {
-      if (buf.length > 0 && size + part.length + 1 > CHUNK_CHARS) {
-        chunks.push(buf.join('\n'));
-        buf = [];
-        size = 0;
+  const expand = (u: FileUnit): FileUnit[] =>
+    u.text.length > CHUNK_CHARS ? lineSplit(u.text).map((text) => ({ path: u.path, text })) : [u];
+  for (const group of groups) {
+    for (const unit of group) {
+      for (const u of expand(unit)) {
+        if (seen.has(u)) continue;
+        seen.add(u);
+        if (buf.length > 0 && size + u.text.length + 1 > CHUNK_CHARS) {
+          chunks.push(buf.map((v) => v.text).join('\n'));
+          buf = [];
+          seen = new Set();
+          size = 0;
+        }
+        buf.push(u);
+        size += u.text.length + 1;
       }
-      buf.push(part);
-      size += part.length + 1;
     }
   }
-  if (buf.length > 0) chunks.push(buf.join('\n'));
+  if (buf.length > 0) chunks.push(buf.map((v) => v.text).join('\n'));
   return chunks;
 }
 
