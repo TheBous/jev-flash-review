@@ -1,7 +1,9 @@
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import type { ReviewOutput } from './engine.js';
-import { loadRules, reviewDiff } from './engine.js';
+import { reviewDiff } from './engine.js';
+import { TypeSafeJudge } from './judge.js';
+import { loadRules } from './rules.js';
+import type { Result, ReviewOutput } from './types.js';
 
 const run = promisify(execFile);
 
@@ -18,6 +20,28 @@ interface PrMeta {
 async function gh(args: string[]): Promise<string> {
   const { stdout } = await run('gh', args, { maxBuffer: 50 * 1024 * 1024 });
   return stdout;
+}
+
+function parsePrMeta(raw: unknown): Result<PrMeta, 'invalid-pr'> {
+  if (typeof raw !== 'object' || raw === null) return { ok: false, error: 'invalid-pr' };
+  const meta = raw as Record<string, unknown>;
+  if (
+    typeof meta.number !== 'number' ||
+    typeof meta.title !== 'string' ||
+    typeof meta.url !== 'string' ||
+    (meta.body !== null && typeof meta.body !== 'string')
+  ) {
+    return { ok: false, error: 'invalid-pr' };
+  }
+  return {
+    ok: true,
+    value: {
+      number: meta.number,
+      title: meta.title,
+      body: meta.body as string | null,
+      url: meta.url,
+    },
+  };
 }
 
 function formatReport(output: ReviewOutput, meta: PrMeta): string {
@@ -68,22 +92,30 @@ async function main(): Promise<number> {
     console.error('Usage: npm run review -- <pr-number-or-url>');
     return 2;
   }
-
-  console.error(`Fetching PR ${prRef}...`);
-  const meta = JSON.parse(
-    await gh(['pr', 'view', prRef, '--json', 'number,title,body,url']),
-  ) as PrMeta;
-  const diff = await gh(['pr', 'diff', prRef]);
-
-  console.error('Evaluating rules with TypeSafe...');
-  const config = await loadRules();
-  const output = await reviewDiff(
-    { diff, title: meta.title, description: meta.body ?? '' },
-    config,
+  const rules = await loadRules();
+  if (!rules.ok) {
+    console.error(`Cannot load rules: ${rules.error}`);
+    return 2;
+  }
+  const meta = parsePrMeta(
+    JSON.parse(await gh(['pr', 'view', prRef, '--json', 'number,title,body,url'])),
   );
-
-  console.log(formatReport(output, meta));
-  return output.results.some(
+  if (!meta.ok) {
+    console.error(`Cannot parse PR metadata: ${meta.error}`);
+    return 2;
+  }
+  const diff = await gh(['pr', 'diff', prRef]);
+  const reviewed = await reviewDiff(
+    { diff, title: meta.value.title, description: meta.value.body ?? '' },
+    rules.value,
+    new TypeSafeJudge(),
+  );
+  if (!reviewed.ok) {
+    console.error(`Review failed: ${reviewed.error}`);
+    return 2;
+  }
+  console.log(formatReport(reviewed.value, meta.value));
+  return reviewed.value.results.some(
     (result) => result.answer === 'NO' && FAIL_SEVERITIES.has(result.severity),
   )
     ? 1

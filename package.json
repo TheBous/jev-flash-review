@@ -15,7 +15,8 @@
     "typecheck": "tsc --noEmit",
     "review": "tsx --env-file-if-exists=.env src/index.ts",
     "prepare": "husky",
-    "release": "release-it"
+    "release": "release-it",
+    "test": "node --import tsx --test src/*.test.ts"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,cjs,mjs,json,jsonc,css}": [

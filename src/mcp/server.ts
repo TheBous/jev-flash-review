@@ -1,9 +1,16 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
-import { loadRules, reviewDiff } from '../engine.js';
+import { reviewDiff } from '../engine.js';
+import { TypeSafeJudge } from '../judge.js';
+import { loadRules } from '../rules.js';
 
-const config = await loadRules();
+const rules = await loadRules();
+if (!rules.ok) {
+  // Broken boot configuration is an invariant violation: refuse to start.
+  console.error(`Cannot load rules: ${rules.error}`);
+  process.exit(1);
+}
 
 const server = new McpServer({ name: 'review-blaster', version: '0.1.0' });
 
@@ -25,8 +32,18 @@ server.registerTool(
     },
   },
   async ({ diff, title, description }) => {
-    const output = await reviewDiff({ diff, title, description }, config);
-    return { content: [{ type: 'text', text: JSON.stringify(output) }] };
+    const reviewed = await reviewDiff(
+      { diff, title, description },
+      rules.value,
+      new TypeSafeJudge(),
+    );
+    if (!reviewed.ok) {
+      return {
+        isError: true,
+        content: [{ type: 'text', text: `Review failed: ${reviewed.error}` }],
+      };
+    }
+    return { content: [{ type: 'text', text: JSON.stringify(reviewed.value) }] };
   },
 );
 
