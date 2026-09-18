@@ -13,6 +13,13 @@ tool of the `jev-flash-review` MCP server.
 **Core principle: the engine never reads the repository — you supply the diff,
 it returns verdicts.**
 
+## If the engine is missing
+
+If the `review_diff` MCP tool is not in your available tools: STOP. Tell the user
+the review engine MCP is not registered in this session and give them the
+registration line for their harness. Do NOT substitute a manual diff analysis,
+and never present one as the engine's result.
+
 ## Steps
 
 1. Collect the input (both via `gh`):

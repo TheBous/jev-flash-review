@@ -15,6 +15,13 @@ tool of the `jev-flash-review` MCP server as the judge.
 substitutes for its verdict.** A rule you believe you fixed is not fixed until
 a re-run reports it clean.
 
+## If the engine is missing
+
+If the `review_diff` MCP tool is not in your available tools: STOP. Tell the user
+the review engine MCP is not registered in this session and give them the
+registration line for their harness. Do NOT substitute a manual diff analysis,
+and never present one as the engine's result.
+
 ## The loop
 
 1. Collect the current state: `git diff HEAD`, plus each untracked file

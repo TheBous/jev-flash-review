@@ -37,3 +37,14 @@ for (const relativePath of manifestPaths) {
     console.log(`${relativePath} → ${pkg.version}`);
   }
 }
+
+const serverFile = path.join(root, 'src', 'mcp', 'server.ts');
+const serverSource = fs.readFileSync(serverFile, 'utf8');
+const synced = serverSource.replace(
+  /new McpServer\(\{ name: '[^']+', version: '[^']+' \}\)/,
+  `new McpServer({ name: 'jev-flash-review', version: '${pkg.version}' })`,
+);
+if (synced !== serverSource) {
+  fs.writeFileSync(serverFile, synced);
+  console.log(`src/mcp/server.ts → ${pkg.version}`);
+}

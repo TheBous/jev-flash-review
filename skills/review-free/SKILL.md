@@ -14,6 +14,13 @@ diff.
 about, build the diff yourself, send only what is needed — the engine reads
 nothing on its own.
 
+## If the engine is missing
+
+If the `review_diff` MCP tool is not in your available tools: STOP. Tell the user
+the review engine MCP is not registered in this session and give them the
+registration line for their harness. Do NOT substitute a manual diff analysis,
+and never present one as the engine's result.
+
 ## Building the diff
 
 Pick the first case that matches:

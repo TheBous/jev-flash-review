@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
-const { parseCommandFile } = require('../.opencode/plugins/review-blaster-frontmatter.cjs');
+const { parseCommandFile } = require('../.opencode/plugins/jev-flash-review-frontmatter.cjs');
 
 const root = path.resolve(__dirname, '..');
 const commandsDir = path.join(root, 'commands');
@@ -68,6 +68,11 @@ for (const name of skillNames) {
   test(`${name} teaches the review_diff tool contract`, () => {
     const body = fs.readFileSync(path.join(skillsDir, name, 'SKILL.md'), 'utf8');
     assert.match(body, /review_diff/, 'skills must name the MCP tool they depend on');
+    assert.match(
+      body,
+      /never present one as the engine's result/,
+      'skills must forbid substituting a manual review when the engine is missing',
+    );
     assert.doesNotMatch(body, /CLAUDE_PLUGIN_ROOT/, 'canonical skills must stay provider-neutral');
   });
 }
@@ -106,6 +111,12 @@ test('provider manifests declare aligned versions', () => {
   for (const manifest of [claude, codex, cursor, portable]) {
     assert.equal(manifest.version, pkg.version, `${manifest.name} version must match package.json`);
   }
+  const serverSource = fs.readFileSync(path.join(root, 'src', 'mcp', 'server.ts'), 'utf8');
+  assert.match(
+    serverSource,
+    new RegExp(`new McpServer\\(\\{ name: 'jev-flash-review', version: '${pkg.version}' \\}\\)`),
+    'MCP server name and version must match package.json',
+  );
 });
 
 test('opencode command parsing extracts description and template', () => {
