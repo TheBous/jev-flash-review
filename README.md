@@ -1,72 +1,193 @@
 # jev-flash-review
 
-AI-powered PR review runner (Node 24 + TypeScript, ESM). Checks a GitHub pull
-request against the rules in `rules.json` using [TypeSafe](https://typesafe.ai)'s
-System One model (Jev), then categorizes every violation as **must fix**,
-**recommended**, or **minor**.
+Rule-based code review for AI coding agents, powered by [TypeSafe Jev](https://typesafe.ai).
+Ship three skills to your agent — review a PR, review anything, or loop until
+the rule engine reports clean — backed by one local MCP review engine.
+
+Local-first: the engine never reads your repository. The calling agent supplies
+the diff (and the business context); the engine returns structured verdicts.
 
 ## How it works
 
-1. Fetches PR title, description, and full diff via `gh` (must be installed and authenticated)
-2. One batched TypeSafe call: one **Noul** (yes/no) question per rule → binary pass/fail (pass ≥ 0.5)
-3. One batched TypeSafe call for the failed rules only: **Choice** question each → `must_fix` / `recommended` / `minor`
-4. Prints the report; exits `1` if any violation is `must_fix` (CI-friendly)
+```
+agent curates input → review_diff tool → structured JSON → agent acts
+```
+
+1. **The agent builds the input**: a unified diff plus `taskContext` — the
+   business purpose, boundaries ("fence") and invariants of the task. The diff
+   alone judges hygiene; the fence lets the engine judge business-logic fit.
+2. **The engine evaluates every rule in `rules.json`**: the diff is chunked,
+   each rule becomes a typed Choice question (`YES` / `NO` / `N/A` with
+   `applies_if`), questions are batched per (chunk × rule set) and run in
+   parallel.
+3. **Merge**: a rule takes its most severe outcome across chunks.
+4. **Evidence**: for each violation, a second Choice over the diff's hunk
+   markers ("select instead of generate") — the engine picks the location,
+   the code prints `file:line`. Violations with no hunk are reported as
+   `absence` (missing tests, docs, handling) or PR-level issues.
+5. **Output** (JSON): one outcome per rule — answer, probability, confidence,
+   severity, question text, evidence locations — plus summary (`total / yes /
+   no / n/a / blockers`), chunk count and token usage.
+
+## The skills
+
+| Skill | Trigger | Input source |
+|---|---|---|
+| `review-pr` | Review a GitHub PR by number or URL | `gh pr view` + `gh pr diff` |
+| `review-free` | Review anything that is not a PR — files, modules, working-tree changes, diffs against a branch | Agent-curated diff (`git diff`, untracked files, or full files rendered as all-additions diffs) |
+| `review-loop` | Iterate while implementing until the engine is clean | Current working diff, re-collected every iteration |
+
+All three call the same `review_diff` MCP tool. If the tool is not available in
+the session, the skills stop and tell you how to register the engine — they
+never substitute a manual review for the engine's verdict.
 
 ## Setup
 
+Requirements: Node.js 24+, a [TypeSafe API key](https://console.typesafe.ai),
+and `gh` (authenticated) for the PR skill.
+
 ```sh
 npm install
-echo 'TYPESAFE_API_KEY=...' > .env   # from console.typesafe.ai (.env is gitignored)
+echo 'TYPESAFE_API_KEY=...' > .env   # gitignored, inherited by the engine process
 ```
 
-## Usage
+## Installation per harness
+
+### Claude Code
+
+```
+/plugin marketplace add lucvalse/jev-flash-review
+/plugin install jev-flash-review@jev-flash-review
+```
+
+Skills: `jev-flash-review:review-pr`, `jev-flash-review:review-free`,
+`jev-flash-review:review-loop`. The bundled `.mcp.json` registers the review
+engine automatically.
+
+### Codex (CLI)
+
+```sh
+codex plugin marketplace add lucvalse/jev-flash-review
+codex plugin add jev-flash-review@jev-flash-review
+```
+
+Register the engine manually in `~/.codex/config.toml` (Codex does not read
+`.mcp.json`):
+
+```toml
+[mcp_servers.jev-flash-review]
+command = "node"
+args = ["/absolute/path/to/jev-flash-review/dist/server.js"]
+env_vars = ["TYPESAFE_API_KEY"]
+```
+
+Restart Codex. Codex desktop loads the skills but not MCP servers — full
+reviews stay on the CLI.
+
+### Cursor
+
+```
+/add-plugin
+```
+
+Paste `https://github.com/lucvalse/jev-flash-review` when prompted. Cursor
+loads skills from `skills/` and commands from `commands/`, then register the
+engine in Cursor's MCP settings pointing at `dist/server.js`.
+
+### OpenCode
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": ["/absolute/path/to/jev-flash-review/.opencode/plugins/jev-flash-review.mjs"]
+}
+```
+
+```sh
+opencode mcp add jev-flash-review --global -- node /absolute/path/to/jev-flash-review/dist/server.js
+```
+
+The tool appears as `jev-flash-review_review_diff`.
+
+## CLI usage
+
+The classic one-shot PR review still works without any agent:
 
 ```sh
 npm run review -- 123                    # inside a repo checkout
 npm run review -- https://github.com/owner/repo/pull/123
 ```
 
+Prints the text report; exits `1` on `blocker` violations (CI-friendly).
+
 ## Rules
 
-`rules.json` is an array of `{ "id", "check" }`. The `check` text is sent to the
-model verbatim — write it as a clear condition the PR must satisfy:
+`rules.json` holds the contract plus the categorized rule set. Each rule is a
+`{ rule_id, question, applies_if, severity }` — the `question` text is sent to
+the model:
 
 ```json
-[
-  { "id": "no_secrets", "check": "The diff contains no API keys, tokens, or credentials." }
-]
+{
+  "contract": { "rules": ["Compliant: ...", "Violation: ...", "N/A: ..."] },
+  "categories": [
+    {
+      "name": "security",
+      "rules": [
+        {
+          "rule_id": "SEC-31",
+          "question": "Are no hardcoded secrets or credentials present in the diff?",
+          "applies_if": "The diff adds or moves credential-like literals",
+          "severity": "blocker"
+        }
+      ]
+    }
+  ]
+}
 ```
 
-## Boilerplate scripts
+## Architecture
 
-| Command             | What it does                                        |
-| ------------------- | --------------------------------------------------- |
-| `npm run review`    | Run the PR review (see above)                       |
-| `npm run dev`       | Watch mode (`tsx watch`)                            |
-| `npm run build`     | Compile `src/` → `dist/` (`tsc`)                    |
-| `npm start`         | Run compiled CLI from `dist/`                       |
-| `npm run lint`      | Lint + format check (`biome check .`)               |
-| `npm run lint:fix`  | Lint + format + organize imports (write mode)       |
-| `npm run typecheck` | Type check only                                     |
-| `npm run release`   | Conventional release: bump + CHANGELOG + git tag + push |
-
-## Commits
-
-Commits follow [Conventional Commits](https://www.conventionalcommits.org) —
-enforced by commitlint on `commit-msg`. Format: `type(scope): message`
-(e.g. `feat(api): add review endpoint`).
-
-On `pre-commit`, lint-staged runs Biome (lint + format) on staged files.
-Fixable issues are fixed and re-staged; unfixable ones block the commit.
-
-## Release
-
-```sh
-npm run release            # interactive patch/minor/major picker
-npm run release -- minor   # direct bump
-npm run release -- --dry-run
+```
+skills/<name>/SKILL.md     canonical agent workflows (review-pr, review-free, review-loop)
+commands/<name>.md          thin command adapters
+src/engine.ts               review workflow (pure domain, no drivers)
+src/judge.ts                TypeSafe adapter implementing the Judge port
+src/types.ts                domain contracts (Result, ReviewInput/Output, ChoiceSpec)
+src/diff.ts                 chunking + hunk annotation
+src/rules.ts                boundary parser for rules.json
+src/index.ts                CLI shell (gh + text report)
+src/mcp/server.ts           MCP stdio server (thin handler)
+dist/server.js              committed bundle — what consumers run, no build needed
 ```
 
-Bumps are derived from commits (`feat:` → minor, `fix:` → patch, `BREAKING CHANGE` → major),
-CHANGELOG.md is updated, then commit + tag `vX.Y.Z` + push.
-# jev-flash-review
+The domain never imports a concrete driver: the engine takes a `Judge` port,
+implemented by `TypeSafeJudge`. Swap the adapter and the workflow is unchanged —
+including a future remote transport.
+
+## Scripts
+
+| Command | What it does |
+|---|---|
+| `npm run review -- <pr>` | One-shot PR review |
+| `npm test` | Unit tests + skills portability tests |
+| `npm run bundle` | Rebuild `dist/server.js` (run after touching `src/` or `rules.json`) |
+| `npm run dev` | Watch mode (`tsx watch`) |
+| `npm run build` | Compile `src/` → `dist/` (`tsc`) |
+| `npm run typecheck` | Type check only |
+| `npm run lint` / `lint:fix` | Biome check (write mode for fix) |
+| `npm run release` | Conventional release: bump + CHANGELOG + manifests sync + git tag + push |
+
+## Commits and releases
+
+Conventional Commits (commitlint enforced). `npm run release` bumps
+`package.json`, syncs the version into every provider manifest
+(`scripts/sync-manifests.cjs`, tested by the portability suite), updates
+CHANGELOG.md, then commits + tags + pushes. CI runs typecheck and tests on
+push and PRs.
+
+## Privacy
+
+The engine process holds `TYPESAFE_API_KEY` in memory and sends it only in the
+TLS Authorization header to `https://api.typesafe.ai`. Only the `diff`,
+`title`, `description` and `taskContext` you supply per call leave the machine.
+Never send secrets, `.env` files, vendored code, or lockfiles.
