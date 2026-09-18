@@ -438,6 +438,12 @@
           "question": "Does serialization refrain from exposing internal or sensitive fields?",
           "applies_if": "Serializing objects outward",
           "severity": "high"
+        },
+        {
+          "rule_id": "BND-17",
+          "question": "Is JavaScript type coercion handled at trust boundaries?",
+          "applies_if": "Reading query, body, or params in JavaScript or TypeScript",
+          "severity": "high"
         }
       ]
     },
@@ -843,6 +849,18 @@
           "rule_id": "IDEMP-08",
           "question": "Is a reconciliation procedure available?",
           "applies_if": "Financial transactions or asynchronous state management",
+          "severity": "high"
+        },
+        {
+          "rule_id": "ERR-23",
+          "question": "Are untrusted values neutralized before logging?",
+          "applies_if": "Logging external input",
+          "severity": "medium"
+        },
+        {
+          "rule_id": "ERR-24",
+          "question": "Are data migrations backward-compatible, reversible, and free of destructive loss?",
+          "applies_if": "Schema or data migrations",
           "severity": "high"
         }
       ]
@@ -1311,6 +1329,72 @@
           "question": "Does the change refrain from weakening existing input validation, allowlists, or security checks?",
           "applies_if": "Modifying validation logic, regexes, allowlists, or guard conditions",
           "severity": "high"
+        },
+        {
+          "rule_id": "SEC-78",
+          "question": "Is untrusted content prevented from executing as code in rendered output?",
+          "applies_if": "Rendering user-controlled data as HTML, SVG, or URLs",
+          "severity": "blocker"
+        },
+        {
+          "rule_id": "SEC-79",
+          "question": "Do NoSQL queries refrain from passing untrusted input as operators or expressions?",
+          "applies_if": "Building document-store queries from external input",
+          "severity": "blocker"
+        },
+        {
+          "rule_id": "SEC-80",
+          "question": "Do deep merges and dynamic key assignments filter __proto__, constructor, and prototype?",
+          "applies_if": "Merging external objects or assigning dynamic keys",
+          "severity": "blocker"
+        },
+        {
+          "rule_id": "SEC-81",
+          "question": "Do password hashes use a memory-hard function with an appropriate work factor?",
+          "applies_if": "Hashing passwords or secrets",
+          "severity": "high"
+        },
+        {
+          "rule_id": "SEC-82",
+          "question": "Do authentication failures return indistinguishable responses for unknown users and wrong credentials?",
+          "applies_if": "Login, password reset, or account recovery flows",
+          "severity": "medium"
+        },
+        {
+          "rule_id": "SEC-83",
+          "question": "Do sessions enforce absolute and idle expiration, and rotate on authentication changes?",
+          "applies_if": "Session management, login, or privilege changes",
+          "severity": "high"
+        },
+        {
+          "rule_id": "SEC-84",
+          "question": "Are password-reset tokens random, single-use, and short-lived?",
+          "applies_if": "Password reset or account recovery flows",
+          "severity": "high"
+        },
+        {
+          "rule_id": "SEC-85",
+          "question": "Are API keys stored hashed, scoped, and rotatable?",
+          "applies_if": "Issuing or storing API keys",
+          "severity": "high"
+        },
+        {
+          "rule_id": "SEC-86",
+          "question": "Are secret credentials kept out of client-side bundles?",
+          "applies_if": "Frontend code, mobile clients, or edge functions",
+          "severity": "blocker"
+        },
+        {
+          "rule_id": "SEC-87",
+          "question": "Is full payment-card PAN never stored, logged, or persisted?",
+          "applies_if": "Handling payment card data",
+          "severity": "blocker"
+        },
+        {
+          "rule_id": "SEC-88",
+          "question": "Are monetary amounts and prices sourced server-side rather than trusted from the client?",
+          "applies_if": "Checkout, pricing, discounts, or refunds",
+          "severity": "blocker"
         }
       ]
     },
@@ -1424,6 +1508,12 @@
           "question": "Are content type and charset headers explicit and correct?",
           "applies_if": "Content-Type headers in HTTP requests/responses",
           "severity": "medium"
+        },
+        {
+          "rule_id": "API-19",
+          "question": "Do GraphQL endpoints bound query depth and complexity, and hide introspection in production?",
+          "applies_if": "GraphQL servers",
+          "severity": "high"
         }
       ]
     },
@@ -2092,6 +2182,12 @@
           "question": "Are security vulnerability alerts monitored for project dependencies?",
           "applies_if": "Dependabot, Snyk, or Renovate tool usage",
           "severity": "medium"
+        },
+        {
+          "rule_id": "SUP-37",
+          "question": "Do workflow scripts refrain from interpolating untrusted contexts?",
+          "applies_if": "GitHub Actions workflows",
+          "severity": "high"
         }
       ]
     },
@@ -2312,6 +2408,35 @@
           "question": "Was the final code output validated directly against the initial functional contract?",
           "applies_if": "AI-generated code",
           "severity": "blocker"
+        }
+      ]
+    },
+    {
+      "name": "LLM-powered application security",
+      "rules": [
+        {
+          "rule_id": "LLM-01",
+          "question": "Is model output validated and encoded before reaching executors, queries, or renderers?",
+          "applies_if": "Passing language-model completions downstream",
+          "severity": "blocker"
+        },
+        {
+          "rule_id": "LLM-02",
+          "question": "Do AI agents require human approval for destructive, irreversible, or privileged actions?",
+          "applies_if": "Agentic tool use",
+          "severity": "high"
+        },
+        {
+          "rule_id": "LLM-03",
+          "question": "Do agent loops enforce iteration, time, and cost limits?",
+          "applies_if": "Autonomous agent loops",
+          "severity": "medium"
+        },
+        {
+          "rule_id": "LLM-04",
+          "question": "Are retrieval sources tenant-isolated, with untrusted content segregated from instructions?",
+          "applies_if": "Retrieval-augmented generation pipelines",
+          "severity": "high"
         }
       ]
     },
