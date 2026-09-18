@@ -116,7 +116,7 @@ test('provider manifests declare aligned versions', () => {
   for (const manifest of [claude, codex, cursor, portable]) {
     assert.equal(manifest.version, pkg.version, `${manifest.name} version must match package.json`);
   }
-  const serverSource = fs.readFileSync(path.join(root, 'src', 'mcp', 'server.ts'), 'utf8');
+  const serverSource = fs.readFileSync(path.join(root, 'src', 'mcp', 'reviewServer.ts'), 'utf8');
   assert.match(
     serverSource,
     new RegExp(`new McpServer\\(\\{ name: 'jev-flash-review', version: '${pkg.version}' \\}\\)`),

@@ -8,8 +8,11 @@ import type { ChoiceSpec, Judge, JudgeAnswers, PrState, TokenUsage } from './typ
 export class TypeSafeJudge implements Judge {
   private readonly client: TypeSafeClient;
 
-  constructor(timeoutMs = 60_000) {
-    this.client = new TypeSafeClient({ timeout: timeoutMs });
+  constructor(options?: { timeoutMs?: number; apiKey?: string }) {
+    this.client = new TypeSafeClient({
+      timeout: options?.timeoutMs ?? 60_000,
+      ...(options?.apiKey ? { apiKey: options.apiKey } : {}),
+    });
   }
 
   async ask(

@@ -56,7 +56,12 @@ and `gh` (authenticated) for the PR skill.
 ```sh
 npm install
 echo 'TYPESAFE_API_KEY=...' > .env   # gitignored, inherited by the engine process
+npm run bundle                        # builds dist/server.js (gitignored, local only)
 ```
+
+> Note: `dist/` is intentionally not committed. After cloning, run
+> `npm run bundle` once (and again after pulling engine changes) so the MCP
+> server the harnesses point at exists and is fresh.
 
 ## Installation per harness
 
@@ -115,6 +120,40 @@ opencode mcp add jev-flash-review --global -- node /absolute/path/to/jev-flash-r
 ```
 
 The tool appears as `jev-flash-review_review_diff`.
+
+## Remote engine (Cloudflare Worker)
+
+Same engine, same `review_diff` contract, reachable from anywhere without the
+Mac on. The Worker is stateless (one MCP instance per request, no sessions) —
+the skills work unchanged against it; only the client registration differs.
+
+```sh
+npm run deploy   # requires: wrangler login (once per machine)
+```
+
+Secrets (set once, never in the repo):
+
+```sh
+wrangler secret put TYPESAFE_API_KEY
+wrangler secret put REVIEW_BEARER   # any long random string, e.g. openssl rand -hex 32
+```
+
+Every request must carry `Authorization: Bearer <REVIEW_BEARER>`.
+
+```sh
+# Claude Code
+claude mcp add --transport http jev-flash-review https://jev-flash-review.<you>.workers.dev \
+  --header "Authorization: Bearer <REVIEW_BEARER>"
+
+# OpenCode — in opencode.json
+# "jev-flash-review": { "type": "remote",
+#   "url": "https://jev-flash-review.<you>.workers.dev",
+#   "headers": { "Authorization": "Bearer <REVIEW_BEARER>" } }
+```
+
+Notes: `dist/` stays local-only (see above) — the Worker bundles everything
+itself. Start on the free tier; the engine fans out parallel TypeSafe calls,
+so upgrade to paid if large reviews feel slow (subrequest concurrency).
 
 ## CLI usage
 

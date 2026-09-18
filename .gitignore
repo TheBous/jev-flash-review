@@ -1,6 +1,5 @@
 node_modules/
 dist/
-!dist/server.js
 coverage/
 *.log
 .DS_Store

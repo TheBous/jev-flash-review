@@ -17,7 +17,9 @@
     "prepare": "husky",
     "release": "release-it",
     "test": "node --import tsx --test src/*.test.ts && node --test tests/skills-portability.test.cjs",
-    "bundle": "esbuild src/mcp/server.ts --bundle --platform=node --format=esm --target=node24 --outfile=dist/server.js"
+    "bundle": "esbuild src/mcp/server.ts --bundle --platform=node --format=esm --target=node24 --outfile=dist/server.js",
+    "dev:worker": "wrangler dev",
+    "deploy": "wrangler deploy"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,cjs,mjs,json,jsonc,css}": [
@@ -34,7 +36,8 @@
     "lint-staged": "^17.5.1",
     "release-it": "^21.0.3",
     "tsx": "^4.23.13",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "wrangler": "^4.134.0"
   },
   "allowScripts": {
     "esbuild@0.28.2": true

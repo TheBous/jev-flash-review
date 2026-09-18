@@ -38,7 +38,7 @@ for (const relativePath of manifestPaths) {
   }
 }
 
-const serverFile = path.join(root, 'src', 'mcp', 'server.ts');
+const serverFile = path.join(root, 'src', 'mcp', 'reviewServer.ts');
 const serverSource = fs.readFileSync(serverFile, 'utf8');
 const synced = serverSource.replace(
   /new McpServer\(\{ name: '[^']+', version: '[^']+' \}\)/,
