@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/TheBous/review-blaster/compare/v0.3.0...v0.4.0) (2026-09-18)
+
+### Features
+
+* enhance adjudication process and reporting for violations ([4f7b5b9](https://github.com/TheBous/review-blaster/commit/4f7b5b9bdf717951629d62326957241db5509aaf))
+* update README to enhance clarity on functionality and usage of jev-flash-review ([f73bec5](https://github.com/TheBous/review-blaster/commit/f73bec546c88eac6800efb9d13e7ec6d9799ffa6))
+
 ## [0.3.0](https://github.com/TheBous/review-blaster/compare/v0.2.0...v0.3.0) (2026-09-18)
 
 ### Features

@@ -12,7 +12,7 @@ if (!rules.ok) {
   process.exit(1);
 }
 
-const server = new McpServer({ name: 'jev-flash-review', version: '0.3.0' });
+const server = new McpServer({ name: 'jev-flash-review', version: '0.4.0' });
 
 server.registerTool(
   'review_diff',
