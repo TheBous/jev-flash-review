@@ -68,6 +68,7 @@ function buildStates(
       part: `${i + 1} of ${chunks.length}`,
       diff: text,
     },
+    task_context: input.taskContext ?? '',
     answer_rules: config.contract.rules,
   }));
 }

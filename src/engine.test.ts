@@ -62,12 +62,17 @@ test('reviewDiff reports rule outcomes and locates evidence', async () => {
   const judge = fakeJudge((state, key, spec) => {
     if (isRuleQuestion(spec)) {
       assert.equal(state.pr.part, '1 of 1');
+      assert.equal(state.task_context, 'keep demo self-contained');
       return key === 'R1' ? NO(0.81) : YES(0.9);
     }
     return AT('hunk_001', 0.72);
   });
   const diff = ['diff --git a/src/a.ts b/src/a.ts', '@@ -1,1 +1,2 @@', '+new line'].join('\n');
-  const reviewed = await reviewDiff({ diff }, CONFIG.value, judge);
+  const reviewed = await reviewDiff(
+    { diff, taskContext: 'keep demo self-contained' },
+    CONFIG.value,
+    judge,
+  );
   assert.ok(reviewed.ok);
   assert.deepEqual(reviewed.value.summary, { total: 2, yes: 1, no: 1, na: 0, blockers: 1 });
   const [r1, r2] = reviewed.value.results;

@@ -25,6 +25,9 @@ it returns verdicts.**
 2. Call `review_diff` with:
    - `diff`: the full `gh pr diff` output
    - `title` / `description`: from the PR metadata
+   - `taskContext`: the business context of the change — what the feature/fix
+     is for, its boundaries and invariants. Take it from the user's request and
+     from any context they state; the PR body alone rarely carries the fence.
 
 3. Report to the user, in this order:
    - One-line verdict: clean, or N violations of which M blockers.

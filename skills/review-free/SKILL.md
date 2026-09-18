@@ -34,8 +34,11 @@ Pick the first case that matches:
 
 ## Steps
 
-1. Build the diff per above; set `title` to a one-line summary of what is
-   being reviewed and `description` to the user's request.
+1. Build the diff per above; set `title` to a one-line summary of what is being
+   reviewed and `description` to the user's request. Put the business context
+   in `taskContext`: purpose of the change, its boundaries (what is in and out
+   of scope), invariants it must respect. This is what lets the engine judge
+   business-logic fit, not just diff-level hygiene.
 2. Call `review_diff`.
 3. Report: verdict first, then blockers with evidence locations, then other
    violations by severity, then summary counts. `N/A` rules in one line.

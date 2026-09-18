@@ -29,11 +29,18 @@ server.registerTool(
         .describe('The unified diff to review (e.g. `gh pr diff`, `git diff HEAD` output)'),
       title: z.string().optional().describe('Title of the change under review'),
       description: z.string().optional().describe('Description of the change under review'),
+      taskContext: z
+        .string()
+        .optional()
+        .describe(
+          'Business context of the task/feature/fix: purpose, boundaries ("fence"), invariants. ' +
+            'Lets the engine judge whether the change fits the intended behavior, not just the diff itself.',
+        ),
     },
   },
-  async ({ diff, title, description }) => {
+  async ({ diff, title, description, taskContext }) => {
     const reviewed = await reviewDiff(
-      { diff, title, description },
+      { diff, title, description, taskContext },
       rules.value,
       new TypeSafeJudge(),
     );

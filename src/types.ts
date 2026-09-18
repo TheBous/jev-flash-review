@@ -20,6 +20,8 @@ export interface ReviewInput {
   diff: string;
   title?: string;
   description?: string;
+  /** Business context: what the task/feature/fix is for, its boundaries and invariants. */
+  taskContext?: string;
 }
 
 export type ReviewError = 'empty-diff';
@@ -65,6 +67,7 @@ export interface ChoiceSpec {
 /** State sent to the judge: the change under review plus the answer contract. */
 export interface PrState {
   pr: { title: string; description: string; part: string; diff: string };
+  task_context: string;
   answer_rules: string[];
 }
 

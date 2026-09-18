@@ -20,9 +20,11 @@ a re-run reports it clean.
 1. Collect the current state: `git diff HEAD`, plus each untracked file
    (`git ls-files --others --exclude-standard`) rendered as an all-additions
    diff. Always review the **current** state, never a stale diff.
-2. Call `review_diff` with `title` = a stable one-line task summary and
-   `description` = the user's requirements. Keep both identical across
-   iterations so results are comparable.
+2. Call `review_diff` with `title` = a stable one-line task summary,
+   `description` = a summary of the change, and `taskContext` = the user's
+   requirements plus the feature fence: business rules, boundaries, invariants
+   the change must respect. Keep all three identical across iterations so
+   results are comparable.
 3. If `summary.blockers === 0` and no new `high` violations appeared: stop, go
    to the final report.
 4. Fix, then loop:
