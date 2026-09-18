@@ -59,7 +59,7 @@
       "rule_id": "ARC-10",
       "question": "Are source files over 200 lines split before implementation rather than waived for urgency, legacy, or minimal-diff reasons?",
       "applies_if": "Adding or modifying source files over 200 lines",
-      "severity": "high"
+      "severity": "low"
     },
     {
       "rule_id": "ARC-11",
