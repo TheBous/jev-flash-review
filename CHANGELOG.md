@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.5.0](https://github.com/TheBous/review-blaster/compare/v0.4.0...v0.5.0) (2026-09-18)
+
+### Features
+
+* refactor MCP server to use a dedicated review server and add worker support ([cc5d66c](https://github.com/TheBous/review-blaster/commit/cc5d66c76aba44ad9fe3e5fab04d1d13067dcea2))
+
 ## [0.4.0](https://github.com/TheBous/review-blaster/compare/v0.3.0...v0.4.0) (2026-09-18)
 
 ### Features
