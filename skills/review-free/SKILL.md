@@ -52,23 +52,11 @@ Pick the first case that matches:
    line. Read findings from the `violations` array — it holds only confirmed
    findings; `results` is the full matrix including dropped ones.
 
-## Grouping a large review
-
-Default: one `review_diff` call with everything you built — the engine groups
-import/test-related files and stays inside its own budget.
-
-When you know relations the diff cannot show (aliases, barrels, modules that
-belong to one feature), partition the diff into coherent groups first and make
-one `review_diff` call per group, keeping `title`, `description`, and
-`taskContext` identical. Merge the verdicts when reporting. Coupled files
-never go into different groups — a contract rule needs both sides in the same
-call.
-
 ## Common mistakes
 
 - Sending secrets, `.env` files, vendored code, or lockfiles — never.
 - Sending whole-file dumps when the user asked about a module — diff the
   module's files, not the world.
-- Splitting a huge target by character count — split by coherent file groups
-  (see Grouping above) and merge results.
+- Splitting a huge target by character count — split by coherent slices (per
+  module) and merge results.
 - Treating a `NO` as a verdict — it is a finding with a probability.

@@ -43,14 +43,6 @@ and never present one as the engine's result.
      the engine's position before arguing with it.
    - Re-run the relevant validation (typecheck, tests), then go to step 1.
 
-## Big changes
-
-If the diff is large, split it into coherent file groups (imports, tests, and
-feature modules stay together) and make one `review_diff` call per group. Fix
-this grouping in the first iteration and keep it identical afterwards, like
-`title` and `description` — changing groups between iterations makes runs
-incomparable.
-
 ## Stopping
 
 Stop only when one of these holds:
@@ -83,7 +75,5 @@ severity and why they were left, final summary counts.
 - Sending a stale diff instead of the current state
 - Changing `title`/`description` between iterations, making results
   incomparable
-- Re-grouping the diff between iterations — groups are fixed in run 1 (see
-  Big changes)
 - Fixing rules in random order instead of blocker → high → medium
 - Adding speculative code, comments, or tests just to flip an answer
