@@ -46,3 +46,93 @@ test('annotateHunks survives a malformed hunk header', () => {
   const { hunks } = annotateHunks('@@ garbage');
   assert.deepEqual(hunks[0], { id: 'hunk_001', file: '', start: '?', count: '?', lines: [] });
 });
+
+// ~25k chars per file: two coupled files fit a chunk, three do not.
+const bigFile = (path: string, spec?: string) =>
+  [
+    `diff --git a/${path} b/${path}`,
+    `--- a/${path}`,
+    `+++ b/${path}`,
+    '@@ -1,0 +1,500 @@',
+    ...(spec ? [`+import x from '${spec}';`] : []),
+    ...Array.from({ length: 500 }, (_, i) => `+line ${i} ${'x'.repeat(40)}`),
+  ].join('\n');
+
+function chunkOf(chunks: string[], path: string): string {
+  const chunk = chunks.find((c) => c.includes(`b/${path}\n`));
+  assert.ok(chunk, `expected a chunk containing ${path}`);
+  return chunk;
+}
+
+test('chunkDiff reviews a file together with the file it imports', () => {
+  // Order interleaves the pairs so naive in-order packing would pair a/c and b/d.
+  const diff = [
+    bigFile('src/a.ts', './b'),
+    bigFile('src/c.ts', './d'),
+    bigFile('src/b.ts'),
+    bigFile('src/d.ts'),
+  ].join('\n');
+  const chunks = chunkDiff(diff);
+  assert.ok(chunks.length >= 2);
+  assert.equal(chunkOf(chunks, 'src/a.ts'), chunkOf(chunks, 'src/b.ts'));
+  assert.equal(chunkOf(chunks, 'src/c.ts'), chunkOf(chunks, 'src/d.ts'));
+});
+
+test('chunkDiff keeps a test file with its source file', () => {
+  const diff = [bigFile('src/foo.ts'), bigFile('src/other.ts'), bigFile('src/foo.test.ts')].join(
+    '\n',
+  );
+  const chunks = chunkDiff(diff);
+  assert.equal(chunkOf(chunks, 'src/foo.ts'), chunkOf(chunks, 'src/foo.test.ts'));
+});
+
+test('chunkDiff duplicates a hub file into each dependent review unit', () => {
+  const diff = [
+    bigFile('src/a.ts', './hub'),
+    bigFile('src/b.ts', './hub'),
+    bigFile('src/c.ts', './hub'),
+    bigFile('src/hub.ts'),
+  ].join('\n');
+  const chunks = chunkDiff(diff);
+  const hubChunks = chunks.filter((c) => c.includes('b/src/hub.ts\n')).length;
+  assert.ok(hubChunks >= 3, `expected hub duplicated across units, found ${hubChunks}`);
+});
+
+test('chunkDiff packs unrelated files together', () => {
+  const diff = [bigFile('src/a.ts'), bigFile('src/b.ts'), bigFile('src/c.ts')].join('\n');
+  const chunks = chunkDiff(diff);
+  assert.equal(chunks.length, 2);
+  const paths = chunks.map((c) =>
+    ['src/a.ts', 'src/b.ts', 'src/c.ts'].filter((p) => c.includes(`b/${p}\n`)),
+  );
+  assert.equal(paths.flat().length, 3, 'every file appears in exactly one chunk');
+});
+
+test('chunkDiff ignores imports of files outside the diff', () => {
+  const diff = [bigFile('src/a.ts', './missing'), bigFile('src/b.ts'), bigFile('src/c.ts')].join(
+    '\n',
+  );
+  const chunks = chunkDiff(diff);
+  assert.equal(chunks.length, 2);
+  const paths = chunks.map((c) =>
+    ['src/a.ts', 'src/b.ts', 'src/c.ts'].filter((p) => c.includes(`b/${p}\n`)),
+  );
+  assert.equal(paths.flat().length, 3, 'every file appears in exactly one chunk');
+});
+
+test('chunkDiff splits an oversized single file by lines', () => {
+  const path = 'src/huge.ts';
+  const lines = 2_000;
+  const diff = [
+    `diff --git a/${path} b/${path}`,
+    `--- a/${path}`,
+    `+++ b/${path}`,
+    `@@ -1,0 +1,${lines} @@`,
+    ...Array.from({ length: lines }, (_, i) => `+line ${i} ${'x'.repeat(40)}`),
+  ].join('\n');
+  const chunks = chunkDiff(diff);
+  assert.ok(chunks.length > 1, 'expected the file to be split');
+  assert.ok(chunks.every((c) => c.length <= 60_000 + 40));
+  const totalLines = chunks.flatMap((c) => c.split('\n')).length;
+  assert.equal(totalLines, lines + 4);
+});

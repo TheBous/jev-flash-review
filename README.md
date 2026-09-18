@@ -16,11 +16,14 @@ agent curates input → review_diff tool → structured JSON → agent acts
 1. **The agent builds the input**: a unified diff plus `taskContext` — the
    business purpose, boundaries ("fence") and invariants of the task. The diff
    alone judges hygiene; the fence lets the engine judge business-logic fit.
-2. **The engine evaluates every rule in `src/rules/`**: the diff is chunked,
-   each rule becomes a typed Choice question (`YES` / `NO` / `N/A` with
-   `applies_if`), questions are batched per (chunk × rule set) and run in
+2. **The engine evaluates every rule in `src/rules/`**: the diff is chunked —
+   each file is reviewed together with its direct neighbors (files it imports
+   or that import it, plus its test pair) so coupled changes are judged in the
+   same call — each rule becomes a typed Choice question (`YES` / `NO` / `N/A`
+   with `applies_if`), questions are batched per (chunk × rule set) and run in
    parallel.
-3. **Merge**: a rule takes its most severe outcome across chunks.
+3. **Merge**: a rule takes its most severe outcome across chunks (a file that
+   appears in several units is judged once per unit; worst wins).
 4. **Evidence**: for each violation, a second Choice over the diff's hunk
    markers ("select instead of generate") — the engine picks the location,
    the code prints `file:line`. Violations with no hunk are reported as
