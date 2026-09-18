@@ -39,11 +39,31 @@ export interface RuleOutcome {
   probability: number;
   confidence: number;
   evidence: EvidenceHit[];
+  /** Impact rated against the selected evidence; null unless a confirmed violation. */
+  impact: ImpactLevel | null;
+  impactConfidence: number | null;
+}
+
+export type ImpactLevel = 'none' | 'minor' | 'significant' | 'critical';
+
+/** Working outcome inside the workflow: carries the worst chunk for evidence. */
+export interface Outcome extends RuleOutcome {
+  worstChunkIndex: number;
 }
 
 export interface ReviewOutput {
+  /** Full matrix: every rule outcome, including dropped violations. */
   results: RuleOutcome[];
-  summary: { total: number; yes: number; no: number; na: number; blockers: number };
+  /** Confirmed findings only: NO outcomes that survived the evidence gates. */
+  violations: RuleOutcome[];
+  summary: {
+    total: number;
+    yes: number;
+    no: number;
+    na: number;
+    blockers: number;
+    dropped: number;
+  };
   chunks: number;
   usage: { inputTokens: number; outputTokens: number };
 }

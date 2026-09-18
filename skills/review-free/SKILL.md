@@ -47,8 +47,10 @@ Pick the first case that matches:
    of scope), invariants it must respect. This is what lets the engine judge
    business-logic fit, not just diff-level hygiene.
 2. Call `review_diff`.
-3. Report: verdict first, then blockers with evidence locations, then other
-   violations by severity, then summary counts. `N/A` rules in one line.
+3. Report: verdict first, then blockers with evidence locations and impact,
+   then other violations by severity, then summary counts. `N/A` rules in one
+   line. Read findings from the `violations` array — it holds only confirmed
+   findings; `results` is the full matrix including dropped ones.
 
 ## Common mistakes
 

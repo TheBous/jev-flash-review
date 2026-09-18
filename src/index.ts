@@ -57,14 +57,16 @@ function formatReport(output: ReviewOutput, meta: PrMeta): string {
         `(p ${result.probability.toFixed(2)}, conf ${result.confidence.toFixed(2)})`,
     );
   }
-  const violations = output.results.filter((result) => result.answer === 'NO');
+  const violations = output.violations;
   for (const severity of ['blocker', 'high', 'medium', 'low', 'info', 'advisory']) {
     const bucket = violations.filter((result) => result.severity === severity);
     if (bucket.length === 0) continue;
     lines.push('');
     lines.push(severity.toUpperCase());
     for (const result of bucket) {
-      lines.push(`  - [${result.rule_id}] ${result.question}`);
+      lines.push(
+        `  - [${result.rule_id}] ${result.question} (impact: ${result.impact ?? 'unrated'})`,
+      );
       for (const e of result.evidence) {
         lines.push(`      ↳ ${e.location} (p ${e.probability.toFixed(2)})`);
       }
@@ -78,7 +80,7 @@ function formatReport(output: ReviewOutput, meta: PrMeta): string {
   lines.push('');
   lines.push(
     `${output.summary.total} rules checked: ${output.summary.yes} yes, ` +
-      `${output.summary.no} no, ${output.summary.na} n/a`,
+      `${output.summary.no} no, ${output.summary.na} n/a, ${output.summary.dropped} dropped (weak or unsupported evidence)`,
   );
   lines.push(
     `Usage: ${output.usage.inputTokens} input / ${output.usage.outputTokens} output tokens`,
@@ -115,11 +117,7 @@ async function main(): Promise<number> {
     return 2;
   }
   console.log(formatReport(reviewed.value, meta.value));
-  return reviewed.value.results.some(
-    (result) => result.answer === 'NO' && FAIL_SEVERITIES.has(result.severity),
-  )
-    ? 1
-    : 0;
+  return reviewed.value.violations.some((result) => FAIL_SEVERITIES.has(result.severity)) ? 1 : 0;
 }
 
 main()

@@ -33,7 +33,8 @@ and never present one as the engine's result.
    the change must respect. Keep all three identical across iterations so
    results are comparable.
 3. If `summary.blockers === 0` and no new `high` violations appeared: stop, go
-   to the final report.
+   to the final report. Count only the `violations` array — confirmed findings.
+   Dropped rules (weak or unsupported evidence) are not blockers.
 4. Fix, then loop:
    - Address `NO` rules in blocker → high → medium order, using each rule's
      `question` and `evidence` locations to find the code.

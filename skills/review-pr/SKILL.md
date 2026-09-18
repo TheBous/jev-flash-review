@@ -39,8 +39,12 @@ and never present one as the engine's result.
 3. Report to the user, in this order:
    - One-line verdict: clean, or N violations of which M blockers.
    - Blockers, then high/medium/low: for each violation
-     `[rule_id] question` plus its evidence locations (`file:line`).
-   - Summary counts (`total / yes / no / n/a`) and token usage.
+     `[rule_id] question` plus its evidence locations (`file:line`) and impact.
+   - Summary counts (`total / yes / no / n/a / dropped`) and token usage.
+
+   Read findings from the `violations` array — it holds only confirmed
+   findings. `results` is the full matrix including dropped ones; never report
+   dropped rules as violations.
 
 ## Common mistakes
 

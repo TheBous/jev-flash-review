@@ -1,11 +1,14 @@
 // Review workflow: chunk the diff, ask the Judge port about every rule, merge
-// the worst outcome per rule across chunks, then locate evidence for violations.
+// the worst outcome per rule across chunks, then hand violations to findings
+// for evidence location and adjudication.
 // No driver imports here — effects cross the Judge port.
-import { annotateHunks, chunkDiff, type Hunk } from './diff.js';
+import { adjudicateViolations } from './adjudicate.js';
+import { annotateHunks, chunkDiff } from './diff.js';
+import { locateEvidence } from './evidence.js';
 import type {
   ChoiceSpec,
-  EvidenceHit,
   Judge,
+  Outcome,
   PrState,
   Result,
   ReviewError,
@@ -18,9 +21,6 @@ import type {
 
 // ~100 tokens per rule question; keep batches well inside the request budget
 const RULES_PER_CALL = 80;
-// evidence questions carry every hunk of the chunk as options (~25 tokens each);
-// 8 × 60 hunks × 25t ≈ 12k on top of the chunk state stays inside the budget
-const EVIDENCE_PER_CALL = 8;
 
 const ANSWER_CRITERIA = {
   YES: 'Compliant: the PR satisfies the rule.',
@@ -28,18 +28,8 @@ const ANSWER_CRITERIA = {
   'N/A': 'The rule does not apply to this change given the applicability condition.',
 } as const;
 
-const ABSENT =
-  'The violation is not tied to one hunk: it is an absence (missing tests, docs, config, handling) or a PR-level issue.';
-
-const EVIDENCE_INSTRUCTION =
-  'Which `[hunk_*]` marker in `pr.diff` marks the primary evidence of this violation? Choose `absent` when the violation is not tied to a specific hunk.';
-
 const ANSWER_RANK = { NO: 0, 'N/A': 1, YES: 2 } as const;
 type AnswerLabel = keyof typeof ANSWER_RANK;
-
-interface Outcome extends RuleOutcome {
-  worstChunkIndex: number;
-}
 
 function sanitize(id: string): string {
   return id.replace(/[^a-zA-Z0-9_]/g, '_');
@@ -135,6 +125,8 @@ export async function reviewDiff(
       probability: worst.probabilities[worst.choice] ?? 0,
       confidence: worst.confidence,
       evidence: [],
+      impact: null,
+      impactConfidence: null,
       worstChunkIndex: worstIndex,
     };
   });
@@ -143,23 +135,27 @@ export async function reviewDiff(
     .flat()
     .map((r) => r.usage)
     .reduce(sumUsage, { inputTokens: 0, outputTokens: 0 });
-  const evidenceUsage = await locateEvidence(outcomes, rules, chunks, states, judge);
-  usage.inputTokens += evidenceUsage.inputTokens;
-  usage.outputTokens += evidenceUsage.outputTokens;
+  const questions = new Map(rules.map((rule) => [rule.rule_id, rule.question]));
+  const located = await locateEvidence(outcomes, questions, chunks, states, judge);
+  sumUsage(usage, located);
+  const adjudicated = await adjudicateViolations(outcomes, states, judge);
+  sumUsage(usage, adjudicated.usage);
 
-  const violations = outcomes.filter((outcome) => outcome.answer === 'NO');
+  const violations = adjudicated.violations;
   const na = outcomes.filter((outcome) => outcome.answer === 'N/A').length;
-  const yes = outcomes.length - violations.length - na;
+  const yes = outcomes.length - violations.length - adjudicated.dropped - na;
   return {
     ok: true,
     value: {
-      results: outcomes.map(({ worstChunkIndex, ...outcome }) => outcome),
+      results: outcomes.map(toPublic),
+      violations: violations.map(toPublic),
       summary: {
         total: outcomes.length,
         yes,
         no: violations.length,
         na,
         blockers: violations.filter((outcome) => outcome.severity === 'blocker').length,
+        dropped: adjudicated.dropped,
       },
       chunks: chunks.length,
       usage,
@@ -173,82 +169,6 @@ function sumUsage(total: TokenUsage, usage: TokenUsage): TokenUsage {
   return total;
 }
 
-// Evidence pass: for each violation, one Choice over the hunks of its worst chunk
-// ("select instead of generate" — the judge picks the location, code prints file:line).
-async function locateEvidence(
-  outcomes: Outcome[],
-  rules: RuleConfig['categories'][number]['rules'],
-  chunks: { hunks: Hunk[] }[],
-  states: PrState[],
-  judge: Judge,
-): Promise<TokenUsage> {
-  const violationByChunk = new Map<number, Outcome[]>();
-  for (const outcome of outcomes.filter((outcome) => outcome.answer === 'NO')) {
-    const list = violationByChunk.get(outcome.worstChunkIndex) ?? [];
-    list.push(outcome);
-    violationByChunk.set(outcome.worstChunkIndex, list);
-  }
-
-  const calls: { violations: Outcome[]; promise: ReturnType<Judge['ask']> }[] = [];
-  for (const [chunkIndex, list] of violationByChunk) {
-    const chunk = chunks[chunkIndex];
-    const state = states[chunkIndex];
-    if (!chunk || chunk.hunks.length === 0 || !state) continue;
-    const options: Record<string, string> = Object.fromEntries(
-      chunk.hunks.map((h) => [h.id, `${h.file}:${h.start} (${h.count} changed-line block)`]),
-    );
-    options.absent = ABSENT;
-    for (let i = 0; i < list.length; i += EVIDENCE_PER_CALL) {
-      const batch = list.slice(i, i + EVIDENCE_PER_CALL);
-      calls.push({
-        violations: batch,
-        promise: judge.ask(
-          state,
-          Object.fromEntries(
-            batch.map((violation) => [
-              sanitize(violation.rule_id),
-              {
-                input: {
-                  violation:
-                    rules.find((rule) => rule.rule_id === violation.rule_id)?.question ?? '',
-                  instruction: EVIDENCE_INSTRUCTION,
-                },
-                options,
-              } satisfies ChoiceSpec,
-            ]),
-          ),
-        ),
-      });
-    }
-  }
-
-  const usage: TokenUsage = { inputTokens: 0, outputTokens: 0 };
-  for (const { violations, promise } of calls) {
-    const { answers, usage: callUsage } = await promise;
-    usage.inputTokens += callUsage.inputTokens;
-    usage.outputTokens += callUsage.outputTokens;
-    for (const violation of violations) {
-      violation.evidence = topEvidence(
-        need(answers, sanitize(violation.rule_id)).probabilities,
-        chunks[violation.worstChunkIndex]?.hunks ?? [],
-      );
-    }
-  }
-  return usage;
-}
-
-function topEvidence(probabilities: Record<string, number>, hunks: Hunk[]): EvidenceHit[] {
-  return Object.entries(probabilities)
-    .sort((a, b) => b[1] - a[1])
-    .filter(([, p]) => p >= 0.05)
-    .slice(0, 2)
-    .map(([label, p]) => {
-      const hunk = hunks.find((h) => h.id === label);
-      return {
-        location: hunk
-          ? `${hunk.file}:${hunk.start} (+${hunk.count} lines)`
-          : 'absence / PR-level (not tied to a hunk)',
-        probability: p,
-      };
-    });
+function toPublic({ worstChunkIndex, ...outcome }: Outcome): RuleOutcome {
+  return outcome;
 }

@@ -73,6 +73,11 @@ for (const name of skillNames) {
       /never present one as the engine's result/,
       'skills must forbid substituting a manual review when the engine is missing',
     );
+    assert.match(
+      body,
+      /`violations` array/,
+      'skills must read confirmed findings from the violations array, not raw results',
+    );
     assert.doesNotMatch(body, /CLAUDE_PLUGIN_ROOT/, 'canonical skills must stay provider-neutral');
   });
 }

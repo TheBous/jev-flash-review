@@ -25,9 +25,16 @@ agent curates input → review_diff tool → structured JSON → agent acts
    markers ("select instead of generate") — the engine picks the location,
    the code prints `file:line`. Violations with no hunk are reported as
    `absence` (missing tests, docs, handling) or PR-level issues.
-5. **Output** (JSON): one outcome per rule — answer, probability, confidence,
-   severity, question text, evidence locations — plus summary (`total / yes /
-   no / n/a / blockers`), chunk count and token usage.
+5. **Adjudication**: weak locations (top confidence < 0.55) are dropped, not
+   reported. Survivors pass a confirm Choice ("does this location actually
+   show the violation?") — `unsupported` kills them. Confirmed violations get
+   an impact rating (`none` / `minor` / `significant` / `critical`) scored
+   against the selected evidence.
+6. **Output** (JSON): `results` holds the full matrix (every rule, including
+   dropped ones); `violations` holds confirmed findings only. Each outcome
+   carries answer, probability, confidence, severity, question text, evidence
+   locations and impact. Summary: `total / yes / no / n/a / blockers /
+   dropped`, plus chunk count and token usage.
 
 ## The skills
 
@@ -150,7 +157,9 @@ the model:
 ```
 skills/<name>/SKILL.md     canonical agent workflows (review-pr, review-free, review-loop)
 commands/<name>.md          thin command adapters
-src/engine.ts               review workflow (pure domain, no drivers)
+src/engine.ts               review workflow: chunk, ask, merge (pure domain, no drivers)
+src/evidence.ts             evidence location over hunk markers
+src/adjudicate.ts           confidence gate, noIssue-style confirm, impact rating
 src/judge.ts                TypeSafe adapter implementing the Judge port
 src/types.ts                domain contracts (Result, ReviewInput/Output, ChoiceSpec)
 src/diff.ts                 chunking + hunk annotation
