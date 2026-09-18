@@ -1,8 +1,7 @@
-// Diff parsing: splits a raw unified diff into review chunks inside the request
-// budget. Each review unit is one file plus its direct neighbors — changed
-// files it imports or that import it, and its test/source pair — so a rule
-// judging a contract sees both sides. Units are duplicated per relationship
-// and the worst-across-chunks merge in the engine makes duplicates safe.
+// Diff parsing: splits a raw unified diff into file-sized review chunks inside
+// the request budget. Related files (imports either way, test pairs) are NOT
+// duplicated into every chunk — the engine's pull pass fetches them on demand
+// via extraContext when a judgment comes back borderline.
 // Hunks are marked so the judge can point at evidence by id instead of
 // generating text.
 export interface Hunk {
@@ -33,7 +32,7 @@ interface FileUnit {
 
 export function chunkDiff(diff: string): string[] {
   if (diff.length <= CHUNK_CHARS) return [diff];
-  return packUnits(egoUnits(splitFileUnits(diff)));
+  return packUnits(splitFileUnits(diff));
 }
 
 function splitFileUnits(diff: string): FileUnit[] {
@@ -113,68 +112,70 @@ function dirOf(path: string): string {
   return cut === -1 ? '' : path.slice(0, cut);
 }
 
-// ponytail: one-hop adjacency, neighbors capped — a hub imported everywhere
-// would otherwise be duplicated into every dependent unit. Raise NEIGHBOR_CAP
-// if cross-file findings seem to miss context.
-const NEIGHBOR_CAP = 2;
-
-function egoUnits(units: FileUnit[]): FileUnit[][] {
-  const specs = units.map((u) => (u.path ? importSpecs(u) : []));
-  const dirs = units.map((u) => dirOf(u.path));
-  const neighbors = (i: number, j: number): boolean => {
-    const a = units[i];
-    const b = units[j];
-    const sa = specs[i];
-    const sb = specs[j];
-    const da = dirs[i];
-    const db = dirs[j];
-    if (i === j || !a || !b || !sa || !sb || !da || !db || !a.path || !b.path) return false;
+/**
+ * Files of the diff related to (but missing from) a chunk: its imports,
+ * its importers, its test pair — in diff order, until the budget is full.
+ * Empty when the chunk already carries everything (e.g. single-chunk diffs),
+ * so the pull pass costs nothing where there is nothing new to see.
+ */
+export function extraContext(diff: string, chunk: string, budget = CHUNK_CHARS): string {
+  const all = splitFileUnits(diff).filter((u) => u.path);
+  const chunkPaths = new Set(
+    [...chunk.matchAll(/^diff --git a\/(.+) b\/(.+)$/gm)].map((m) => m[2] ?? ''),
+  );
+  const meta = new Map(all.map((u) => [u, { specs: importSpecs(u), dir: dirOf(u.path) }]));
+  const related = (a: FileUnit, b: FileUnit): boolean => {
+    if (a === b) return false;
     if (testPaired(a.path, b.path)) return true;
+    const ma = meta.get(a);
+    const mb = meta.get(b);
     return (
-      sa.some((spec) => matchesPath(resolveSpec(spec, da), b.path)) ||
-      sb.some((spec) => matchesPath(resolveSpec(spec, db), a.path))
+      !!ma &&
+      !!mb &&
+      (ma.specs.some((s) => matchesPath(resolveSpec(s, ma.dir), b.path)) ||
+        mb.specs.some((s) => matchesPath(resolveSpec(s, mb.dir), a.path)))
     );
   };
-  const used = new Map<FileUnit, number>();
-  return units.map((center, i) => {
-    const group = [center];
-    for (const [j, other] of units.entries()) {
-      if (!neighbors(i, j)) continue;
-      const n = used.get(other) ?? 0;
-      if (n >= NEIGHBOR_CAP) continue;
-      used.set(other, n + 1);
-      group.push(other);
+  const chunkUnits = all.filter((u) => chunkPaths.has(u.path));
+  const missing = new Set(all.filter((u) => !chunkPaths.has(u.path)));
+  const out: string[] = [];
+  let size = 0;
+  for (const unit of chunkUnits) {
+    for (const other of missing) {
+      if (!related(unit, other)) continue;
+      if (size + other.text.length + 1 > budget) continue;
+      missing.delete(other);
+      out.push(other.text);
+      size += other.text.length + 1;
     }
-    return group;
-  });
+  }
+  return out.join('\n');
 }
 
-/** Greedy packing under the budget; a file lands once per chunk. */
-function packUnits(groups: FileUnit[][]): string[] {
+/** Greedy packing of whole files under the budget; oversized files are line-split. */
+function packUnits(units: FileUnit[]): string[] {
   const chunks: string[] = [];
   let buf: FileUnit[] = [];
-  let seen = new Set<FileUnit>();
   let size = 0;
-  const expand = (u: FileUnit): FileUnit[] =>
-    u.text.length > CHUNK_CHARS ? lineSplit(u.text).map((text) => ({ path: u.path, text })) : [u];
-  for (const group of groups) {
-    for (const unit of group) {
-      for (const u of expand(unit)) {
-        if (seen.has(u)) continue;
-        seen.add(u);
-        if (buf.length > 0 && size + u.text.length + 1 > CHUNK_CHARS) {
-          chunks.push(buf.map((v) => v.text).join('\n'));
-          buf = [];
-          seen = new Set();
-          size = 0;
-        }
-        buf.push(u);
-        size += u.text.length + 1;
+  for (const unit of units) {
+    for (const u of expand(unit)) {
+      if (buf.length > 0 && size + u.text.length + 1 > CHUNK_CHARS) {
+        chunks.push(buf.map((v) => v.text).join('\n'));
+        buf = [];
+        size = 0;
       }
+      buf.push(u);
+      size += u.text.length + 1;
     }
   }
   if (buf.length > 0) chunks.push(buf.map((v) => v.text).join('\n'));
   return chunks;
+}
+
+function expand(unit: FileUnit): FileUnit[] {
+  return unit.text.length > CHUNK_CHARS
+    ? lineSplit(unit.text).map((text) => ({ path: unit.path, text }))
+    : [unit];
 }
 
 function lineSplit(text: string): string[] {

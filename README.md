@@ -16,24 +16,26 @@ agent curates input → review_diff tool → structured JSON → agent acts
 1. **The agent builds the input**: a unified diff plus `taskContext` — the
    business purpose, boundaries ("fence") and invariants of the task. The diff
    alone judges hygiene; the fence lets the engine judge business-logic fit.
-2. **The engine evaluates every rule in `src/rules/`**: the diff is chunked —
-   each file is reviewed together with its direct neighbors (files it imports
-   or that import it, plus its test pair) so coupled changes are judged in the
-   same call — each rule becomes a typed Choice question (`YES` / `NO` / `N/A`
+2. **The engine evaluates every rule in `src/rules/`**: the diff is chunked
+   into file-sized pieces (no duplication — every file is judged exactly
+   once); each rule becomes a typed Choice question (`YES` / `NO` / `N/A`
    with `applies_if`), questions are batched per (chunk × rule set) and run in
    parallel.
-3. **Merge**: a rule takes its most severe outcome across chunks (a file that
-   appears in several units is judged once per unit; worst wins).
-4. **Evidence**: for each violation, a second Choice over the diff's hunk
+3. **Pull pass**: a borderline judgment (probability in the 0.35–0.65 band) is
+   re-asked once with the related diff files appended (files it imports or
+   that import it, plus its test pair), so coupled rules are re-judged with
+   both sides in view — paid only where the first look was uncertain.
+4. **Merge**: a rule takes its most severe outcome across chunks (worst wins).
+5. **Evidence**: for each violation, a second Choice over the diff's hunk
    markers ("select instead of generate") — the engine picks the location,
    the code prints `file:line`. Violations with no hunk are reported as
    `absence` (missing tests, docs, handling) or PR-level issues.
-5. **Adjudication**: weak locations (top confidence < 0.55) are dropped, not
+6. **Adjudication**: weak locations (top confidence < 0.55) are dropped, not
    reported. Survivors pass a confirm Choice ("does this location actually
    show the violation?") — `unsupported` kills them. Confirmed violations get
    an impact rating (`none` / `minor` / `significant` / `critical`) scored
    against the selected evidence.
-6. **Output** (JSON): `results` holds the full matrix (every rule, including
+7. **Output** (JSON): `results` holds the full matrix (every rule, including
    dropped ones); `violations` holds confirmed findings only. Each outcome
    carries answer, probability, confidence, severity, question text, evidence
    locations and impact. Summary: `total / yes / no / n/a / blockers /

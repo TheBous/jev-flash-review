@@ -73,6 +73,72 @@ function kindOf(spec: ChoiceSpec): QuestionKind {
 
 const SMALL_DIFF = ['diff --git a/src/a.ts b/src/a.ts', '@@ -1,1 +1,2 @@', '+new line'].join('\n');
 
+// ~25k chars per file: two files fit a chunk, three do not.
+const bigFile = (path: string, spec?: string) =>
+  [
+    `diff --git a/${path} b/${path}`,
+    `--- a/${path}`,
+    `+++ b/${path}`,
+    '@@ -1,0 +1,500 @@',
+    ...(spec ? [`+import x from '${spec}';`] : []),
+    ...Array.from({ length: 500 }, (_, i) => `+line ${i} ${'x'.repeat(40)}`),
+  ].join('\n');
+
+test('reviewDiff re-asks borderline rules with the missing counterpart', async () => {
+  assert.ok(CONFIG.ok);
+  let ruleAsks = 0;
+  const ruleDiffs: string[] = [];
+  const diff = [bigFile('src/a.ts', './b'), bigFile('src/c.ts'), bigFile('src/b.ts')].join('\n');
+  const judge = fakeJudge((state, key, spec) => {
+    switch (kindOf(spec)) {
+      case 'rule':
+        ruleAsks += 1;
+        ruleDiffs.push(state.pr.diff);
+        if (state.pr.diff.includes('b/src/b.ts\n')) return key === 'R1' ? NO(0.9) : YES(0.95);
+        return key === 'R1' ? NO(0.5) : YES(0.95);
+      case 'evidence':
+        return AT('hunk_001', 0.72);
+      case 'confirm':
+        return SUPPORTED;
+      case 'impact':
+        return SIGNIFICANT;
+    }
+  });
+  const reviewed = await reviewDiff({ diff }, CONFIG.value, judge);
+  assert.ok(reviewed.ok);
+  assert.equal(ruleAsks, 5, 'pass 1 asks 2 chunks × 2 rules, the pull re-asks R1 only');
+  assert.ok(
+    ruleDiffs.some((d) => d.includes('b/src/a.ts\n') && d.includes('b/src/b.ts\n')),
+    'the pull state must carry both sides of the import',
+  );
+  const r1 = reviewed.value.violations.find((v) => v.rule_id === 'R1');
+  assert.ok(r1);
+  assert.equal(r1.probability, 0.9, 'the re-ask replaces the borderline answer');
+});
+
+test('reviewDiff skips the pull pass for confident answers', async () => {
+  assert.ok(CONFIG.ok);
+  let ruleAsks = 0;
+  const diff = [bigFile('src/a.ts', './b'), bigFile('src/c.ts'), bigFile('src/b.ts')].join('\n');
+  const judge = fakeJudge((_state, key, spec) => {
+    switch (kindOf(spec)) {
+      case 'rule':
+        ruleAsks += 1;
+        return key === 'R1' ? NO(0.81) : YES(0.9);
+      case 'evidence':
+        return AT('hunk_001', 0.72);
+      case 'confirm':
+        return SUPPORTED;
+      case 'impact':
+        return SIGNIFICANT;
+    }
+  });
+  const reviewed = await reviewDiff({ diff }, CONFIG.value, judge);
+  assert.ok(reviewed.ok);
+  assert.equal(ruleAsks, 4, 'pass 1 only: 2 chunks × 2 rules, no re-ask when confident');
+  assert.equal(reviewed.value.summary.no, 1);
+});
+
 test('reviewDiff rejects an empty diff', async () => {
   assert.ok(CONFIG.ok);
   const reviewed = await reviewDiff(

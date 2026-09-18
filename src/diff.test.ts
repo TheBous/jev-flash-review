@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { annotateHunks, chunkDiff } from './diff.js';
+import { annotateHunks, chunkDiff, extraContext } from './diff.js';
 
 const SMALL_DIFF = [
   'diff --git a/src/a.ts b/src/a.ts',
@@ -47,7 +47,7 @@ test('annotateHunks survives a malformed hunk header', () => {
   assert.deepEqual(hunks[0], { id: 'hunk_001', file: '', start: '?', count: '?', lines: [] });
 });
 
-// ~25k chars per file: two coupled files fit a chunk, three do not.
+// ~25k chars per file: two files fit a chunk, three do not.
 const bigFile = (path: string, spec?: string) =>
   [
     `diff --git a/${path} b/${path}`,
@@ -64,8 +64,7 @@ function chunkOf(chunks: string[], path: string): string {
   return chunk;
 }
 
-test('chunkDiff reviews a file together with the file it imports', () => {
-  // Order interleaves the pairs so naive in-order packing would pair a/c and b/d.
+test('chunkDiff keeps every file whole: no duplication across chunks', () => {
   const diff = [
     bigFile('src/a.ts', './b'),
     bigFile('src/c.ts', './d'),
@@ -73,42 +72,61 @@ test('chunkDiff reviews a file together with the file it imports', () => {
     bigFile('src/d.ts'),
   ].join('\n');
   const chunks = chunkDiff(diff);
-  assert.ok(chunks.length >= 2);
-  assert.equal(chunkOf(chunks, 'src/a.ts'), chunkOf(chunks, 'src/b.ts'));
-  assert.equal(chunkOf(chunks, 'src/c.ts'), chunkOf(chunks, 'src/d.ts'));
+  const fileHeaders = chunks.reduce((sum, c) => sum + [...c.matchAll(/^diff --git /gm)].length, 0);
+  assert.equal(fileHeaders, 4, 'every file appears exactly once');
 });
 
-test('chunkDiff keeps a test file with its source file', () => {
+test('extraContext pulls the file an import points at', () => {
+  const diff = [bigFile('src/a.ts', './b'), bigFile('src/c.ts'), bigFile('src/b.ts')].join('\n');
+  const chunks = chunkDiff(diff);
+  const extra = extraContext(diff, chunkOf(chunks, 'src/a.ts'));
+  assert.ok(extra.includes('b/src/b.ts\n'), 'b must be pulled next to a');
+  assert.ok(!extra.includes('b/src/c.ts\n'), 'unrelated files stay out');
+});
+
+test('extraContext keeps a test beside its source, both directions', () => {
   const diff = [bigFile('src/foo.ts'), bigFile('src/other.ts'), bigFile('src/foo.test.ts')].join(
     '\n',
   );
   const chunks = chunkDiff(diff);
-  assert.equal(chunkOf(chunks, 'src/foo.ts'), chunkOf(chunks, 'src/foo.test.ts'));
+  assert.ok(extraContext(diff, chunkOf(chunks, 'src/foo.ts')).includes('b/src/foo.test.ts\n'));
+  assert.ok(extraContext(diff, chunkOf(chunks, 'src/foo.test.ts')).includes('b/src/foo.ts\n'));
 });
 
-test('chunkDiff caps hub duplication across review units', () => {
+test('extraContext fills the budget with importers of a hub', () => {
   const dependents = ['a', 'b', 'c', 'd', 'e', 'f'].map((n) => bigFile(`src/${n}.ts`, './hub'));
   const diff = [...dependents, bigFile('src/hub.ts')].join('\n');
   const chunks = chunkDiff(diff);
-  const hubChunks = chunks.filter((c) => c.includes('b/src/hub.ts\n')).length;
-  assert.ok(hubChunks >= 2, 'hub must appear in its own unit and at least one dependent');
-  assert.ok(hubChunks <= 1 + 2, `hub capped at own unit + 2 neighbors, found ${hubChunks}`);
+  const extra = extraContext(diff, chunkOf(chunks, 'src/hub.ts'));
+  assert.ok(extra.includes('b/src/a.ts\n'), 'an importer must be pulled');
+  assert.ok(extra.length <= 60_000, 'the pull stays inside the budget');
+});
+
+test('extraContext pulls a shared neighbor once', () => {
+  const diff = [bigFile('src/a.ts', './x'), bigFile('src/b.ts', './x'), bigFile('src/x.ts')].join(
+    '\n',
+  );
+  const chunks = chunkDiff(diff);
+  const extra = extraContext(diff, chunkOf(chunks, 'src/a.ts'));
+  const xCopies = [...extra.matchAll(/^diff --git /gm)].length;
+  assert.equal(xCopies, 1, 'the shared neighbor must appear exactly once');
+});
+
+test('extraContext ignores imports of files outside the diff', () => {
+  const diff = [bigFile('src/a.ts', './missing'), bigFile('src/b.ts'), bigFile('src/c.ts')].join(
+    '\n',
+  );
+  const chunks = chunkDiff(diff);
+  assert.equal(extraContext(diff, chunkOf(chunks, 'src/a.ts')), '');
+});
+
+test('extraContext returns nothing when the diff fits one chunk', () => {
+  const diff = [bigFile('src/a.ts', './b'), bigFile('src/b.ts')].join('\n');
+  assert.equal(extraContext(diff, diff), '');
 });
 
 test('chunkDiff packs unrelated files together', () => {
   const diff = [bigFile('src/a.ts'), bigFile('src/b.ts'), bigFile('src/c.ts')].join('\n');
-  const chunks = chunkDiff(diff);
-  assert.equal(chunks.length, 2);
-  const paths = chunks.map((c) =>
-    ['src/a.ts', 'src/b.ts', 'src/c.ts'].filter((p) => c.includes(`b/${p}\n`)),
-  );
-  assert.equal(paths.flat().length, 3, 'every file appears in exactly one chunk');
-});
-
-test('chunkDiff ignores imports of files outside the diff', () => {
-  const diff = [bigFile('src/a.ts', './missing'), bigFile('src/b.ts'), bigFile('src/c.ts')].join(
-    '\n',
-  );
   const chunks = chunkDiff(diff);
   assert.equal(chunks.length, 2);
   const paths = chunks.map((c) =>
