@@ -38,6 +38,8 @@
     "esbuild@0.28.2": true
   },
   "dependencies": {
-    "@typesafe-ai/sdk": "^0.6.0"
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@typesafe-ai/sdk": "^0.6.0",
+    "zod": "^4.6.5"
   }
 }
