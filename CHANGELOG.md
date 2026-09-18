@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.9.0](https://github.com/TheBous/review-blaster/compare/v0.8.0...v0.9.0) (2026-09-18)
+
+### Features
+
+* **diff:** cap hub duplication across review units and improve chunk packing logic ([8284b02](https://github.com/TheBous/review-blaster/commit/8284b021fd20b7ff162459d46cba29c19319f9c9))
+
 ## [0.8.0](https://github.com/TheBous/review-blaster/compare/v0.7.0...v0.8.0) (2026-09-18)
 
 ### Features

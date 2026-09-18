@@ -6,7 +6,7 @@ import { reviewDiff } from '../engine.js';
 import type { Judge, RuleConfig } from '../types.js';
 
 export function createReviewServer(rules: RuleConfig, judge: Judge): McpServer {
-  const server = new McpServer({ name: 'jev-flash-review', version: '0.8.0' });
+  const server = new McpServer({ name: 'jev-flash-review', version: '0.9.0' });
 
   server.registerTool(
     'review_diff',
