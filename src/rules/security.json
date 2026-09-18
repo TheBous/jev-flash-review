@@ -1,0 +1,533 @@
+{
+  "name": "Security",
+  "rules": [
+    {
+      "rule_id": "SEC-01",
+      "question": "Are all external inputs validated server-side?",
+      "applies_if": "HTTP endpoints, APIs, or form inputs present",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-02",
+      "question": "Does validation leverage allowlists whenever possible?",
+      "applies_if": "Validating external input",
+      "severity": "high"
+    },
+    {
+      "rule_id": "SEC-03",
+      "question": "Are invalid inputs rejected?",
+      "applies_if": "Input validation logic",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-04",
+      "question": "Do SQL queries use parameters instead of input concatenation?",
+      "applies_if": "Code executes SQL queries",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-05",
+      "question": "Is unsafe string concatenation absent in SQL generation?",
+      "applies_if": "Building SQL query strings",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-06",
+      "question": "Are shell arguments parameterized?",
+      "applies_if": "Executing system/shell commands",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-07",
+      "question": "Is command injection impossible?",
+      "applies_if": "Executing system/shell commands",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-08",
+      "question": "Is dynamic code execution (code injection) absent?",
+      "applies_if": "Dynamic evaluation (eval, exec, etc.)",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-09",
+      "question": "Does HTML output use contextual encoding?",
+      "applies_if": "Rendering untrusted data into HTML contexts",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-10",
+      "question": "Does JavaScript, CSS, and URL output use contextual encoding?",
+      "applies_if": "Rendering untrusted data into script/style/link contexts",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-11",
+      "question": "Do templates refrain from executing untrusted input as code?",
+      "applies_if": "Template engine usage (Server-Side Template Injection)",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-12",
+      "question": "Are user-supplied file paths prevented from path traversal?",
+      "applies_if": "Accessing file system via user input",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-13",
+      "question": "Do symlinks or canonical paths refrain from breaking out of authorized directories?",
+      "applies_if": "Resolving file system paths",
+      "severity": "high"
+    },
+    {
+      "rule_id": "SEC-14",
+      "question": "Is untrusted data deserialization secure?",
+      "applies_if": "Object deserialization (pickle, Java serialization, etc.)",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-15",
+      "question": "Are user-controlled regex patterns free from ReDoS vulnerabilities?",
+      "applies_if": "Applying regex to user input",
+      "severity": "high"
+    },
+    {
+      "rule_id": "SEC-16",
+      "question": "Are input sizes and computational costs bounded?",
+      "applies_if": "Parsing large files or CPU-intensive algorithms",
+      "severity": "high"
+    },
+    {
+      "rule_id": "SEC-17",
+      "question": "Does every sensitive function require authentication?",
+      "applies_if": "APIs or actions impacting system data or state",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-18",
+      "question": "Does authentication refrain from relying solely on client-controllable data?",
+      "applies_if": "Authentication logic or session management",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-19",
+      "question": "Is authenticated identity verified server-side?",
+      "applies_if": "Session or token verification",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-20",
+      "question": "Is every requested object authorized against the current user?",
+      "applies_if": "Resource access via ID (IDOR/BOLA prevention)",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-21",
+      "question": "Do user-provided IDs refrain from allowing IDOR or BOLA?",
+      "applies_if": "Resource access via identifiers",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-22",
+      "question": "Does every sensitive function enforce the required role?",
+      "applies_if": "Role-Based Access Control (RBAC) systems",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-23",
+      "question": "Is every modifiable property authorized independently?",
+      "applies_if": "Partial entity updates (PATCH/PUT)",
+      "severity": "high"
+    },
+    {
+      "rule_id": "SEC-24",
+      "question": "Does mass assignment refrain from modifying protected fields?",
+      "applies_if": "Directly binding HTTP payloads to domain models",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-25",
+      "question": "Is privilege escalation impossible?",
+      "applies_if": "Role management, permissions, and user updates",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-26",
+      "question": "Do cookie-based state-changing operations have CSRF protection?",
+      "applies_if": "Cookie-based auth on state-modifying routes",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-27",
+      "question": "Is the client prevented from bypassing authorization or business rules?",
+      "applies_if": "Security checks and state transitions",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-28",
+      "question": "Are authorizations re-evaluated upon role or session changes?",
+      "applies_if": "Modifying privileges of active users",
+      "severity": "high"
+    },
+    {
+      "rule_id": "SEC-29",
+      "question": "Do sensitive operations enforce rate limiting?",
+      "applies_if": "Auth, payment, email dispatch, or password reset endpoints",
+      "severity": "high"
+    },
+    {
+      "rule_id": "SEC-30",
+      "question": "Do sensitive business flows feature abuse and automation protections?",
+      "applies_if": "Public endpoints prone to scraping or bot abuse",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "SEC-31",
+      "question": "Are hardcoded secrets absent from the code?",
+      "applies_if": "Always",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-32",
+      "question": "Are secrets excluded from log outputs?",
+      "applies_if": "Logging statements",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-33",
+      "question": "Are secrets excluded from error messages?",
+      "applies_if": "Exception handling or error responses",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-34",
+      "question": "Are secrets stored in an appropriate secret manager?",
+      "applies_if": "Credential or API key storage and retrieval",
+      "severity": "high"
+    },
+    {
+      "rule_id": "SEC-35",
+      "question": "Is key rotation supported?",
+      "applies_if": "Cryptographic key management architecture",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "SEC-36",
+      "question": "Are standard cryptographic primitives used?",
+      "applies_if": "Implementing encryption, hashing, or signatures",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-37",
+      "question": "Is proprietary or custom cryptography absent?",
+      "applies_if": "Using custom encryption algorithms or schemes",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-38",
+      "question": "Is sensitive data protected in transit?",
+      "applies_if": "Network communications, API calls, or socket channels",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-39",
+      "question": "Is sensitive data protected at rest when required?",
+      "applies_if": "Persisting PII, tokens, or credentials in storage/DB",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-40",
+      "question": "Does TLS validation verify certificate, hostname, and trust chain?",
+      "applies_if": "Outbound HTTP/TCP clients",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-41",
+      "question": "Are random number generators used for security cryptographically secure?",
+      "applies_if": "Generating tokens, nonces, salts, or keys",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-42",
+      "question": "Are passwords prevented from being stored in plaintext?",
+      "applies_if": "User credential management",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-43",
+      "question": "Do tokens have verified expiration, audience, and issuer?",
+      "applies_if": "JWT/Auth token parsing or verification",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-44",
+      "question": "Do self-contained tokens verify signature or MAC before use?",
+      "applies_if": "Using JWTs or signed tokens",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-45",
+      "question": "Are token algorithms restricted to an allowlist?",
+      "applies_if": "JWT signature verification",
+      "severity": "high"
+    },
+    {
+      "rule_id": "SEC-46",
+      "question": "Is the 'none' algorithm strictly rejected?",
+      "applies_if": "JWT verification",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-47",
+      "question": "Is key confusion between symmetric and asymmetric algorithms prevented?",
+      "applies_if": "JWT signature verification (e.g., HMAC vs RSA/ECDSA)",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-48",
+      "question": "Do token keys originate from trusted, allowlisted sources?",
+      "applies_if": "Fetching or validating public keys (JWKS)",
+      "severity": "high"
+    },
+    {
+      "rule_id": "SEC-49",
+      "question": "Do jku, x5u, and jwk URLs refrain from permitting arbitrary sources?",
+      "applies_if": "Using JWT headers for key resolution",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-50",
+      "question": "Does CORS enforce an allowlist of origins?",
+      "applies_if": "Configuring CORS headers on web APIs",
+      "severity": "high"
+    },
+    {
+      "rule_id": "SEC-51",
+      "question": "Do sensitive cookies include the Secure flag?",
+      "applies_if": "Setting session or auth cookies",
+      "severity": "high"
+    },
+    {
+      "rule_id": "SEC-52",
+      "question": "Do sensitive cookies include the HttpOnly flag?",
+      "applies_if": "Setting session or auth cookies",
+      "severity": "high"
+    },
+    {
+      "rule_id": "SEC-53",
+      "question": "Do sensitive cookies set an appropriate SameSite attribute?",
+      "applies_if": "Setting web cookies",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "SEC-54",
+      "question": "Do sensitive responses prevent shared caching?",
+      "applies_if": "HTTP response headers for private data",
+      "severity": "high"
+    },
+    {
+      "rule_id": "SEC-55",
+      "question": "Are applicable security headers configured?",
+      "applies_if": "Web applications serving HTTP responses",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "SEC-56",
+      "question": "Do HTML pages enforce an appropriate Content Security Policy (CSP)?",
+      "applies_if": "Server-side HTML rendering or Single Page Applications",
+      "severity": "high"
+    },
+    {
+      "rule_id": "SEC-57",
+      "question": "Is HTTP traffic protected with HSTS where applicable?",
+      "applies_if": "Web server or HTTPS middleware configuration",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "SEC-58",
+      "question": "Is 'X-Content-Type-Options: nosniff' present where applicable?",
+      "applies_if": "HTTP responses serving static or dynamic payloads",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "SEC-59",
+      "question": "Is clickjacking prevented?",
+      "applies_if": "Web applications with UI (X-Frame-Options / frame-ancestors)",
+      "severity": "high"
+    },
+    {
+      "rule_id": "SEC-60",
+      "question": "Are server version details hidden from unnecessary exposure?",
+      "applies_if": "HTTP response headers (Server, X-Powered-By)",
+      "severity": "low"
+    },
+    {
+      "rule_id": "SEC-61",
+      "question": "Do endpoints refrain from exposing more data than necessary?",
+      "applies_if": "Response DTOs and API resources",
+      "severity": "high"
+    },
+    {
+      "rule_id": "SEC-62",
+      "question": "Do downloadable files specify an appropriate Content-Disposition header?",
+      "applies_if": "File download endpoints",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "SEC-63",
+      "question": "Do downloadable files specify a safe content type?",
+      "applies_if": "File download endpoints",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "SEC-64",
+      "question": "Do uploads constrain file size, type, and name?",
+      "applies_if": "File upload endpoints",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-65",
+      "question": "Are uploaded files stored outside executable web paths?",
+      "applies_if": "Storing uploaded files to local disk",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-66",
+      "question": "Are uploaded files prevented from executing as code?",
+      "applies_if": "Managing and serving user-uploaded files",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-67",
+      "question": "Do user-controlled URLs refrain from permitting open redirects?",
+      "applies_if": "Redirects based on query parameters or payload input",
+      "severity": "high"
+    },
+    {
+      "rule_id": "SEC-68",
+      "question": "Are server-side requests to external URLs protected against SSRF?",
+      "applies_if": "Server issuing network requests driven by user input",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-69",
+      "question": "Are SSRF targets restricted from accessing internal networks or metadata endpoints?",
+      "applies_if": "Outbound user-driven requests",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-70",
+      "question": "Do incoming webhooks verify origin authenticity and integrity?",
+      "applies_if": "Endpoints accepting third-party webhooks",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-71",
+      "question": "Do sensitive operations generate audit logs?",
+      "applies_if": "Administrative actions, permission changes, or critical data edits",
+      "severity": "high"
+    },
+    {
+      "rule_id": "SEC-72",
+      "question": "Are audit logs protected against unauthorized modification?",
+      "applies_if": "Audit log persistence infrastructure",
+      "severity": "high"
+    },
+    {
+      "rule_id": "SEC-73",
+      "question": "Do security events trigger alerts when necessary?",
+      "applies_if": "Authentication failure detection or anomaly monitoring",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "SEC-74",
+      "question": "Are production configurations free of debug mode or insecure defaults?",
+      "applies_if": "Environment or configuration files",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-75",
+      "question": "Do applied permissions adhere to the principle of least privilege?",
+      "applies_if": "Assigning permissions to processes, DB users, or service accounts",
+      "severity": "high"
+    },
+    {
+      "rule_id": "SEC-76",
+      "question": "Is data originating from APIs, logs, files, and configs treated as untrusted?",
+      "applies_if": "Reading external data at process boundaries",
+      "severity": "high"
+    },
+    {
+      "rule_id": "SEC-77",
+      "question": "Does the change refrain from weakening existing input validation, allowlists, or security checks?",
+      "applies_if": "Modifying validation logic, regexes, allowlists, or guard conditions",
+      "severity": "high"
+    },
+    {
+      "rule_id": "SEC-78",
+      "question": "Is untrusted content prevented from executing as code in rendered output?",
+      "applies_if": "Rendering user-controlled data as HTML, SVG, or URLs",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-79",
+      "question": "Do NoSQL queries refrain from passing untrusted input as operators or expressions?",
+      "applies_if": "Building document-store queries from external input",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-80",
+      "question": "Do deep merges and dynamic key assignments filter __proto__, constructor, and prototype?",
+      "applies_if": "Merging external objects or assigning dynamic keys",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-81",
+      "question": "Do password hashes use a memory-hard function with an appropriate work factor?",
+      "applies_if": "Hashing passwords or secrets",
+      "severity": "high"
+    },
+    {
+      "rule_id": "SEC-82",
+      "question": "Do authentication failures return indistinguishable responses for unknown users and wrong credentials?",
+      "applies_if": "Login, password reset, or account recovery flows",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "SEC-83",
+      "question": "Do sessions enforce absolute and idle expiration, and rotate on authentication changes?",
+      "applies_if": "Session management, login, or privilege changes",
+      "severity": "high"
+    },
+    {
+      "rule_id": "SEC-84",
+      "question": "Are password-reset tokens random, single-use, and short-lived?",
+      "applies_if": "Password reset or account recovery flows",
+      "severity": "high"
+    },
+    {
+      "rule_id": "SEC-85",
+      "question": "Are API keys stored hashed, scoped, and rotatable?",
+      "applies_if": "Issuing or storing API keys",
+      "severity": "high"
+    },
+    {
+      "rule_id": "SEC-86",
+      "question": "Are secret credentials kept out of client-side bundles?",
+      "applies_if": "Frontend code, mobile clients, or edge functions",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-87",
+      "question": "Is full payment-card PAN never stored, logged, or persisted?",
+      "applies_if": "Handling payment card data",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "SEC-88",
+      "question": "Are monetary amounts and prices sourced server-side rather than trusted from the client?",
+      "applies_if": "Checkout, pricing, discounts, or refunds",
+      "severity": "blocker"
+    }
+  ]
+}

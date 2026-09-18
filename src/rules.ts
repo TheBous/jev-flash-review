@@ -1,7 +1,57 @@
-// Boundary parser for the rule configuration. rules.json is untrusted input:
-// parse it once into the domain type, never cast inside the domain.
-import { readFile } from 'node:fs/promises';
+// Boundary parser for the rule configuration. The split rule files are
+// untrusted input: parse them once into the domain type, never cast inside
+// the domain.
+import aiGeneratedCodeRules from './rules/ai-generated-code-rules.json' with { type: 'json' };
+import apiContractsAndCompatibility from './rules/api-contracts-and-compatibility.json' with {
+  type: 'json',
+};
+import architectureAndMaintainability from './rules/architecture-and-maintainability.json' with {
+  type: 'json',
+};
+import boundaryParsingAndTypes from './rules/boundary-parsing-and-types.json' with { type: 'json' };
+import contextAndScopeBoundary from './rules/context-and-scope-boundary.json' with { type: 'json' };
+import dependenciesCicdAndSupplyChain from './rules/dependencies-cicd-and-supply-chain.json' with {
+  type: 'json',
+};
+import documentationAndOperations from './rules/documentation-and-operations.json' with {
+  type: 'json',
+};
+import errorsConsistencyAndReliability from './rules/errors-consistency-and-reliability.json' with {
+  type: 'json',
+};
+import functionalCorrectness from './rules/functional-correctness.json' with { type: 'json' };
+import intentAndScope from './rules/intent-and-scope.json' with { type: 'json' };
+import llmApplicationSecurity from './rules/llm-application-security.json' with { type: 'json' };
+import meta from './rules/meta.json' with { type: 'json' };
+import multiModelReview from './rules/multi-model-review.json' with { type: 'json' };
+import performanceAndResources from './rules/performance-and-resources.json' with { type: 'json' };
+import security from './rules/security.json' with { type: 'json' };
+import testingAndVerification from './rules/testing-and-verification.json' with { type: 'json' };
+import uiAndAccessibility from './rules/ui-and-accessibility.json' with { type: 'json' };
 import type { Result, Rule, RuleConfig, RulesError } from './types.js';
+
+// Merged rule data: one entry per review type, in review-execution order.
+export const rawRules = {
+  ...meta,
+  categories: [
+    contextAndScopeBoundary,
+    intentAndScope,
+    functionalCorrectness,
+    boundaryParsingAndTypes,
+    architectureAndMaintainability,
+    errorsConsistencyAndReliability,
+    security,
+    apiContractsAndCompatibility,
+    performanceAndResources,
+    testingAndVerification,
+    uiAndAccessibility,
+    dependenciesCicdAndSupplyChain,
+    documentationAndOperations,
+    aiGeneratedCodeRules,
+    llmApplicationSecurity,
+    multiModelReview,
+  ],
+};
 
 function parseRule(raw: unknown): Result<Rule, 'invalid-rules'> {
   if (typeof raw !== 'object' || raw === null) return { ok: false, error: 'invalid-rules' };
@@ -63,15 +113,5 @@ export function parseRules(raw: unknown): Result<RuleConfig, RulesError> {
 }
 
 export async function loadRules(): Promise<Result<RuleConfig, RulesError>> {
-  let raw: string;
-  try {
-    raw = await readFile(new URL('../rules.json', import.meta.url), 'utf8');
-  } catch {
-    return { ok: false, error: 'unreadable-rules' };
-  }
-  try {
-    return parseRules(JSON.parse(raw));
-  } catch {
-    return { ok: false, error: 'invalid-rules' };
-  }
+  return parseRules(rawRules);
 }

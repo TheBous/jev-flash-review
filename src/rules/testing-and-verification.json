@@ -1,0 +1,161 @@
+{
+  "name": "Testing and verification",
+  "rules": [
+    {
+      "rule_id": "TEST-01",
+      "question": "Does a behavioral change include adequate tests?",
+      "applies_if": "Modifying or adding features",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "TEST-02",
+      "question": "Does a bug fix include a regression test?",
+      "applies_if": "Bug fix / defect resolution",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "TEST-03",
+      "question": "Do tests verify behavior rather than implementation details?",
+      "applies_if": "Writing unit or integration tests",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "TEST-04",
+      "question": "Would every test fail if expected behavior were broken?",
+      "applies_if": "Writing tests",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "TEST-05",
+      "question": "Are test assertions free from tautology?",
+      "applies_if": "Writing assertions in tests",
+      "severity": "high"
+    },
+    {
+      "rule_id": "TEST-06",
+      "question": "Do mocks refrain from causing tests to pass unconditionally?",
+      "applies_if": "Using mocks, stubs, or spies in tests",
+      "severity": "high"
+    },
+    {
+      "rule_id": "TEST-07",
+      "question": "Do test names clearly describe the verified behavior?",
+      "applies_if": "Writing tests",
+      "severity": "low"
+    },
+    {
+      "rule_id": "TEST-08",
+      "question": "Are null, empty, and missing inputs covered by tests?",
+      "applies_if": "Test coverage for functions or endpoints",
+      "severity": "high"
+    },
+    {
+      "rule_id": "TEST-09",
+      "question": "Are boundary limit values covered by tests?",
+      "applies_if": "Testing algorithms, ranges, or limits",
+      "severity": "high"
+    },
+    {
+      "rule_id": "TEST-10",
+      "question": "Are error paths covered by tests?",
+      "applies_if": "Error handling and exception logic in code",
+      "severity": "high"
+    },
+    {
+      "rule_id": "TEST-11",
+      "question": "Are duplicate input scenarios covered by tests?",
+      "applies_if": "Testing operations on collections or idempotency",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "TEST-12",
+      "question": "Are retry, timeout, and partial failure paths covered by tests?",
+      "applies_if": "Testing HTTP clients, I/O, or external services",
+      "severity": "high"
+    },
+    {
+      "rule_id": "TEST-13",
+      "question": "Are out-of-order execution and concurrency tested where relevant?",
+      "applies_if": "Testing concurrent systems or event streams",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "TEST-14",
+      "question": "Are negative security test cases covered?",
+      "applies_if": "Testing auth, authorization, and input validation",
+      "severity": "high"
+    },
+    {
+      "rule_id": "TEST-15",
+      "question": "Are boundaries between modules, databases, and services covered?",
+      "applies_if": "Integration testing",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "TEST-16",
+      "question": "Are contract tests present for APIs or messaging schemas where applicable?",
+      "applies_if": "Integration between microservices or external APIs",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "TEST-17",
+      "question": "Are both enabled and disabled states of feature flags tested?",
+      "applies_if": "Using feature flags in modified code",
+      "severity": "high"
+    },
+    {
+      "rule_id": "TEST-18",
+      "question": "Do modified or removed assertions refrain from reducing test coverage?",
+      "applies_if": "Modifying existing test suites",
+      "severity": "high"
+    },
+    {
+      "rule_id": "TEST-19",
+      "question": "Do tests refrain from using invented or non-existent APIs?",
+      "applies_if": "Writing tests",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "TEST-20",
+      "question": "Are tests deterministic and free from non-deterministic timing dependencies?",
+      "applies_if": "Asynchronous or timed test suites",
+      "severity": "high"
+    },
+    {
+      "rule_id": "TEST-21",
+      "question": "Is the test granularity — unit, integration, or end-to-end — appropriate?",
+      "applies_if": "Adding new test suites or strategies",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "TEST-22",
+      "question": "Do build and type-check steps pass?",
+      "applies_if": "Automated verification phase (CI/CD)",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "TEST-23",
+      "question": "Do linter and static analysis checks pass?",
+      "applies_if": "Automated verification phase (CI/CD)",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "TEST-24",
+      "question": "Was manual verification performed for UI or non-automatable behaviors?",
+      "applies_if": "Visual UI changes or hardware/physical interaction flows",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "TEST-25",
+      "question": "Are coverage gaps explicitly declared?",
+      "applies_if": "Inability or decision not to test a component",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "TEST-26",
+      "question": "Were correctness and security findings verified independently when necessary?",
+      "applies_if": "Multi-model review or finding triage",
+      "severity": "high"
+    }
+  ]
+}

@@ -16,7 +16,7 @@ agent curates input → review_diff tool → structured JSON → agent acts
 1. **The agent builds the input**: a unified diff plus `taskContext` — the
    business purpose, boundaries ("fence") and invariants of the task. The diff
    alone judges hygiene; the fence lets the engine judge business-logic fit.
-2. **The engine evaluates every rule in `rules.json`**: the diff is chunked,
+2. **The engine evaluates every rule in `src/rules/`**: the diff is chunked,
    each rule becomes a typed Choice question (`YES` / `NO` / `N/A` with
    `applies_if`), questions are batched per (chunk × rule set) and run in
    parallel.
@@ -168,7 +168,8 @@ Prints the text report; exits `1` on `blocker` violations (CI-friendly).
 
 ## Rules
 
-`rules.json` holds the contract plus the categorized rule set. Each rule is a
+`src/rules/` holds the contract (`meta.json`) plus one file per review type
+(category). Each rule is a
 `{ rule_id, question, applies_if, severity }` — the `question` text is sent to
 the model:
 
@@ -202,7 +203,7 @@ src/adjudicate.ts           confidence gate, noIssue-style confirm, impact ratin
 src/judge.ts                TypeSafe adapter implementing the Judge port
 src/types.ts                domain contracts (Result, ReviewInput/Output, ChoiceSpec)
 src/diff.ts                 chunking + hunk annotation
-src/rules.ts                boundary parser for rules.json
+src/rules.ts                boundary parser, merges src/rules/*.json
 src/index.ts                CLI shell (gh + text report)
 src/mcp/server.ts           MCP stdio server (thin handler)
 dist/server.js              committed bundle — what consumers run, no build needed
@@ -218,7 +219,7 @@ including a future remote transport.
 |---|---|
 | `npm run review -- <pr>` | One-shot PR review |
 | `npm test` | Unit tests + skills portability tests |
-| `npm run bundle` | Rebuild `dist/server.js` (run after touching `src/` or `rules.json`) |
+| `npm run bundle` | Rebuild `dist/server.js` (run after touching `src/`) |
 | `npm run dev` | Watch mode (`tsx watch`) |
 | `npm run build` | Compile `src/` → `dist/` (`tsc`) |
 | `npm run typecheck` | Type check only |

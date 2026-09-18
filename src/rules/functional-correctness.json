@@ -1,0 +1,125 @@
+{
+  "name": "Functional correctness",
+  "rules": [
+    {
+      "rule_id": "COR-01",
+      "question": "Does the happy path produce the expected result?",
+      "applies_if": "Always",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "COR-02",
+      "question": "Are null, undefined, or missing inputs handled correctly?",
+      "applies_if": "Functions or endpoints accept optional or nullable parameters",
+      "severity": "high"
+    },
+    {
+      "rule_id": "COR-03",
+      "question": "Are empty inputs handled correctly?",
+      "applies_if": "Functions or endpoints process strings, arrays, or collections",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "COR-04",
+      "question": "Are minimum and maximum values handled correctly?",
+      "applies_if": "Code processes numeric ranges, boundaries, or pagination",
+      "severity": "high"
+    },
+    {
+      "rule_id": "COR-05",
+      "question": "Are incorrectly typed inputs rejected or handled properly?",
+      "applies_if": "Dynamically typed environments or data deserialization",
+      "severity": "high"
+    },
+    {
+      "rule_id": "COR-06",
+      "question": "Are malformed inputs rejected or handled properly?",
+      "applies_if": "Parsing strings, structured data (JSON/XML), or parameters",
+      "severity": "high"
+    },
+    {
+      "rule_id": "COR-07",
+      "question": "Are malformed external responses handled?",
+      "applies_if": "Code consumes external APIs or third-party services",
+      "severity": "high"
+    },
+    {
+      "rule_id": "COR-08",
+      "question": "Do error paths produce correct results?",
+      "applies_if": "Error handling branches or exception logic exist",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "COR-09",
+      "question": "Are off-by-one errors absent?",
+      "applies_if": "Loops, array indexing, or range handling present",
+      "severity": "high"
+    },
+    {
+      "rule_id": "COR-10",
+      "question": "Do domain invariants remain true at all times?",
+      "applies_if": "Executing business logic or domain model mutations",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "COR-11",
+      "question": "Are initial and final states consistent?",
+      "applies_if": "State machines or data lifecycle modifications present",
+      "severity": "high"
+    },
+    {
+      "rule_id": "COR-12",
+      "question": "Do duplicate calls produce the expected behavior?",
+      "applies_if": "Operations with side effects or repeated invocations",
+      "severity": "high"
+    },
+    {
+      "rule_id": "COR-13",
+      "question": "Are out-of-order events handled correctly?",
+      "applies_if": "Event-driven systems, queues, or unordered async processing",
+      "severity": "high"
+    },
+    {
+      "rule_id": "COR-14",
+      "question": "Do retries, timeouts, and partial failures produce correct results?",
+      "applies_if": "Network calls or distributed operations",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "COR-15",
+      "question": "Do concurrent operations produce correct results?",
+      "applies_if": "Concurrent access to shared resources or multithreading",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "COR-16",
+      "question": "Do all callers continue to work with the new contract?",
+      "applies_if": "Modifying existing signatures, contracts, or interfaces",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "COR-17",
+      "question": "Are units of measurement, precision, rounding, and conversions correct?",
+      "applies_if": "Financial, mathematical, or unit conversion logic",
+      "severity": "high"
+    },
+    {
+      "rule_id": "COR-18",
+      "question": "Are dates, time zones, and localization handled correctly?",
+      "applies_if": "Manipulating or formatting dates, timestamps, and times",
+      "severity": "high"
+    },
+    {
+      "rule_id": "COR-19",
+      "question": "Are promises, coroutines, or async tasks prevented from unhandled execution?",
+      "applies_if": "Asynchronous or concurrent code usage",
+      "severity": "high"
+    },
+    {
+      "rule_id": "COR-20",
+      "question": "Are unreachable branches or unhandled impossible states absent?",
+      "applies_if": "Conditional flows or pattern matching on enums/unions",
+      "severity": "medium"
+    }
+  ]
+}

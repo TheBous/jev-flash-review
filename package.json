@@ -56,7 +56,6 @@
     "skills/",
     "dist/server.js",
     "mcp.json",
-    "plugin.json",
-    "rules.json"
+    "plugin.json"
   ]
 }

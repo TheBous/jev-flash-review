@@ -1,0 +1,119 @@
+{
+  "name": "API, contracts, and compatibility",
+  "rules": [
+    {
+      "rule_id": "API-01",
+      "question": "Does the API schema match the actual implementation?",
+      "applies_if": "OpenAPI/Swagger specs or API contracts present",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "API-02",
+      "question": "Do inputs adhere to the declared schema?",
+      "applies_if": "API request validation",
+      "severity": "high"
+    },
+    {
+      "rule_id": "API-03",
+      "question": "Do outputs adhere to the declared schema?",
+      "applies_if": "API response generation",
+      "severity": "high"
+    },
+    {
+      "rule_id": "API-04",
+      "question": "Are all possible responses documented?",
+      "applies_if": "OpenAPI docs or network contract specifications",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "API-05",
+      "question": "Are HTTP status codes semantically correct?",
+      "applies_if": "REST HTTP endpoints",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "API-06",
+      "question": "Is the error payload structure consistent and stable?",
+      "applies_if": "HTTP error responses",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "API-07",
+      "question": "Are authentication requirements declared and enforced?",
+      "applies_if": "API specifications and endpoints",
+      "severity": "high"
+    },
+    {
+      "rule_id": "API-08",
+      "question": "Do changes refrain from breaking existing consumers?",
+      "applies_if": "Modifying public or active APIs",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "API-09",
+      "question": "Do breaking changes provide versioning or a migration path?",
+      "applies_if": "Introducing incompatible API changes",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "API-10",
+      "question": "Are HTTP methods and idempotency semantics correct?",
+      "applies_if": "Using GET, POST, PUT, DELETE, PATCH",
+      "severity": "high"
+    },
+    {
+      "rule_id": "API-11",
+      "question": "Do collection endpoints implement pagination or limit constraints?",
+      "applies_if": "Endpoints returning list resources",
+      "severity": "high"
+    },
+    {
+      "rule_id": "API-12",
+      "question": "Are response payload fields minimized?",
+      "applies_if": "Response payload design",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "API-13",
+      "question": "Do events and messages maintain forward and backward compatibility?",
+      "applies_if": "Event-driven systems, Protobuf, or schema registries",
+      "severity": "high"
+    },
+    {
+      "rule_id": "API-14",
+      "question": "Have downstream consumers and internal callers been updated?",
+      "applies_if": "Modifying contract of an internal service/client",
+      "severity": "high"
+    },
+    {
+      "rule_id": "API-15",
+      "question": "Are deprecations and removals documented?",
+      "applies_if": "Removing or deprecating API endpoints/fields",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "API-16",
+      "question": "Does the version number accurately reflect public contract changes?",
+      "applies_if": "Releasing APIs or packages with Semantic Versioning",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "API-17",
+      "question": "Are shadow endpoints or incomplete API inventories absent?",
+      "applies_if": "Adding new HTTP routes",
+      "severity": "high"
+    },
+    {
+      "rule_id": "API-18",
+      "question": "Are content type and charset headers explicit and correct?",
+      "applies_if": "Content-Type headers in HTTP requests/responses",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "API-19",
+      "question": "Do GraphQL endpoints bound query depth and complexity, and hide introspection in production?",
+      "applies_if": "GraphQL servers",
+      "severity": "high"
+    }
+  ]
+}

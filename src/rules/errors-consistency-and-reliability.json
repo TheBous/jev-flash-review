@@ -1,0 +1,197 @@
+{
+  "name": "Errors, consistency, and reliability",
+  "rules": [
+    {
+      "rule_id": "ERR-01",
+      "question": "Is every expected domain error represented by a Result or discriminated union?",
+      "applies_if": "Modeling domain errors",
+      "severity": "high"
+    },
+    {
+      "rule_id": "ERR-02",
+      "question": "Do domain return types explicitly expose possible errors?",
+      "applies_if": "Domain method signatures",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "ERR-03",
+      "question": "Are exceptions restricted to infrastructure failures or broken invariants?",
+      "applies_if": "Using throw/exceptions",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "ERR-04",
+      "question": "Are untyped throws absent?",
+      "applies_if": "Throwing exceptions (e.g., throw 'error' or throw raw object)",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "ERR-05",
+      "question": "Are empty catch blocks absent?",
+      "applies_if": "Presence of try/catch blocks",
+      "severity": "high"
+    },
+    {
+      "rule_id": "ERR-06",
+      "question": "Is catch-all logging or suppression that masks errors absent?",
+      "applies_if": "Generic catch blocks (Exception, Throwable, catch(e))",
+      "severity": "high"
+    },
+    {
+      "rule_id": "ERR-07",
+      "question": "Are external errors mapped without loss of context?",
+      "applies_if": "Integrating third-party services or I/O",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "ERR-08",
+      "question": "Do errors returned to clients refrain from leaking sensitive data?",
+      "applies_if": "HTTP/API error responses",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "ERR-09",
+      "question": "Are error logs free of secrets or PII?",
+      "applies_if": "Logging statements",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "ERR-10",
+      "question": "Do timeouts have an explicit deadline?",
+      "applies_if": "HTTP calls, network clients, or DB queries",
+      "severity": "high"
+    },
+    {
+      "rule_id": "ERR-11",
+      "question": "Are retries bounded?",
+      "applies_if": "Retry logic on fallible operations",
+      "severity": "high"
+    },
+    {
+      "rule_id": "ERR-12",
+      "question": "Do retries employ backoff strategies when required?",
+      "applies_if": "Retry logic on distributed calls",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "ERR-13",
+      "question": "Is an operation retried only if safe or idempotent?",
+      "applies_if": "Retrying operations with side effects",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "ERR-14",
+      "question": "Do multi-step side effects have a rollback or compensation strategy?",
+      "applies_if": "Distributed transactions or multi-service saga operations",
+      "severity": "high"
+    },
+    {
+      "rule_id": "ERR-15",
+      "question": "Are transactions atomic with respect to the protected invariant?",
+      "applies_if": "Database or persistent storage writes",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "ERR-16",
+      "question": "Are concurrent writes protected by locks, transactions, or atomic constraints?",
+      "applies_if": "Multithreaded environments or high-concurrency resources",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "ERR-17",
+      "question": "Are race conditions and TOCTOU vulnerabilities handled or impossible?",
+      "applies_if": "Check-then-act logic on files, DB, or shared resources",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "ERR-18",
+      "question": "Are unknown-outcome states distinguished from definite failures?",
+      "applies_if": "Invoking external systems subject to network timeouts",
+      "severity": "high"
+    },
+    {
+      "rule_id": "ERR-19",
+      "question": "Is an ambiguous side effect prevented from blind re-execution?",
+      "applies_if": "Failure handling on unsafe external calls",
+      "severity": "high"
+    },
+    {
+      "rule_id": "ERR-20",
+      "question": "Are resources released even along error execution paths?",
+      "applies_if": "Opening file handles, DB connections, sockets, locks",
+      "severity": "high"
+    },
+    {
+      "rule_id": "ERR-21",
+      "question": "Are startup, shutdown, and health checks consistent with the new behavior?",
+      "applies_if": "Application lifecycle infrastructure modifications",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "ERR-22",
+      "question": "Are sufficient logging, metrics, or tracing available to diagnose failures?",
+      "applies_if": "Writing new services, endpoints, or critical paths",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "IDEMP-01",
+      "question": "Does a durable store exist for idempotency tracking?",
+      "applies_if": "Payment, provisioning, or external write operations",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "IDEMP-02",
+      "question": "Is the idempotency store updated atomically?",
+      "applies_if": "Managing idempotency keys",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "IDEMP-03",
+      "question": "Is the idempotency key scoped per tenant, account, or resource?",
+      "applies_if": "Multi-tenant idempotency key handling",
+      "severity": "high"
+    },
+    {
+      "rule_id": "IDEMP-04",
+      "question": "Does the request contain a payload fingerprint?",
+      "applies_if": "Idempotency validation on request payloads",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "IDEMP-05",
+      "question": "Does an identical replay return the cached result?",
+      "applies_if": "Handling cached idempotent responses",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "IDEMP-06",
+      "question": "Does the same key with a different fingerprint trigger a conflict?",
+      "applies_if": "Validating idempotency key integrity",
+      "severity": "high"
+    },
+    {
+      "rule_id": "IDEMP-07",
+      "question": "Does an ambiguous provider error produce an unknown-outcome state?",
+      "applies_if": "Integrating payment gateways or external providers",
+      "severity": "high"
+    },
+    {
+      "rule_id": "IDEMP-08",
+      "question": "Is a reconciliation procedure available?",
+      "applies_if": "Financial transactions or asynchronous state management",
+      "severity": "high"
+    },
+    {
+      "rule_id": "ERR-23",
+      "question": "Are untrusted values neutralized before logging?",
+      "applies_if": "Logging external input",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "ERR-24",
+      "question": "Are data migrations backward-compatible, reversible, and free of destructive loss?",
+      "applies_if": "Schema or data migrations",
+      "severity": "high"
+    }
+  ]
+}
