@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "jev-flash-review",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Rule-based code review: review a PR, review anything, or loop until the rule engine reports clean",
   "owner": {
     "name": "Luca Valsecchi"
@@ -11,7 +11,7 @@
   "plugins": [
     {
       "name": "jev-flash-review",
-      "version": "0.5.0",
+      "version": "0.6.0",
       "description": "Review PRs, arbitrary code, or loop until clean — powered by the jev-flash-review MCP rule engine",
       "author": {
         "name": "Luca Valsecchi"

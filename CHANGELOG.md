@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.6.0](https://github.com/TheBous/review-blaster/compare/v0.5.0...v0.6.0) (2026-09-18)
+
+### Features
+
+* enhance adjudication process with evidence snippets and improve confirmation logic ([cbdb5ae](https://github.com/TheBous/review-blaster/commit/cbdb5aeb4564948db3eb226c820f3914ae00b7e4))
+
 ## [0.5.0](https://github.com/TheBous/review-blaster/compare/v0.4.0...v0.5.0) (2026-09-18)
 
 ### Features
