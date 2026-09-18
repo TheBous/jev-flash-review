@@ -1,0 +1,143 @@
+{
+  "name": "Frontend engineering",
+  "rules": [
+    {
+      "rule_id": "FE-01",
+      "question": "Are frontend components focused on one user-facing responsibility instead of accumulating unrelated flag combinations?",
+      "applies_if": "Frontend components or pages with multiple rendering branches or configuration flags",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "FE-02",
+      "question": "Is client state owned at the narrowest appropriate scope without unnecessary global state or prop drilling?",
+      "applies_if": "Adding or changing state in frontend components",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "FE-03",
+      "question": "Is derived UI state computed from source state instead of duplicated and synchronized separately?",
+      "applies_if": "Frontend state containing values derivable from other state or props",
+      "severity": "high"
+    },
+    {
+      "rule_id": "FE-04",
+      "question": "Is shareable or navigation-sensitive UI state represented in the URL or browser history?",
+      "applies_if": "Filters, pagination, tabs, search, sorting, or views users expect to refresh, bookmark, or revisit",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "FE-05",
+      "question": "Are stale or out-of-order asynchronous responses prevented from overwriting newer UI state?",
+      "applies_if": "Search, autocomplete, route changes, polling, or concurrent frontend requests",
+      "severity": "high"
+    },
+    {
+      "rule_id": "FE-06",
+      "question": "Are event listeners, timers, observers, subscriptions, and asynchronous effects cleaned up or safely ignored after their owner unmounts or disconnects?",
+      "applies_if": "Frontend effects, DOM controllers, subscriptions, timers, observers, or fetch requests tied to component or route lifecycle",
+      "severity": "high"
+    },
+    {
+      "rule_id": "FE-07",
+      "question": "Are loading, empty, success, and recoverable error states represented for asynchronous UI?",
+      "applies_if": "Frontend views that load or mutate remote data",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "FE-08",
+      "question": "Are optimistic UI changes reconciled with server truth after failure or conflict?",
+      "applies_if": "Optimistic updates or client-first mutations of remote data",
+      "severity": "high"
+    },
+    {
+      "rule_id": "FE-09",
+      "question": "Does core content or functionality remain usable when optional JavaScript or a newer browser API is unavailable?",
+      "applies_if": "Progressive enhancement, client-rendered content, forms, navigation, or newer browser APIs",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "FE-10",
+      "question": "Does the responsive layout avoid horizontal overflow and preserve content at supported viewport sizes?",
+      "applies_if": "Responsive layouts, fixed-width elements, or viewport-specific styles",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "FE-11",
+      "question": "Do images reserve their rendered space before loading by providing intrinsic dimensions or an equivalent aspect ratio?",
+      "applies_if": "Adding or changing rendered images, media cards, avatars, or galleries",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "FE-12",
+      "question": "Do images use responsive sources and loading priority appropriate to their rendered size and position?",
+      "applies_if": "Responsive images, image-heavy pages, or above-the-fold media",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "FE-13",
+      "question": "Does the change avoid introducing unexpected layout shifts from asynchronous content, fonts, or media?",
+      "applies_if": "Dynamic rendering, deferred data, web fonts, ads, embeds, or media loading",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "FE-14",
+      "question": "Are third-party scripts loaded only when needed and kept out of the critical rendering path?",
+      "applies_if": "Analytics, advertising, embeds, widgets, or other third-party frontend scripts",
+      "severity": "high"
+    },
+    {
+      "rule_id": "FE-15",
+      "question": "Are expensive interaction handlers and rendering tasks kept from blocking the browser main thread?",
+      "applies_if": "Large event handlers, synchronous parsing, client-side computation, or heavy rendering work",
+      "severity": "high"
+    },
+    {
+      "rule_id": "FE-16",
+      "question": "Are authentication tokens, session identifiers, and credentials kept out of Web Storage and client bundles?",
+      "applies_if": "Frontend authentication, localStorage, sessionStorage, IndexedDB, or public build configuration",
+      "severity": "blocker"
+    },
+    {
+      "rule_id": "FE-17",
+      "question": "Are cross-window messages checked against exact allowed origins and an expected data shape before use?",
+      "applies_if": "postMessage, MessageChannel, iframe communication, or cross-window events",
+      "severity": "high"
+    },
+    {
+      "rule_id": "FE-18",
+      "question": "Are browser APIs and newer platform features guarded by feature detection or an explicit support baseline?",
+      "applies_if": "Using browser APIs, CSS features, or platform capabilities with uneven support",
+      "severity": "medium"
+    },
+    {
+      "rule_id": "FE-19",
+      "question": "Do pending form submissions prevent ambiguous duplicate interaction and preserve a recoverable state?",
+      "applies_if": "Forms or buttons that trigger asynchronous mutations",
+      "severity": "high"
+    },
+    {
+      "rule_id": "FE-20",
+      "question": "Are every side-effecting UI effect's early-return, success, failure, cancellation, and unmount paths paired with the required cleanup?",
+      "applies_if": "React effects, Stimulus/Turbo controllers, injected scripts, global listeners, timers, or DOM mutations",
+      "severity": "high"
+    },
+    {
+      "rule_id": "FE-21",
+      "question": "Do DOM callbacks and asynchronous completions verify that their owning component or controller is still current before mutating UI?",
+      "applies_if": "React remounts, Turbo page swaps, Stimulus disconnects, route changes, or delayed UI callbacks",
+      "severity": "high"
+    },
+    {
+      "rule_id": "FE-22",
+      "question": "Does concurrent UI interaction state use an explicit model that prevents impossible combinations and duplicate in-flight work?",
+      "applies_if": "Overlapping clicks, async mutations, timers, animations, or UI state represented by multiple booleans",
+      "severity": "high"
+    },
+    {
+      "rule_id": "FE-23",
+      "question": "Are event handlers lifecycle-safe, using delegation when repeated per-element wiring would multiply teardown or duplicate-trigger risk?",
+      "applies_if": "Dynamic lists, repeated DOM elements, or components attaching handlers to many child nodes",
+      "severity": "medium"
+    }
+  ]
+}

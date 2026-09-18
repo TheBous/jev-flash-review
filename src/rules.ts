@@ -19,6 +19,7 @@ import documentationAndOperations from './rules/documentation-and-operations.jso
 import errorsConsistencyAndReliability from './rules/errors-consistency-and-reliability.json' with {
   type: 'json',
 };
+import frontendEngineering from './rules/frontend-engineering.json' with { type: 'json' };
 import functionalCorrectness from './rules/functional-correctness.json' with { type: 'json' };
 import intentAndScope from './rules/intent-and-scope.json' with { type: 'json' };
 import llmApplicationSecurity from './rules/llm-application-security.json' with { type: 'json' };
@@ -44,6 +45,7 @@ export const rawRules = {
     apiContractsAndCompatibility,
     performanceAndResources,
     testingAndVerification,
+    frontendEngineering,
     uiAndAccessibility,
     dependenciesCicdAndSupplyChain,
     documentationAndOperations,
