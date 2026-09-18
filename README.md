@@ -1,4 +1,4 @@
-# review-blaster
+# jev-flash-review
 
 AI-powered PR review runner (Node 24 + TypeScript, ESM). Checks a GitHub pull
 request against the rules in `rules.json` using [TypeSafe](https://typesafe.ai)'s
@@ -69,4 +69,4 @@ npm run release -- --dry-run
 
 Bumps are derived from commits (`feat:` → minor, `fix:` → patch, `BREAKING CHANGE` → major),
 CHANGELOG.md is updated, then commit + tag `vX.Y.Z` + push.
-# review-blaster
+# jev-flash-review

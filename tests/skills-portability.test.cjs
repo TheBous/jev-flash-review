@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
-const { parseCommandFile } = require('../.opencode/plugins/review-blaster-frontmatter.cjs');
+const { parseCommandFile } = require('../.opencode/plugins/jev-flash-review-frontmatter.cjs');
 
 const root = path.resolve(__dirname, '..');
 const commandsDir = path.join(root, 'commands');

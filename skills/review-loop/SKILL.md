@@ -9,7 +9,7 @@ description: >
 # Review loop
 
 Close the loop: implement → review → fix → re-review, using the `review_diff`
-tool of the `review-blaster` MCP server as the judge.
+tool of the `jev-flash-review` MCP server as the judge.
 
 **Core principle: the engine is the judge. Your own inspection never
 substitutes for its verdict.** A rule you believe you fixed is not fixed until

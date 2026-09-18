@@ -7,7 +7,7 @@ description: >
 
 # Review anything
 
-The `review_diff` tool of the `review-blaster` MCP server accepts any unified
+The `review_diff` tool of the `jev-flash-review` MCP server accepts any unified
 diff.
 
 **Core principle: you curate, the engine judges.** Read what the user asked

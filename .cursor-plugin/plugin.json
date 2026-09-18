@@ -1,13 +1,13 @@
 {
-  "name": "review-blaster",
-  "displayName": "review-blaster",
+  "name": "jev-flash-review",
+  "displayName": "jev-flash-review",
   "version": "0.1.0",
-  "description": "Rule-based code review skills backed by the review-blaster MCP engine — review PRs, arbitrary code, or loop until clean",
+  "description": "Rule-based code review skills backed by the jev-flash-review MCP engine — review PRs, arbitrary code, or loop until clean",
   "author": {
     "name": "Luca Valsecchi"
   },
-  "homepage": "https://github.com/lucvalse/review-blaster",
-  "repository": "https://github.com/lucvalse/review-blaster",
+  "homepage": "https://github.com/lucvalse/jev-flash-review",
+  "repository": "https://github.com/lucvalse/jev-flash-review",
   "license": "MIT",
   "keywords": ["code-review", "mcp", "typesafe"],
   "category": "developer-tools",

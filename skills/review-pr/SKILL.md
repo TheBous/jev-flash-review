@@ -8,7 +8,7 @@ description: >
 # Review a PR
 
 Run the project rule engine over a GitHub pull request via the `review_diff`
-tool of the `review-blaster` MCP server.
+tool of the `jev-flash-review` MCP server.
 
 **Core principle: the engine never reads the repository — you supply the diff,
 it returns verdicts.**
