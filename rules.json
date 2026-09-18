@@ -1305,6 +1305,12 @@
           "question": "Is data originating from APIs, logs, files, and configs treated as untrusted?",
           "applies_if": "Reading external data at process boundaries",
           "severity": "high"
+        },
+        {
+          "rule_id": "SEC-77",
+          "question": "Does the change refrain from weakening existing input validation, allowlists, or security checks?",
+          "applies_if": "Modifying validation logic, regexes, allowlists, or guard conditions",
+          "severity": "high"
         }
       ]
     },
