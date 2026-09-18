@@ -46,10 +46,30 @@ and never present one as the engine's result.
    findings. `results` is the full matrix including dropped ones; never report
    dropped rules as violations.
 
+## Large PRs: group related files
+
+Default: one `review_diff` call with the whole diff. The engine keeps
+import-related files and test/source pairs inside the same analysis chunk and
+splits under budget on its own.
+
+Step in only when you can see relations the engine cannot: path aliases
+(`@/...`), barrel re-exports, cross-package features, or structure you know
+from reading the codebase. Then:
+
+1. Partition the diff into coherent groups — coupled files together,
+   unrelated files apart.
+2. Make one `review_diff` call per group, keeping `title`, `description`, and
+   `taskContext` identical across calls.
+3. Merge the verdicts when reporting: concatenate the `violations` arrays and
+   sum the summary counts.
+
+Never split coupled files across groups — a rule that checks the contract
+between two files needs both sides in the same call.
+
 ## Common mistakes
 
-- Truncating the diff to fit — review in coherent slices instead (one feature
-  or file group per call) and merge results.
+- Truncating the diff to fit — split into coherent file groups (see Large PRs
+  above) and make one call per group.
 - Presenting a `NO` as a certainty — report it as a finding with its
   probability and let the user decide.
 - Detailing `N/A` rules — one line with their ids, nothing more.
