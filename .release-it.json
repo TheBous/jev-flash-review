@@ -4,6 +4,7 @@
     "commitMessage": "chore(release): v${version}",
     "tagName": "v${version}",
     "requireCleanWorkingDir": true,
+    "stageAll": true,
     "push": true
   },
   "npm": {
@@ -11,6 +12,9 @@
   },
   "github": {
     "release": false
+  },
+  "hooks": {
+    "after:bump": "node scripts/sync-manifests.cjs"
   },
   "plugins": {
     "@release-it/conventional-changelog": {
