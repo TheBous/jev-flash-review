@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.10.0](https://github.com/TheBous/review-blaster/compare/v0.9.0...v0.10.0) (2026-09-18)
+
+### Features
+
+* **diff:** implement extraContext for enhanced rule evaluation ([761d4e9](https://github.com/TheBous/review-blaster/commit/761d4e968713aed5b896cc01da3a8484953236e5))
+
 ## [0.9.0](https://github.com/TheBous/review-blaster/compare/v0.8.0...v0.9.0) (2026-09-18)
 
 ### Features

@@ -1,7 +1,7 @@
 {
   "name": "jev-flash-review",
   "displayName": "jev-flash-review",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "Rule-based code review skills backed by the jev-flash-review MCP engine — review PRs, arbitrary code, or loop until clean",
   "author": {
     "name": "Luca Valsecchi"
