@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.8.0](https://github.com/TheBous/review-blaster/compare/v0.7.0...v0.8.0) (2026-09-18)
+
+### Features
+
+* **diff:** enhance chunkDiff to group related files and improve diff handling ([ac924dc](https://github.com/TheBous/review-blaster/commit/ac924dc69349bd9d545ad4a1616d101dac91b8ef))
+
+### Reverts
+
+* Revert "feat(rules): enhance guidance for handling large reviews and PRs with coherent grouping" ([aa38c7c](https://github.com/TheBous/review-blaster/commit/aa38c7c542040ac9343d6db1267fea5a324958b7))
+
 ## [0.7.0](https://github.com/TheBous/review-blaster/compare/v0.6.0...v0.7.0) (2026-09-18)
 
 ### Features
