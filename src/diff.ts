@@ -27,15 +27,10 @@ interface FileUnit {
   text: string;
 }
 
-export function chunkDiff(diff: string): string[] {
-  if (diff.length <= CHUNK_CHARS) return [diff];
-  return packUnits(splitFileUnits(diff), false);
-}
-
 /** One chunk per file, pairing only its changed test file; oversized chunks are hunk-split. */
 export function chunkPerFile(diff: string): string[] {
   return pairTestUnits(splitFileUnits(diff))
-    .flatMap((unit) => expand(unit, true))
+    .flatMap((unit) => expand(unit))
     .map((u) => u.text);
 }
 
@@ -92,33 +87,12 @@ function testPaired(p1: string, p2: string): boolean {
   );
 }
 
-/** Greedy packing of whole files under the budget; oversized units are hunk-split. */
-function packUnits(units: FileUnit[], selfContained: boolean): string[] {
-  const chunks: string[] = [];
-  let buf: FileUnit[] = [];
-  let size = 0;
-  for (const unit of units) {
-    for (const u of expand(unit, selfContained)) {
-      if (buf.length > 0 && size + u.text.length + 1 > CHUNK_CHARS) {
-        chunks.push(buf.map((v) => v.text).join('\n'));
-        buf = [];
-        size = 0;
-      }
-      buf.push(u);
-      size += u.text.length + 1;
-    }
-  }
-  if (buf.length > 0) chunks.push(buf.map((v) => v.text).join('\n'));
-  return chunks;
-}
-
-function expand(unit: FileUnit, selfContained: boolean): FileUnit[] {
+function expand(unit: FileUnit): FileUnit[] {
   if (unit.text.length <= CHUNK_CHARS) return [unit];
-  if (!selfContained) return lineSplit(unit.text).map((text) => ({ path: unit.path, text }));
 
-  // A paired source+test unit can be larger than the budget. Split its
-  // members independently, but keep every resulting piece self-contained and
-  // never mix it with an unrelated file.
+  // A paired source+test unit can be larger than the budget. Split its members
+  // independently, but keep every resulting piece self-contained and never
+  // mix it with an unrelated file.
   const members = splitFileUnits(unit.text);
   return members.flatMap((member) =>
     splitByHunks(member.text).map((text) => ({ path: member.path, text })),
