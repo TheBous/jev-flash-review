@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "jev-flash-review",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "Rule-based code review skills backed by the jev-flash-review MCP engine — review PRs, arbitrary code, or loop until clean.",
   "author": {
     "name": "Luca Valsecchi"
