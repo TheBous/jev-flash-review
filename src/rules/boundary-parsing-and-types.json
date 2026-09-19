@@ -4,110 +4,92 @@
     {
       "rule_id": "BND-01",
       "question": "Is the flow entry point → parsing → domain → adapter → output traceable?",
-      "applies_if": "Data flow from external sources into application interior",
-      "severity": "medium"
+      "applies_if": "Data flow from external sources into application interior"
     },
     {
       "rule_id": "BND-02",
       "question": "Are untrusted inputs parsed exactly once at the boundary?",
-      "applies_if": "Receiving data from untrusted external sources",
-      "severity": "blocker"
+      "applies_if": "Receiving data from untrusted external sources"
     },
     {
       "rule_id": "BND-03",
       "question": "Does the domain receive domain values rather than raw external DTOs?",
-      "applies_if": "Passing data between API/Boundary layers and domain",
-      "severity": "high"
+      "applies_if": "Passing data between API/Boundary layers and domain"
     },
     {
       "rule_id": "BND-04",
       "question": "Is the input type verified?",
-      "applies_if": "Parsing and processing external inputs",
-      "severity": "high"
+      "applies_if": "Parsing and processing external inputs"
     },
     {
       "rule_id": "BND-05",
       "question": "Is input length constrained?",
-      "applies_if": "Accepting strings, files, or external payloads",
-      "severity": "high"
+      "applies_if": "Accepting strings, files, or external payloads"
     },
     {
       "rule_id": "BND-06",
       "question": "Is numeric input range validated?",
-      "applies_if": "Accepting external numeric parameters",
-      "severity": "high"
+      "applies_if": "Accepting external numeric parameters"
     },
     {
       "rule_id": "BND-07",
       "question": "Are charset and encoding explicitly handled?",
-      "applies_if": "Manipulating files, buffers, or network payloads",
-      "severity": "medium"
+      "applies_if": "Manipulating files, buffers, or network payloads"
     },
     {
       "rule_id": "BND-08",
       "question": "Are enumerable values validated against an allowlist?",
-      "applies_if": "Accepting discrete choice values from user/API input",
-      "severity": "high"
+      "applies_if": "Accepting discrete choice values from user/API input"
     },
     {
       "rule_id": "BND-09",
       "question": "Does normalization occur before security or business decisions?",
-      "applies_if": "String/input sanitization or normalization",
-      "severity": "high"
+      "applies_if": "String/input sanitization or normalization"
     },
     {
       "rule_id": "BND-10",
       "question": "Is validation free from duplication with divergent semantics?",
-      "applies_if": "Validation present across multiple pipeline points",
-      "severity": "medium"
+      "applies_if": "Validation present across multiple pipeline points"
     },
     {
       "rule_id": "BND-11",
       "question": "Are illegal states made unrepresentable by the type system?",
-      "applies_if": "Modeling data structures in type system",
-      "severity": "medium"
+      "applies_if": "Modeling data structures in type system"
     },
     {
       "rule_id": "BND-12",
       "question": "Are mutually exclusive options represented via union or discriminated state?",
-      "applies_if": "Defining data structures with alternative variants",
-      "severity": "medium"
+      "applies_if": "Defining data structures with alternative variants"
     },
     {
       "rule_id": "BND-13",
       "question": "Are any, casts, unknown, and optional fallbacks genuinely justified?",
-      "applies_if": "Statically typed languages bypassing type system (e.g., TS/C#)",
-      "severity": "medium"
+      "applies_if": "Statically typed languages bypassing type system (e.g., TS/C#)"
     },
     {
       "rule_id": "BND-14",
       "question": "Do silent fallbacks refrain from hiding undefined invariants?",
-      "applies_if": "Default values or missing-value handling present",
-      "severity": "high"
+      "applies_if": "Default values or missing-value handling present"
     },
     {
       "rule_id": "BND-15",
       "question": "Are external adapter responses validated before use?",
-      "applies_if": "Integration with external services or APIs",
-      "severity": "high"
+      "applies_if": "Integration with external services or APIs"
     },
     {
       "rule_id": "BND-16",
       "question": "Does serialization refrain from exposing internal or sensitive fields?",
-      "applies_if": "Serializing objects outward",
-      "severity": "high"
+      "applies_if": "Serializing objects outward"
     },
     {
       "rule_id": "BND-17",
       "question": "Is JavaScript type coercion handled at trust boundaries?",
-      "applies_if": "Reading query, body, or params in JavaScript or TypeScript",
-      "severity": "high"
+      "applies_if": "Reading query, body, or params in JavaScript or TypeScript"
     },
     {
       "rule_id": "BND-18",
       "question": "Are presence-only checks (truthy or non-empty strings) used where the value's format or domain should be validated?",
-      "applies_if": "Accepting identifiers, codes, tokens, dates, or other strings with an expected format or domain",
-      "severity": "high"
+      "applies_if": "Accepting identifiers, codes, tokens, dates, or other strings with an expected format or domain"
     }
   ]
 }

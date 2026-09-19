@@ -4,146 +4,122 @@
     {
       "rule_id": "A11Y-01",
       "question": "Do HTML elements use native semantic elements when available?",
-      "applies_if": "Web HTML layouts or interactive components",
-      "severity": "medium"
+      "applies_if": "Web HTML layouts or interactive components"
     },
     {
       "rule_id": "A11Y-02",
       "question": "Are all interactive features operable via keyboard?",
-      "applies_if": "Interactive web user interfaces",
-      "severity": "high"
+      "applies_if": "Interactive web user interfaces"
     },
     {
       "rule_id": "A11Y-03",
       "question": "Is the focus indicator clearly visible?",
-      "applies_if": "CSS styles or components with focused states",
-      "severity": "high"
+      "applies_if": "CSS styles or components with focused states"
     },
     {
       "rule_id": "A11Y-04",
       "question": "Is focus prevented from being obscured?",
-      "applies_if": "Sticky elements, modals, or overlapping layers",
-      "severity": "medium"
+      "applies_if": "Sticky elements, modals, or overlapping layers"
     },
     {
       "rule_id": "A11Y-05",
       "question": "Do dialogs manage initial focus capture and return focus on close?",
-      "applies_if": "Modals, dialogs, or interactive popovers",
-      "severity": "medium"
+      "applies_if": "Modals, dialogs, or interactive popovers"
     },
     {
       "rule_id": "A11Y-06",
       "question": "Do form inputs have associated labels?",
-      "applies_if": "Form components and input fields",
-      "severity": "high"
+      "applies_if": "Form components and input fields"
     },
     {
       "rule_id": "A11Y-07",
       "question": "Are form validation errors announced to assistive technology?",
-      "applies_if": "Form validation and error rendering",
-      "severity": "medium"
+      "applies_if": "Form validation and error rendering"
     },
     {
       "rule_id": "A11Y-08",
       "question": "Do informative images feature appropriate alt text?",
-      "applies_if": "Image tags or image components",
-      "severity": "medium"
+      "applies_if": "Image tags or image components"
     },
     {
       "rule_id": "A11Y-09",
       "question": "Are decorative images hidden from assistive technology output?",
-      "applies_if": "Decorative img tags or icons (alt='', aria-hidden)",
-      "severity": "low"
+      "applies_if": "Decorative img tags or icons (alt='', aria-hidden)"
     },
     {
       "rule_id": "A11Y-10",
       "question": "Does page structure utilize consistent heading hierarchy and landmarks?",
-      "applies_if": "Web page structure and layout",
-      "severity": "medium"
+      "applies_if": "Web page structure and layout"
     },
     {
       "rule_id": "A11Y-11",
       "question": "Are color contrast and UI states conveyed without relying on color alone?",
-      "applies_if": "UI component design and visual styling",
-      "severity": "high"
+      "applies_if": "UI component design and visual styling"
     },
     {
       "rule_id": "A11Y-12",
       "question": "Do interactive touch targets meet minimum size requirements?",
-      "applies_if": "Buttons, links, and touch/click controls",
-      "severity": "medium"
+      "applies_if": "Buttons, links, and touch/click controls"
     },
     {
       "rule_id": "A11Y-13",
       "question": "Does drag-and-drop functionality offer a single-pointer alternative?",
-      "applies_if": "Interfaces with drag-and-drop actions",
-      "severity": "medium"
+      "applies_if": "Interfaces with drag-and-drop actions"
     },
     {
       "rule_id": "A11Y-14",
       "question": "Is content free from dangerous flashing effects?",
-      "applies_if": "Animations or flashing visual elements",
-      "severity": "high"
+      "applies_if": "Animations or flashing visual elements"
     },
     {
       "rule_id": "A11Y-15",
       "question": "Can time limits be extended, adjusted, or turned off?",
-      "applies_if": "Timed sessions or visible countdown timers",
-      "severity": "medium"
+      "applies_if": "Timed sessions or visible countdown timers"
     },
     {
       "rule_id": "A11Y-16",
       "question": "Does layout scale gracefully under page zoom and reflow?",
-      "applies_if": "Responsive CSS layout and text enlargement",
-      "severity": "medium"
+      "applies_if": "Responsive CSS layout and text enlargement"
     },
     {
       "rule_id": "A11Y-17",
       "question": "Do responsive viewport variations retain semantic meaning?",
-      "applies_if": "Media queries and responsive adaptations",
-      "severity": "medium"
+      "applies_if": "Media queries and responsive adaptations"
     },
     {
       "rule_id": "A11Y-18",
       "question": "Are unexpected context changes prevented on input focus or value change?",
-      "applies_if": "onFocus or onChange handlers on form controls",
-      "severity": "medium"
+      "applies_if": "onFocus or onChange handlers on form controls"
     },
     {
       "rule_id": "A11Y-19",
       "question": "Is the authentication flow accessible to assistive technologies?",
-      "applies_if": "Login, MFA, or CAPTCHA flows",
-      "severity": "medium"
+      "applies_if": "Login, MFA, or CAPTCHA flows"
     },
     {
       "rule_id": "A11Y-20",
       "question": "Are instructions and help elements consistent across screens?",
-      "applies_if": "Reused UI components or user guidance text",
-      "severity": "low"
+      "applies_if": "Reused UI components or user guidance text"
     },
     {
       "rule_id": "A11Y-21",
       "question": "Does the UI expose correct accessible names, roles, and states to screen readers?",
-      "applies_if": "Using ARIA attributes or custom web components",
-      "severity": "high"
+      "applies_if": "Using ARIA attributes or custom web components"
     },
     {
       "rule_id": "A11Y-22",
       "question": "Do animations respect the user's reduced motion preferences?",
-      "applies_if": "CSS/JS animations or transitions",
-      "severity": "medium"
+      "applies_if": "CSS/JS animations or transitions"
     },
     {
       "rule_id": "A11Y-23",
       "question": "Do dates, numbers, and currencies adhere to local conventions and time zones?",
-      "applies_if": "Displaying formatted values in the UI",
-      "severity": "medium"
+      "applies_if": "Displaying formatted values in the UI"
     },
     {
       "rule_id": "A11Y-24",
       "question": "Do RTL (Right-to-Left) or multilingual text layouts render without breaking component structure?",
-      "applies_if": "Multilingual support or internationalization (i18n/l10n)",
-      "severity": "medium"
+      "applies_if": "Multilingual support or internationalization (i18n/l10n)"
     }
   ]
 }

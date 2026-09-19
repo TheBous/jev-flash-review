@@ -6,7 +6,6 @@ export interface Rule {
   rule_id: string;
   question: string;
   applies_if: string;
-  severity: string;
 }
 
 export interface RuleConfig {
@@ -29,26 +28,37 @@ export type ReviewError = 'empty-diff';
 export interface EvidenceHit {
   location: string;
   probability: number;
-  /** Quoted hunk body for the confirm pass; stripped from public output. */
-  snippet?: string;
+  chunkIndex: number;
+}
+
+export interface ChunkOutcome {
+  chunkIndex: number;
+  answer: 'YES' | 'NO' | 'N/A';
+  probability: number;
+  confidence: number;
+  evidence: EvidenceHit[];
 }
 
 export interface RuleOutcome {
   rule_id: string;
   question: string;
-  severity: string;
+  severity: Severity | null;
+  severityConfidence: number | null;
   answer: 'YES' | 'NO' | 'N/A';
   probability: number;
   confidence: number;
   evidence: EvidenceHit[];
+  /** Per-chunk decisions and evidence before the top-level worst result. */
+  chunkResults: ChunkOutcome[];
   /** Impact rated against the selected evidence; null unless a confirmed violation. */
   impact: ImpactLevel | null;
   impactConfidence: number | null;
 }
 
 export type ImpactLevel = 'none' | 'minor' | 'significant' | 'critical';
+export type Severity = 'blocker' | 'high' | 'medium' | 'low' | 'info' | 'advisory';
 
-/** Working outcome inside the workflow: carries the worst chunk for evidence. */
+/** Working outcome inside the workflow: aggregate result plus per-chunk evidence context. */
 export interface Outcome extends RuleOutcome {
   worstChunkIndex: number;
 }

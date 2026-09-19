@@ -4,74 +4,62 @@
     {
       "rule_id": "CTX-01",
       "question": "Does the implemented behavior satisfy the stated goal?",
-      "applies_if": "Specification/PR description is available",
-      "severity": "blocker"
+      "applies_if": "Specification/PR description is available"
     },
     {
       "rule_id": "CTX-02",
       "question": "Are all explicit acceptance criteria satisfied?",
-      "applies_if": "Explicit acceptance criteria are present",
-      "severity": "blocker"
+      "applies_if": "Explicit acceptance criteria are present"
     },
     {
       "rule_id": "CTX-03",
       "question": "Does the change respect declared non-goals?",
-      "applies_if": "Non-goals are explicitly stated in the requirements",
-      "severity": "high"
+      "applies_if": "Non-goals are explicitly stated in the requirements"
     },
     {
       "rule_id": "CTX-04",
       "question": "Are unrelated changes absent?",
-      "applies_if": "Always",
-      "severity": "medium"
+      "applies_if": "Always"
     },
     {
       "rule_id": "CTX-05",
       "question": "Do the title and description accurately reflect the change?",
-      "applies_if": "Analyzing Pull Request / Commit metadata",
-      "severity": "low"
+      "applies_if": "Analyzing Pull Request / Commit metadata"
     },
     {
       "rule_id": "CTX-06",
       "question": "Is the description free of placeholders or empty mandatory sections?",
-      "applies_if": "Analyzing PR template / Commit metadata",
-      "severity": "low"
+      "applies_if": "Analyzing PR template / Commit metadata"
     },
     {
       "rule_id": "CTX-07",
       "question": "Have configuration, migrations, and rollout been considered?",
-      "applies_if": "Change requires environment, DB schema, or infrastructure updates",
-      "severity": "high"
+      "applies_if": "Change requires environment, DB schema, or infrastructure updates"
     },
     {
       "rule_id": "CTX-08",
       "question": "Is generated, vendor, or minified code distinguished from human-written code?",
-      "applies_if": "Generated files, bundles, or committed third-party libraries exist",
-      "severity": "medium"
+      "applies_if": "Generated files, bundles, or committed third-party libraries exist"
     },
     {
       "rule_id": "CTX-09",
       "question": "Does the review refrain from inventing requirements not in the specification?",
-      "applies_if": "Always",
-      "severity": "info"
+      "applies_if": "Always"
     },
     {
       "rule_id": "CTX-10",
       "question": "Has the risk level been evaluated based on impact, blast radius, irreversibility, boundaries, uncertainty, and coverage?",
-      "applies_if": "Strategic PR evaluation",
-      "severity": "high"
+      "applies_if": "Strategic PR evaluation"
     },
     {
       "rule_id": "CTX-11",
       "question": "Is every specialized reviewer justified by the type of modified code?",
-      "applies_if": "Dynamic allocation of review lenses",
-      "severity": "info"
+      "applies_if": "Dynamic allocation of review lenses"
     },
     {
       "rule_id": "CTX-12",
       "question": "Has the relevant code been read completely rather than via superficial patterns?",
-      "applies_if": "Always",
-      "severity": "high"
+      "applies_if": "Always"
     }
   ]
 }

@@ -4,224 +4,187 @@
     {
       "rule_id": "SUP-01",
       "question": "Is a new dependency genuinely required?",
-      "applies_if": "Modifications to package.json, pom.xml, go.mod, Cargo.toml, etc.",
-      "severity": "high"
+      "applies_if": "Modifications to package.json, pom.xml, go.mod, Cargo.toml, etc."
     },
     {
       "rule_id": "SUP-02",
       "question": "Does the dependency refrain from duplicating existing project capabilities?",
-      "applies_if": "Adding new project libraries",
-      "severity": "medium"
+      "applies_if": "Adding new project libraries"
     },
     {
       "rule_id": "SUP-03",
       "question": "Does the dependency originate from a trusted source?",
-      "applies_if": "Adding external third-party packages",
-      "severity": "blocker"
+      "applies_if": "Adding external third-party packages"
     },
     {
       "rule_id": "SUP-04",
       "question": "Is the dependency actively maintained?",
-      "applies_if": "Adding external third-party packages",
-      "severity": "high"
+      "applies_if": "Adding external third-party packages"
     },
     {
       "rule_id": "SUP-05",
       "question": "Is the dependency free from unaccepted known vulnerabilities?",
-      "applies_if": "Dependency modifications (Dependency Scan phase)",
-      "severity": "blocker"
+      "applies_if": "Dependency modifications (Dependency Scan phase)"
     },
     {
       "rule_id": "SUP-06",
       "question": "Is the dependency license compatible with the project?",
-      "applies_if": "Adding or updating external packages",
-      "severity": "high"
+      "applies_if": "Adding or updating external packages"
     },
     {
       "rule_id": "SUP-07",
       "question": "Are manifest files and lockfiles fully synchronized?",
-      "applies_if": "Modifying package manifest or lockfile",
-      "severity": "blocker"
+      "applies_if": "Modifying package manifest or lockfile"
     },
     {
       "rule_id": "SUP-08",
       "question": "Was the lockfile free from manual or incorrect manipulation?",
-      "applies_if": "Direct edits to lockfiles",
-      "severity": "high"
+      "applies_if": "Direct edits to lockfiles"
     },
     {
       "rule_id": "SUP-09",
       "question": "Were transitive dependencies evaluated for security risks?",
-      "applies_if": "Including new libraries",
-      "severity": "medium"
+      "applies_if": "Including new libraries"
     },
     {
       "rule_id": "SUP-10",
       "question": "Does the dependency upgrade include a review of the changelog?",
-      "applies_if": "Upgrading dependency versions",
-      "severity": "medium"
+      "applies_if": "Upgrading dependency versions"
     },
     {
       "rule_id": "SUP-11",
       "question": "Were independent updates kept unbundled rather than combined unnecessarily?",
-      "applies_if": "Mass package version upgrades",
-      "severity": "low"
+      "applies_if": "Mass package version upgrades"
     },
     {
       "rule_id": "SUP-12",
       "question": "Are CI GitHub Actions pinned to immutable commit SHAs when required?",
-      "applies_if": "Modifying CI/CD pipeline workflows (e.g., GitHub Actions)",
-      "severity": "high"
+      "applies_if": "Modifying CI/CD pipeline workflows (e.g., GitHub Actions)"
     },
     {
       "rule_id": "SUP-13",
       "question": "Do CI execution tokens adhere to the principle of least privilege?",
-      "applies_if": "Configuring CI/CD workflows",
-      "severity": "blocker"
+      "applies_if": "Configuring CI/CD workflows"
     },
     {
       "rule_id": "SUP-14",
       "question": "Are write permissions restricted strictly to the job that requires them?",
-      "applies_if": "Configuring CI/CD jobs",
-      "severity": "high"
+      "applies_if": "Configuring CI/CD jobs"
     },
     {
       "rule_id": "SUP-15",
       "question": "Are third-party CI actions trusted and kept minimal?",
-      "applies_if": "Using external plugins or steps in CI pipelines",
-      "severity": "high"
+      "applies_if": "Using external plugins or steps in CI pipelines"
     },
     {
       "rule_id": "SUP-16",
       "question": "Are untrusted pull requests prevented from accessing repository secrets?",
-      "applies_if": "Configuring CI triggers on fork PRs",
-      "severity": "blocker"
+      "applies_if": "Configuring CI triggers on fork PRs"
     },
     {
       "rule_id": "SUP-17",
       "question": "Do CI workflows prevent execution of arbitrary user-controlled code?",
-      "applies_if": "CI triggers executing on issue, PR title, or comment text",
-      "severity": "blocker"
+      "applies_if": "CI triggers executing on issue, PR title, or comment text"
     },
     {
       "rule_id": "SUP-18",
       "question": "Are CI build logs free of leaked secrets?",
-      "applies_if": "CI build and test job output execution",
-      "severity": "blocker"
+      "applies_if": "CI build and test job output execution"
     },
     {
       "rule_id": "SUP-19",
       "question": "Do required status checks strictly block merging on failure?",
-      "applies_if": "Branch protection rules configuration",
-      "severity": "high"
+      "applies_if": "Branch protection rules configuration"
     },
     {
       "rule_id": "SUP-20",
       "question": "Does the main branch configuration prevent force-pushing and accidental deletion?",
-      "applies_if": "Git repository settings",
-      "severity": "high"
+      "applies_if": "Git repository settings"
     },
     {
       "rule_id": "SUP-21",
       "question": "Is an independent code review required before merging?",
-      "applies_if": "Pull request merge policy configuration",
-      "severity": "high"
+      "applies_if": "Pull request merge policy configuration"
     },
     {
       "rule_id": "SUP-22",
       "question": "Are stale PR approvals automatically invalidated after new commits?",
-      "applies_if": "Pull request merge policy configuration",
-      "severity": "high"
+      "applies_if": "Pull request merge policy configuration"
     },
     {
       "rule_id": "SUP-23",
       "question": "Is source code scanned with a SAST or equivalent tool?",
-      "applies_if": "CI/CD pipeline configuration",
-      "severity": "medium"
+      "applies_if": "CI/CD pipeline configuration"
     },
     {
       "rule_id": "SUP-24",
       "question": "Are unreviewable binary artifacts prevented from being committed?",
-      "applies_if": "Committing binary files or compiled binaries to git",
-      "severity": "high"
+      "applies_if": "Committing binary files or compiled binaries to git"
     },
     {
       "rule_id": "SUP-25",
       "question": "Do build artifacts derive from reproducible or verifiable build setups?",
-      "applies_if": "Artifact compilation and packaging process",
-      "severity": "medium"
+      "applies_if": "Artifact compilation and packaging process"
     },
     {
       "rule_id": "SUP-26",
       "question": "Do release artifacts maintain verifiable integrity?",
-      "applies_if": "Release artifact checksum/signature generation",
-      "severity": "high"
+      "applies_if": "Release artifact checksum/signature generation"
     },
     {
       "rule_id": "SUP-27",
       "question": "Does provenance tracking identify artifacts using cryptographic digests?",
-      "applies_if": "Docker image or artifact deployment pipelines",
-      "severity": "medium"
+      "applies_if": "Docker image or artifact deployment pipelines"
     },
     {
       "rule_id": "SUP-28",
       "question": "Is build provenance cryptographically authenticatable?",
-      "applies_if": "SLSA or build attestation implementations",
-      "severity": "medium"
+      "applies_if": "SLSA or build attestation implementations"
     },
     {
       "rule_id": "SUP-29",
       "question": "Is the build environment isolated?",
-      "applies_if": "CI/CD build runner setup",
-      "severity": "high"
+      "applies_if": "CI/CD build runner setup"
     },
     {
       "rule_id": "SUP-30",
       "question": "Is the build environment ephemeral when required?",
-      "applies_if": "CI/CD build runner setup",
-      "severity": "medium"
+      "applies_if": "CI/CD build runner setup"
     },
     {
       "rule_id": "SUP-31",
       "question": "Are build cache layers protected from cache poisoning attacks?",
-      "applies_if": "Caching layer usage in CI jobs",
-      "severity": "high"
+      "applies_if": "Caching layer usage in CI jobs"
     },
     {
       "rule_id": "SUP-32",
       "question": "Are external parameters used during build steps tracked?",
-      "applies_if": "Parameterized builds",
-      "severity": "low"
+      "applies_if": "Parameterized builds"
     },
     {
       "rule_id": "SUP-33",
       "question": "Is dependency provenance verifiable?",
-      "applies_if": "Private registries or dependency mirroring",
-      "severity": "medium"
+      "applies_if": "Private registries or dependency mirroring"
     },
     {
       "rule_id": "SUP-34",
       "question": "Are deployment artifacts verified before distribution?",
-      "applies_if": "Production deployment pipelines",
-      "severity": "high"
+      "applies_if": "Production deployment pipelines"
     },
     {
       "rule_id": "SUP-35",
       "question": "Does the repository contain a valid SECURITY.md policy?",
-      "applies_if": "Public or corporate repository setup",
-      "severity": "low"
+      "applies_if": "Public or corporate repository setup"
     },
     {
       "rule_id": "SUP-36",
       "question": "Are security vulnerability alerts monitored for project dependencies?",
-      "applies_if": "Dependabot, Snyk, or Renovate tool usage",
-      "severity": "medium"
+      "applies_if": "Dependabot, Snyk, or Renovate tool usage"
     },
     {
       "rule_id": "SUP-37",
       "question": "Do workflow scripts refrain from interpolating untrusted contexts?",
-      "applies_if": "GitHub Actions workflows",
-      "severity": "high"
+      "applies_if": "GitHub Actions workflows"
     }
   ]
 }

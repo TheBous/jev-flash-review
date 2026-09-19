@@ -4,26 +4,22 @@
     {
       "rule_id": "LLM-01",
       "question": "Is model output validated and encoded before reaching executors, queries, or renderers?",
-      "applies_if": "Passing language-model completions downstream",
-      "severity": "blocker"
+      "applies_if": "Passing language-model completions downstream"
     },
     {
       "rule_id": "LLM-02",
       "question": "Do AI agents require human approval for destructive, irreversible, or privileged actions?",
-      "applies_if": "Agentic tool use",
-      "severity": "high"
+      "applies_if": "Agentic tool use"
     },
     {
       "rule_id": "LLM-03",
       "question": "Do agent loops enforce iteration, time, and cost limits?",
-      "applies_if": "Autonomous agent loops",
-      "severity": "medium"
+      "applies_if": "Autonomous agent loops"
     },
     {
       "rule_id": "LLM-04",
       "question": "Are retrieval sources tenant-isolated, with untrusted content segregated from instructions?",
-      "applies_if": "Retrieval-augmented generation pipelines",
-      "severity": "high"
+      "applies_if": "Retrieval-augmented generation pipelines"
     }
   ]
 }
