@@ -4,77 +4,92 @@
     {
       "rule_id": "DOC-01",
       "question": "Is public code documentation updated to reflect changes?",
-      "applies_if": "Modifying public interfaces or modules"
+      "applies_if": "Modifying public interfaces or modules",
+      "severity": "medium"
     },
     {
       "rule_id": "DOC-02",
       "question": "Does documentation explain both behavior and operational contracts?",
-      "applies_if": "Writing docstrings or API documentation"
+      "applies_if": "Writing docstrings or API documentation",
+      "severity": "medium"
     },
     {
       "rule_id": "DOC-03",
       "question": "Do inline comments explain 'why' rather than stating the obvious 'what'?",
-      "applies_if": "Inline comments in source code"
+      "applies_if": "Inline comments in source code",
+      "severity": "low"
     },
     {
       "rule_id": "DOC-04",
       "question": "Do modified APIs include updated reference documentation?",
-      "applies_if": "Modifying API routes or schemas"
+      "applies_if": "Modifying API routes or schemas",
+      "severity": "high"
     },
     {
       "rule_id": "DOC-05",
       "question": "Do build/release changes update README and runbook documentation?",
-      "applies_if": "Modifying setup, build, or deployment steps"
+      "applies_if": "Modifying setup, build, or deployment steps",
+      "severity": "medium"
     },
     {
       "rule_id": "DOC-06",
       "question": "Do database migrations contain operational execution instructions?",
-      "applies_if": "Adding or modifying database/data migrations"
+      "applies_if": "Adding or modifying database/data migrations",
+      "severity": "high"
     },
     {
       "rule_id": "DOC-07",
       "question": "Do risky feature rollouts include a documented rollback plan?",
-      "applies_if": "Complex deployments or infrastructure shifts"
+      "applies_if": "Complex deployments or infrastructure shifts",
+      "severity": "high"
     },
     {
       "rule_id": "DOC-08",
       "question": "Do operational changes expose appropriate metrics or health signals?",
-      "applies_if": "Writing new background services or critical components"
+      "applies_if": "Writing new background services or critical components",
+      "severity": "medium"
     },
     {
       "rule_id": "DOC-09",
       "question": "Do added TODO comments describe actionable follow-up tasks?",
-      "applies_if": "Adding TODO or FIXME comments"
+      "applies_if": "Adding TODO or FIXME comments",
+      "severity": "low"
     },
     {
       "rule_id": "DOC-10",
       "question": "Are stale workarounds, obsolete compatibility layers, or 'removed' comments cleaned up?",
-      "applies_if": "Refactoring or removing legacy code"
+      "applies_if": "Refactoring or removing legacy code",
+      "severity": "low"
     },
     {
       "rule_id": "DOC-11",
       "question": "Is the commit message imperative and self-explanatory?",
-      "applies_if": "Commit messages"
+      "applies_if": "Commit messages",
+      "severity": "low"
     },
     {
       "rule_id": "DOC-12",
       "question": "Does the PR description cover motivation, changes made, and verification steps?",
-      "applies_if": "PR or merge request descriptions"
+      "applies_if": "PR or merge request descriptions",
+      "severity": "medium"
     },
     {
       "rule_id": "DOC-13",
       "question": "Are known edge cases or constraints explicitly documented?",
-      "applies_if": "Partial feature implementation or known limits"
+      "applies_if": "Partial feature implementation or known limits",
+      "severity": "medium"
     },
     {
       "rule_id": "DOC-14",
       "question": "Does review feedback distinguish between required, optional, nit, and info?",
-      "applies_if": "Review report generation"
+      "applies_if": "Review report generation",
+      "severity": "info"
     },
     {
       "rule_id": "DOC-15",
       "question": "Are duplicate review findings aggregated by root cause?",
-      "applies_if": "Review report generation"
+      "applies_if": "Review report generation",
+      "severity": "info"
     }
   ]
 }

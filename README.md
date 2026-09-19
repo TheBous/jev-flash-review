@@ -16,26 +16,21 @@ agent curates input → review_diff tool → structured JSON → agent acts
 1. **The agent builds the input**: a unified diff plus `taskContext` — the
    business purpose, boundaries ("fence") and invariants of the task. The diff
    alone judges hygiene; the fence lets the engine judge business-logic fit.
-2. **The engine evaluates every rule in `src/rules/`**: the diff is chunked
-   one changed file per chunk, optionally with its changed test file (no
-   duplication — every file is judged exactly once, oversized chunks are
-   line-split); each rule becomes a typed Choice question
-   (`YES` / `NO` / `N/A` with `applies_if`), questions are batched per
-   (chunk × rule set) and run in parallel.
-3. **Test pairing**: when a changed source file has its changed `.test` or
-   `.spec` counterpart in the PR, both files are reviewed in the same chunk.
-   Imported modules and importers are never added to that chunk.
-4. **Merge**: a rule takes its most severe outcome across chunks (worst wins).
-5. **Evidence**: for each `NO` result, a Choice over the diff's hunk markers
-   ("select instead of generate") — the engine picks the location, `absent`,
-   or `unsupported`; the code prints `file:line`. Violations with no hunk are
-   reported as `absence` (missing tests, docs, handling) or PR-level issues.
-6. **Adjudication**: weak locations (top confidence < 0.55) are dropped, not
-   reported. The evidence Choice also accepts `unsupported`, which drops a
-   location when the diff does not show a concrete violation. Surviving
-   violations get an impact rating (`none` / `minor` / `significant` /
-   `critical`) scored against the selected evidence.
-7. **Output** (JSON): `results` holds the full matrix (every rule, including
+2. **The engine evaluates every rule in `src/rules/`**: the diff is chunked,
+   each rule becomes a typed Choice question (`YES` / `NO` / `N/A` with
+   `applies_if`), questions are batched per (chunk × rule set) and run in
+   parallel.
+3. **Merge**: a rule takes its most severe outcome across chunks.
+4. **Evidence**: for each violation, a second Choice over the diff's hunk
+   markers ("select instead of generate") — the engine picks the location,
+   the code prints `file:line`. Violations with no hunk are reported as
+   `absence` (missing tests, docs, handling) or PR-level issues.
+5. **Adjudication**: weak locations (top confidence < 0.55) are dropped, not
+   reported. Survivors pass a confirm Choice ("does this location actually
+   show the violation?") — `unsupported` kills them. Confirmed violations get
+   an impact rating (`none` / `minor` / `significant` / `critical`) scored
+   against the selected evidence.
+6. **Output** (JSON): `results` holds the full matrix (every rule, including
    dropped ones); `violations` holds confirmed findings only. Each outcome
    carries answer, probability, confidence, severity, question text, evidence
    locations and impact. Summary: `total / yes / no / n/a / blockers /
@@ -202,15 +197,12 @@ the model:
 ```
 skills/<name>/SKILL.md     canonical agent workflows (review-pr, review-free, review-loop)
 commands/<name>.md          thin command adapters
-src/engine.ts               thin review orchestrator
-src/engine/prepare.ts       input preparation and chunking
-src/engine/hunks.ts         hunk annotation helper
-src/engine/step-1.ts        rule evaluation and cross-chunk merge
-src/engine/step-2.ts        evidence selection and unsupported gate
-src/engine/step-3.ts        confidence gate, impact and severity rating
-src/engine/shared.ts        shared domain helpers
+src/engine.ts               review workflow: chunk, ask, merge (pure domain, no drivers)
+src/evidence.ts             evidence location over hunk markers
+src/adjudicate.ts           confidence gate, noIssue-style confirm, impact rating
 src/judge.ts                TypeSafe adapter implementing the Judge port
 src/types.ts                domain contracts (Result, ReviewInput/Output, ChoiceSpec)
+src/diff.ts                 chunking + hunk annotation
 src/rules.ts                boundary parser, merges src/rules/*.json
 src/index.ts                CLI shell (gh + text report)
 src/mcp/server.ts           MCP stdio server (thin handler)

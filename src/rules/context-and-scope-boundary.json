@@ -4,52 +4,62 @@
     {
       "rule_id": "META-01",
       "question": "Is the functional specification or requirement available?",
-      "applies_if": "Always"
+      "applies_if": "Always",
+      "severity": "info"
     },
     {
       "rule_id": "META-02",
       "question": "Does the model know the diff or the precise set of files to analyze?",
-      "applies_if": "Always"
+      "applies_if": "Always",
+      "severity": "blocker"
     },
     {
       "rule_id": "META-03",
       "question": "Are the relevant language, framework, and versions known?",
-      "applies_if": "Always"
+      "applies_if": "Always",
+      "severity": "medium"
     },
     {
       "rule_id": "META-04",
       "question": "Have all callers of the modified code been identified?",
-      "applies_if": "Code modifies existing signatures or contracts"
+      "applies_if": "Code modifies existing signatures or contracts",
+      "severity": "high"
     },
     {
       "rule_id": "META-05",
       "question": "Have all public or external boundaries been identified?",
-      "applies_if": "Code exposes or consumes external interfaces"
+      "applies_if": "Code exposes or consumes external interfaces",
+      "severity": "high"
     },
     {
       "rule_id": "META-06",
       "question": "Is the rule applicable to the analyzed code?",
-      "applies_if": "Always"
+      "applies_if": "Always",
+      "severity": "info"
     },
     {
       "rule_id": "META-07",
       "question": "Have relevant deterministic checks been executed?",
-      "applies_if": "Automated project tooling exists (linter, type-check, scanner)"
+      "applies_if": "Automated project tooling exists (linter, type-check, scanner)",
+      "severity": "blocker"
     },
     {
       "rule_id": "META-08",
       "question": "Can every finding be anchored to a precise location?",
-      "applies_if": "When reporting an issue"
+      "applies_if": "When reporting an issue",
+      "severity": "high"
     },
     {
       "rule_id": "META-09",
       "question": "Is uncertainty distinguished from a positive verification?",
-      "applies_if": "Always"
+      "applies_if": "Always",
+      "severity": "medium"
     },
     {
       "rule_id": "META-10",
       "question": "Does the rule verify a single independent issue?",
-      "applies_if": "Always"
+      "applies_if": "Always",
+      "severity": "info"
     }
   ]
 }

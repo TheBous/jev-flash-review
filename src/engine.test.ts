@@ -10,8 +10,8 @@ const CONFIG = parseRules({
     {
       name: 'test',
       rules: [
-        { rule_id: 'R1', question: 'Is R1 satisfied?', applies_if: 'always' },
-        { rule_id: 'R2', question: 'Is R2 satisfied?', applies_if: 'always' },
+        { rule_id: 'R1', question: 'Is R1 satisfied?', applies_if: 'always', severity: 'blocker' },
+        { rule_id: 'R2', question: 'Is R2 satisfied?', applies_if: 'always', severity: 'low' },
       ],
     },
   ],
@@ -26,15 +26,20 @@ const AT = (label: string, p: number): Answer => ({
   probabilities: { [label]: p },
   confidence: 0.5,
 });
+const SUPPORTED: Answer = {
+  choice: 'supported',
+  probabilities: { supported: 0.9 },
+  confidence: 0.8,
+};
+const UNSUPPORTED: Answer = {
+  choice: 'unsupported',
+  probabilities: { unsupported: 0.9 },
+  confidence: 0.8,
+};
 const SIGNIFICANT: Answer = {
   choice: 'significant',
   probabilities: { significant: 0.85 },
   confidence: 0.75,
-};
-const BLOCKER: Answer = {
-  choice: 'blocker',
-  probabilities: { blocker: 0.9 },
-  confidence: 0.8,
 };
 
 function fakeJudge(
@@ -46,7 +51,6 @@ function fakeJudge(
       for (const [key, spec] of Object.entries(questions)) {
         const decided = answer(state, key, spec);
         if (decided) answers[key] = decided;
-        else if (kindOf(spec) === 'severity') answers[key] = BLOCKER;
       }
       return {
         answers,
@@ -56,65 +60,18 @@ function fakeJudge(
   };
 }
 
-type QuestionKind = 'rule' | 'evidence' | 'impact' | 'severity';
+type QuestionKind = 'rule' | 'evidence' | 'confirm' | 'impact';
 
 function kindOf(spec: ChoiceSpec): QuestionKind {
   if ('question' in spec.input) return 'rule';
   const instruction = spec.input.instruction ?? '';
-  if (instruction.includes('production severity')) return 'severity';
+  if (instruction.includes('directly show') || instruction.includes('PR as a whole'))
+    return 'confirm';
   if (instruction.includes('production impact')) return 'impact';
   return 'evidence';
 }
 
 const SMALL_DIFF = ['diff --git a/src/a.ts b/src/a.ts', '@@ -1,1 +1,2 @@', '+new line'].join('\n');
-
-// ~25k chars per file: two files fit a chunk, three do not.
-const bigFile = (path: string, spec?: string) =>
-  [
-    `diff --git a/${path} b/${path}`,
-    `--- a/${path}`,
-    `+++ b/${path}`,
-    '@@ -1,0 +1,500 @@',
-    ...(spec ? [`+import x from '${spec}';`] : []),
-    ...Array.from({ length: 500 }, (_, i) => `+line ${i} ${'x'.repeat(40)}`),
-  ].join('\n');
-
-test('reviewDiff keeps each file with only its changed test file', async () => {
-  assert.ok(CONFIG.ok);
-  let ruleAsks = 0;
-  const ruleDiffs: string[] = [];
-  const diff = [bigFile('src/a.ts', './b'), bigFile('src/a.test.ts'), bigFile('src/b.ts')].join(
-    '\n',
-  );
-  const judge = fakeJudge((state, key, spec) => {
-    switch (kindOf(spec)) {
-      case 'rule':
-        ruleAsks += 1;
-        ruleDiffs.push(state.pr.diff);
-        return key === 'R1' ? NO(0.5) : YES(0.95);
-      case 'evidence':
-        return AT('hunk_001', 0.72);
-      case 'impact':
-        return SIGNIFICANT;
-    }
-  });
-  const reviewed = await reviewDiff({ diff }, CONFIG.value, judge);
-  assert.ok(reviewed.ok);
-  assert.equal(ruleAsks, 4, 'two chunks × two rules; no import-based re-ask');
-  assert.ok(
-    ruleDiffs
-      .filter((d) => d.includes('b/src/a.ts\n'))
-      .every((d) => d.includes('b/src/a.test.ts\n') && !d.includes('b/src/b.ts\n')),
-  );
-  assert.ok(
-    ruleDiffs
-      .filter((d) => d.includes('b/src/b.ts\n'))
-      .every((d) => !d.includes('b/src/a.ts\n') && !d.includes('b/src/a.test.ts\n')),
-  );
-  const r1 = reviewed.value.violations.find((v) => v.rule_id === 'R1');
-  assert.ok(r1);
-  assert.equal(r1.probability, 0.5, 'the borderline answer is not re-asked');
-});
 
 test('reviewDiff rejects an empty diff', async () => {
   assert.ok(CONFIG.ok);
@@ -126,8 +83,9 @@ test('reviewDiff rejects an empty diff', async () => {
   assert.deepEqual(reviewed, { ok: false, error: 'empty-diff' });
 });
 
-test('reviewDiff validates violations and rates impact', async () => {
+test('reviewDiff confirms violations and rates impact', async () => {
   assert.ok(CONFIG.ok);
+  let confirmSnippet: string | undefined;
   const judge = fakeJudge((state, key, spec) => {
     switch (kindOf(spec)) {
       case 'rule':
@@ -136,6 +94,9 @@ test('reviewDiff validates violations and rates impact', async () => {
         return key === 'R1' ? NO(0.81) : YES(0.9);
       case 'evidence':
         return AT('hunk_001', 0.72);
+      case 'confirm':
+        confirmSnippet = spec.input.snippet;
+        return SUPPORTED;
       case 'impact':
         return SIGNIFICANT;
     }
@@ -159,21 +120,14 @@ test('reviewDiff validates violations and rates impact', async () => {
   assert.equal(v!.rule_id, 'R1');
   assert.equal(v!.impact, 'significant');
   assert.equal(v!.impactConfidence, 0.75);
-  assert.equal(v!.severity, 'blocker');
-  assert.equal(v!.severityConfidence, 0.8);
-  assert.deepEqual(v!.evidence, [
-    { location: 'src/a.ts:1 (+2 lines)', probability: 0.72, chunkIndex: 0 },
-  ]);
-  assert.deepEqual(
-    v!.chunkResults.map((chunk) => ({ chunkIndex: chunk.chunkIndex, answer: chunk.answer })),
-    [{ chunkIndex: 0, answer: 'NO' }],
-  );
+  assert.deepEqual(v!.evidence, [{ location: 'src/a.ts:1 (+2 lines)', probability: 0.72 }]);
+  assert.equal(confirmSnippet, '+new line');
   assert.equal(reviewed.value.results.length, 2);
-  assert.equal(reviewed.value.results.find((result) => result.rule_id === 'R2')?.severity, null);
 });
 
 test('reviewDiff drops violations with weak location confidence', async () => {
   assert.ok(CONFIG.ok);
+  let confirmAsked = false;
   let impactAsked = false;
   const judge = fakeJudge((state, key, spec) => {
     switch (kindOf(spec)) {
@@ -181,6 +135,9 @@ test('reviewDiff drops violations with weak location confidence', async () => {
         return key === 'R1' ? NO(0.81) : YES(0.9);
       case 'evidence':
         return AT('hunk_001', 0.4);
+      case 'confirm':
+        confirmAsked = true;
+        return SUPPORTED;
       case 'impact':
         impactAsked = true;
         return SIGNIFICANT;
@@ -192,6 +149,7 @@ test('reviewDiff drops violations with weak location confidence', async () => {
   assert.equal(reviewed.value.summary.dropped, 1);
   assert.equal(reviewed.value.summary.no, 0);
   assert.equal(reviewed.value.summary.blockers, 0);
+  assert.equal(confirmAsked, false);
   assert.equal(impactAsked, false);
   // the matrix keeps the raw NO outcome
   assert.equal(reviewed.value.results.find((r) => r.rule_id === 'R1')?.answer, 'NO');
@@ -205,7 +163,9 @@ test('reviewDiff drops violations the evidence does not support', async () => {
       case 'rule':
         return key === 'R1' ? NO(0.81) : YES(0.9);
       case 'evidence':
-        return AT('unsupported', 0.9);
+        return AT('hunk_001', 0.9);
+      case 'confirm':
+        return UNSUPPORTED;
       case 'impact':
         impactAsked = true;
         return SIGNIFICANT;
@@ -220,12 +180,16 @@ test('reviewDiff drops violations the evidence does not support', async () => {
 
 test('reviewDiff merges chunk outcomes keeping the most severe', async () => {
   assert.ok(CONFIG.ok);
+  const confirmInstructions: string[] = [];
   const judge = fakeJudge((state, key, spec) => {
     switch (kindOf(spec)) {
       case 'rule':
         return state.pr.part.startsWith('1 of') ? (key === 'R1' ? YES(0.95) : NO(0.66)) : NO(0.5);
       case 'evidence':
         return AT('absent', 1);
+      case 'confirm':
+        confirmInstructions.push(spec.input.instruction ?? '');
+        return SUPPORTED;
       case 'impact':
         return SIGNIFICANT;
     }
@@ -241,27 +205,21 @@ test('reviewDiff merges chunk outcomes keeping the most severe', async () => {
   ].join('\n');
   const reviewed = await reviewDiff({ diff }, CONFIG.value, judge);
   assert.ok(reviewed.ok);
-  assert.ok(reviewed.value.chunks >= 2);
+  assert.equal(reviewed.value.chunks, 2);
   assert.equal(reviewed.value.violations.length, 2);
   const [r1, r2] = reviewed.value.violations;
-  const chunkCount = reviewed.value.chunks;
   assert.equal(r1!.answer, 'NO', 'YES in chunk 1, NO in chunk 2 → NO wins');
   assert.equal(r2!.answer, 'NO');
-  assert.deepEqual(
-    r1!.chunkResults.map((chunk) => chunk.answer),
-    ['YES', ...Array.from({ length: chunkCount - 1 }, () => 'NO')],
-  );
-  assert.deepEqual(
-    r2!.chunkResults.map((chunk) => chunk.answer),
-    Array.from({ length: chunkCount }, () => 'NO'),
-  );
-  assert.equal(r2!.evidence.length, chunkCount, 'evidence from every NO chunk is retained');
   assert.equal(r2!.impact, 'significant');
   assert.match(r2!.evidence[0]!.location, /absence/);
+  // absent evidence has no quote: confirm must ask about the PR, not the code
+  assert.ok(confirmInstructions.length > 0);
+  assert.ok(confirmInstructions.every((i) => i.includes('PR as a whole')));
 });
 
 test('reviewDiff drops violations with an ambiguous pointer', async () => {
   assert.ok(CONFIG.ok);
+  let confirmAsked = false;
   const judge = fakeJudge((state, key, spec) => {
     switch (kindOf(spec)) {
       case 'rule':
@@ -273,6 +231,9 @@ test('reviewDiff drops violations with an ambiguous pointer', async () => {
           probabilities: { hunk_001: 0.6, absent: 0.56 },
           confidence: 0.5,
         };
+      case 'confirm':
+        confirmAsked = true;
+        return SUPPORTED;
       case 'impact':
         return SIGNIFICANT;
     }
@@ -281,4 +242,5 @@ test('reviewDiff drops violations with an ambiguous pointer', async () => {
   assert.ok(reviewed.ok);
   assert.deepEqual(reviewed.value.violations, []);
   assert.equal(reviewed.value.summary.dropped, 1);
+  assert.equal(confirmAsked, false);
 });

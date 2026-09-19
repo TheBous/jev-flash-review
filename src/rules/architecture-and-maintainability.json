@@ -4,242 +4,290 @@
     {
       "rule_id": "ARC-01",
       "question": "Does code follow patterns already present in the repository?",
-      "applies_if": "Always"
+      "applies_if": "Always",
+      "severity": "low"
     },
     {
       "rule_id": "ARC-02",
       "question": "Is the code free of circular dependencies?",
-      "applies_if": "Importing modules or classes between packages/directories"
+      "applies_if": "Importing modules or classes between packages/directories",
+      "severity": "high"
     },
     {
       "rule_id": "ARC-03",
       "question": "Does the domain refrain from importing concrete drivers?",
-      "applies_if": "Layered architecture / Hexagonal / Clean Architecture"
+      "applies_if": "Layered architecture / Hexagonal / Clean Architecture",
+      "severity": "high"
     },
     {
       "rule_id": "ARC-04",
       "question": "Do side effects route through ports and adapters?",
-      "applies_if": "I/O, database, network, or file system operations"
+      "applies_if": "I/O, database, network, or file system operations",
+      "severity": "high"
     },
     {
       "rule_id": "ARC-05",
       "question": "Do handlers only handle parsing, invocation, and serialization?",
-      "applies_if": "HTTP controllers, gRPC handlers, or message listeners"
+      "applies_if": "HTTP controllers, gRPC handlers, or message listeners",
+      "severity": "high"
     },
     {
       "rule_id": "ARC-06",
       "question": "Does every handler stay under 30 lines when applicable?",
-      "applies_if": "API controllers or handlers"
+      "applies_if": "API controllers or handlers",
+      "severity": "advisory"
     },
     {
       "rule_id": "ARC-07",
       "question": "Is business logic kept out of handlers?",
-      "applies_if": "API controllers or handlers"
+      "applies_if": "API controllers or handlers",
+      "severity": "high"
     },
     {
       "rule_id": "ARC-08",
       "question": "Is pure logic separated from side effects?",
-      "applies_if": "Writing functions or use cases"
+      "applies_if": "Writing functions or use cases",
+      "severity": "medium"
     },
     {
       "rule_id": "ARC-09",
       "question": "Are command and query responsibilities separated?",
-      "applies_if": "Modeling read/write operations (CQRS)"
+      "applies_if": "Modeling read/write operations (CQRS)",
+      "severity": "medium"
     },
     {
       "rule_id": "ARC-10",
       "question": "Are source files over 200 lines split before implementation rather than waived for urgency, legacy, or minimal-diff reasons?",
-      "applies_if": "Adding or modifying source files over 200 lines"
+      "applies_if": "Adding or modifying source files over 200 lines",
+      "severity": "low"
     },
     {
       "rule_id": "ARC-11",
       "question": "Does cognitive complexity stay within 15?",
-      "applies_if": "Complex functions or methods"
+      "applies_if": "Complex functions or methods",
+      "severity": "medium"
     },
     {
       "rule_id": "ARC-12",
       "question": "Does cyclomatic complexity stay within 10?",
-      "applies_if": "Functions or methods"
+      "applies_if": "Functions or methods",
+      "severity": "medium"
     },
     {
       "rule_id": "ARC-13",
       "question": "Do routines have at most three parameters?",
-      "applies_if": "Function or method declarations"
+      "applies_if": "Function or method declarations",
+      "severity": "advisory"
     },
     {
       "rule_id": "ARC-14",
       "question": "Is decision nesting limited to at most two levels?",
-      "applies_if": "Nested conditional blocks"
+      "applies_if": "Nested conditional blocks",
+      "severity": "medium"
     },
     {
       "rule_id": "ARC-15",
       "question": "Are redundant else blocks absent?",
-      "applies_if": "Use of guard clauses or early returns"
+      "applies_if": "Use of guard clauses or early returns",
+      "severity": "low"
     },
     {
       "rule_id": "ARC-16",
       "question": "Do modules have cohesive responsibility?",
-      "applies_if": "Creating or modifying modules and classes"
+      "applies_if": "Creating or modifying modules and classes",
+      "severity": "medium"
     },
     {
       "rule_id": "ARC-17",
       "question": "Are public interfaces compact relative to private logic?",
-      "applies_if": "Designing module/library APIs"
+      "applies_if": "Designing module/library APIs",
+      "severity": "advisory"
     },
     {
       "rule_id": "ARC-18",
       "question": "Is inheritance depth limited to at most one level?",
-      "applies_if": "OOP usage with inheritance"
+      "applies_if": "OOP usage with inheritance",
+      "severity": "medium"
     },
     {
       "rule_id": "ARC-19",
       "question": "Is composition preferred over inheritance where appropriate?",
-      "applies_if": "OOP design"
+      "applies_if": "OOP design",
+      "severity": "medium"
     },
     {
       "rule_id": "ARC-20",
       "question": "Are speculative abstractions absent?",
-      "applies_if": "Introducing new patterns, interfaces, or generics"
+      "applies_if": "Introducing new patterns, interfaces, or generics",
+      "severity": "medium"
     },
     {
       "rule_id": "ARC-21",
       "question": "Do factories, strategies, and interfaces exist only for actual variability or a second implementation?",
-      "applies_if": "Using creational or structural design patterns"
+      "applies_if": "Using creational or structural design patterns",
+      "severity": "medium"
     },
     {
       "rule_id": "ARC-22",
       "question": "Do mutable canonical values have a single owner?",
-      "applies_if": "Managing application state or in-memory data"
+      "applies_if": "Managing application state or in-memory data",
+      "severity": "high"
     },
     {
       "rule_id": "ARC-23",
       "question": "Is feature-specific logic kept out of shared modules?",
-      "applies_if": "Modifying shared/common directories or modules"
+      "applies_if": "Modifying shared/common directories or modules",
+      "severity": "medium"
     },
     {
       "rule_id": "ARC-24",
       "question": "Are pass-through wrappers without value absent?",
-      "applies_if": "Creating delegate classes/functions"
+      "applies_if": "Creating delegate classes/functions",
+      "severity": "low"
     },
     {
       "rule_id": "ARC-25",
       "question": "Does refactoring genuinely reduce reader cognitive overhead?",
-      "applies_if": "PRs including refactoring"
+      "applies_if": "PRs including refactoring",
+      "severity": "medium"
     },
     {
       "rule_id": "ARC-26",
       "question": "Are isolated conditional patches absent from unrelated flows?",
-      "applies_if": "Modifying existing flows with added if/switch conditions"
+      "applies_if": "Modifying existing flows with added if/switch conditions",
+      "severity": "medium"
     },
     {
       "rule_id": "ARC-27",
       "question": "Are repeated conditions on the same model free from indicating a missing dispatcher or domain model?",
-      "applies_if": "Multiple equivalent conditional checks"
+      "applies_if": "Multiple equivalent conditional checks",
+      "severity": "medium"
     },
     {
       "rule_id": "ARC-28",
       "question": "Is dead code, unused variables, or legacy compatibility code absent?",
-      "applies_if": "Always"
+      "applies_if": "Always",
+      "severity": "low"
     },
     {
       "rule_id": "ARC-29",
       "question": "Does the change refrain from unnecessarily mixing refactoring with new functionality?",
-      "applies_if": "Large PRs"
+      "applies_if": "Large PRs",
+      "severity": "advisory"
     },
     {
       "rule_id": "ARC-30",
       "question": "Does the change remain a single verifiable logical unit?",
-      "applies_if": "Always"
+      "applies_if": "Always",
+      "severity": "medium"
     },
     {
       "rule_id": "ARC-31",
       "question": "Was an existing utility reused before creating a new one?",
-      "applies_if": "Creating new helper/utility functions"
+      "applies_if": "Creating new helper/utility functions",
+      "severity": "low"
     },
     {
       "rule_id": "ARC-32",
       "question": "Would a standard library or native solution have avoided new code?",
-      "applies_if": "Writing custom algorithms or utilities"
+      "applies_if": "Writing custom algorithms or utilities",
+      "severity": "low"
     },
     {
       "rule_id": "ARC-33",
       "question": "Was a new dependency genuinely necessary?",
-      "applies_if": "Adding libraries to project manifests"
+      "applies_if": "Adding libraries to project manifests",
+      "severity": "high"
     },
     {
       "rule_id": "ARC-34",
       "question": "Is every deliberate simplification with a known constraint documented?",
-      "applies_if": "Implementing shortcuts or temporary solutions"
+      "applies_if": "Implementing shortcuts or temporary solutions",
+      "severity": "medium"
     },
     {
       "rule_id": "ARC-35",
       "question": "Does modified code refrain from leaving obsolete branches or pass-throughs?",
-      "applies_if": "Modifying or deprecating old code paths"
+      "applies_if": "Modifying or deprecating old code paths",
+      "severity": "medium"
     },
     {
       "rule_id": "ARC-36",
       "question": "Is the code no harder to understand than before?",
-      "applies_if": "Always"
+      "applies_if": "Always",
+      "severity": "medium"
     },
     {
       "rule_id": "ARC-37",
       "question": "Do names communicate the role and domain meaning of modified functions, variables, and types?",
-      "applies_if": "Adding or renaming identifiers"
+      "applies_if": "Adding or renaming identifiers",
+      "severity": "low"
     },
     {
       "rule_id": "ARC-38",
       "question": "Is behavior kept near the data it primarily uses instead of reaching through another module's internals?",
-      "applies_if": "Methods or functions that traverse another object's data or services"
+      "applies_if": "Methods or functions that traverse another object's data or services",
+      "severity": "low"
     },
     {
       "rule_id": "ARC-39",
       "question": "Is duplicated business or transformation logic avoided across modified modules?",
-      "applies_if": "Adding logic similar to existing logic in another location"
+      "applies_if": "Adding logic similar to existing logic in another location",
+      "severity": "medium"
     },
     {
       "rule_id": "ARC-40",
       "question": "Does one logical change avoid scattering coordinated edits across unrelated files or layers?",
-      "applies_if": "A single behavior change requires repeated edits in multiple locations"
+      "applies_if": "A single behavior change requires repeated edits in multiple locations",
+      "severity": "medium"
     },
     {
       "rule_id": "ARC-41",
       "question": "Does each modified module have one coherent reason to change?",
-      "applies_if": "Modules or classes changed for unrelated concerns"
+      "applies_if": "Modules or classes changed for unrelated concerns",
+      "severity": "low"
     },
     {
       "rule_id": "ARC-42",
       "question": "Are long chains of object or service navigation hidden behind a meaningful boundary?",
-      "applies_if": "Deep chained property, method, or service access"
+      "applies_if": "Deep chained property, method, or service access",
+      "severity": "low"
     },
     {
       "rule_id": "ARC-43",
       "question": "Do subclasses and implementations honor the contract they inherit instead of refusing most of it?",
-      "applies_if": "Inheritance or interface implementations"
+      "applies_if": "Inheritance or interface implementations",
+      "severity": "medium"
     },
     {
       "rule_id": "ARC-44",
       "question": "Are repeatedly co-occurring parameters or fields represented as a meaningful value object when that reduces coupling?",
-      "applies_if": "The same group of values travels through multiple APIs or functions"
+      "applies_if": "The same group of values travels through multiple APIs or functions",
+      "severity": "advisory"
     },
     {
       "rule_id": "ARC-45",
       "question": "Do query methods avoid observable mutation?",
-      "applies_if": "Methods or interfaces with read/query responsibilities"
+      "applies_if": "Methods or interfaces with read/query responsibilities",
+      "severity": "medium"
     },
     {
       "rule_id": "ARC-46",
       "question": "Do command methods return only acknowledgement instead of mixing mutation with read-model results?",
-      "applies_if": "Methods or interfaces with command/write responsibilities"
+      "applies_if": "Methods or interfaces with command/write responsibilities",
+      "severity": "medium"
     },
     {
       "rule_id": "ARC-47",
       "question": "Before introducing a durable abstraction, was a viable simpler design compared?",
-      "applies_if": "Adding a new abstraction, interface, factory, strategy, or layer"
+      "applies_if": "Adding a new abstraction, interface, factory, strategy, or layer",
+      "severity": "advisory"
     },
     {
       "rule_id": "ARC-48",
       "question": "Does shared code serve the same domain model, ownership, and change cadence, with context mapping when those differ?",
-      "applies_if": "Sharing code or types across bounded contexts or independently owned modules"
+      "applies_if": "Sharing code or types across bounded contexts or independently owned modules",
+      "severity": "medium"
     }
   ]
 }

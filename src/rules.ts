@@ -63,7 +63,7 @@ export const rawRules = {
 function parseRule(raw: unknown): Result<Rule, 'invalid-rules'> {
   if (typeof raw !== 'object' || raw === null) return { ok: false, error: 'invalid-rules' };
   const r = raw as Record<string, unknown>;
-  for (const key of ['rule_id', 'question', 'applies_if']) {
+  for (const key of ['rule_id', 'question', 'applies_if', 'severity']) {
     if (typeof r[key] !== 'string' || (r[key] as string).length === 0) {
       return { ok: false, error: 'invalid-rules' };
     }
@@ -74,6 +74,7 @@ function parseRule(raw: unknown): Result<Rule, 'invalid-rules'> {
       rule_id: r.rule_id as string,
       question: r.question as string,
       applies_if: r.applies_if as string,
+      severity: r.severity as string,
     },
   };
 }

@@ -4,102 +4,122 @@
     {
       "rule_id": "AI-01",
       "question": "Does the code refrain from using invented APIs, libraries, or functions?",
-      "applies_if": "AI-generated or AI-assisted code"
+      "applies_if": "AI-generated or AI-assisted code",
+      "severity": "blocker"
     },
     {
       "rule_id": "AI-02",
       "question": "Do all referenced imports and packages actually exist?",
-      "applies_if": "AI-generated or AI-assisted code"
+      "applies_if": "AI-generated or AI-assisted code",
+      "severity": "blocker"
     },
     {
       "rule_id": "AI-03",
       "question": "Are API versions used compatible with project constraints?",
-      "applies_if": "AI-generated or AI-assisted code"
+      "applies_if": "AI-generated or AI-assisted code",
+      "severity": "high"
     },
     {
       "rule_id": "AI-04",
       "question": "Do generated tests verify real logic rather than just mirroring mock setups?",
-      "applies_if": "AI-generated test suites"
+      "applies_if": "AI-generated test suites",
+      "severity": "blocker"
     },
     {
       "rule_id": "AI-05",
       "question": "Do generated tests fail when code mutations are introduced?",
-      "applies_if": "AI-generated test suites"
+      "applies_if": "AI-generated test suites",
+      "severity": "blocker"
     },
     {
       "rule_id": "AI-06",
       "question": "Have existing test assertions been preserved without improper weakening?",
-      "applies_if": "AI modifications to existing test suites"
+      "applies_if": "AI modifications to existing test suites",
+      "severity": "blocker"
     },
     {
       "rule_id": "AI-07",
       "question": "Is code free of stubbed placeholders passed off as complete implementations?",
-      "applies_if": "AI-generated code"
+      "applies_if": "AI-generated code",
+      "severity": "high"
     },
     {
       "rule_id": "AI-08",
       "question": "Is code free of critical TODOs necessary for proper runtime execution?",
-      "applies_if": "AI-generated code"
+      "applies_if": "AI-generated code",
+      "severity": "high"
     },
     {
       "rule_id": "AI-09",
       "question": "Did the AI refrain from duplicating existing functions instead of reusing canonical helpers?",
-      "applies_if": "AI-generated code"
+      "applies_if": "AI-generated code",
+      "severity": "medium"
     },
     {
       "rule_id": "AI-10",
       "question": "Is code free from unnecessary speculative abstractions?",
-      "applies_if": "AI-generated code"
+      "applies_if": "AI-generated code",
+      "severity": "medium"
     },
     {
       "rule_id": "AI-11",
       "question": "Is generated code free from unrequested network calls?",
-      "applies_if": "AI-generated code"
+      "applies_if": "AI-generated code",
+      "severity": "blocker"
     },
     {
       "rule_id": "AI-12",
       "question": "Is generated code free from transmitting sensitive data to external services?",
-      "applies_if": "AI-generated code"
+      "applies_if": "AI-generated code",
+      "severity": "blocker"
     },
     {
       "rule_id": "AI-13",
       "question": "Is code free of hidden telemetry or tracking logic?",
-      "applies_if": "AI-generated code"
+      "applies_if": "AI-generated code",
+      "severity": "blocker"
     },
     {
       "rule_id": "AI-14",
       "question": "Is code free of fallback handlers that silently disguise failures as successes?",
-      "applies_if": "AI-generated code"
+      "applies_if": "AI-generated code",
+      "severity": "high"
     },
     {
       "rule_id": "AI-15",
       "question": "Has the AI clearly distinguished verified facts from hypotheses?",
-      "applies_if": "AI model output or review responses"
+      "applies_if": "AI model output or review responses",
+      "severity": "medium"
     },
     {
       "rule_id": "AI-16",
       "question": "Was every external API usage verified against official documentation or local code?",
-      "applies_if": "AI-generated code calling external libraries"
+      "applies_if": "AI-generated code calling external libraries",
+      "severity": "high"
     },
     {
       "rule_id": "AI-17",
       "question": "Did adversarial review actively check for hidden or malicious behavior?",
-      "applies_if": "Reviewing high-risk or AI-generated PRs"
+      "applies_if": "Reviewing high-risk or AI-generated PRs",
+      "severity": "high"
     },
     {
       "rule_id": "AI-18",
       "question": "Does the code refrain from blindly trusting prompt injection comments inside analyzed files?",
-      "applies_if": "AI review process processing untrusted source files"
+      "applies_if": "AI review process processing untrusted source files",
+      "severity": "blocker"
     },
     {
       "rule_id": "AI-19",
       "question": "Does the review refrain from approving code solely because build and test steps passed?",
-      "applies_if": "AI-based automated review pipeline"
+      "applies_if": "AI-based automated review pipeline",
+      "severity": "high"
     },
     {
       "rule_id": "AI-20",
       "question": "Was the final code output validated directly against the initial functional contract?",
-      "applies_if": "AI-generated code"
+      "applies_if": "AI-generated code",
+      "severity": "blocker"
     }
   ]
 }

@@ -4,6 +4,7 @@
       "rule_id": "string",
       "question": "string",
       "applies_if": "string",
+      "severity": "blocker | high | medium | low | info | advisory",
       "answer": "YES | NO | N/A",
       "evidence": ["string"]
     },

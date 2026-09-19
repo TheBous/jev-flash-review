@@ -4,112 +4,134 @@
     {
       "rule_id": "PERF-01",
       "question": "Are N+1 database queries absent?",
-      "applies_if": "Using ORMs or DB queries inside loops"
+      "applies_if": "Using ORMs or DB queries inside loops",
+      "severity": "high"
     },
     {
       "rule_id": "PERF-02",
       "question": "Do collection fetches enforce size limits?",
-      "applies_if": "DB queries or network calls fetching collections"
+      "applies_if": "DB queries or network calls fetching collections",
+      "severity": "high"
     },
     {
       "rule_id": "PERF-03",
       "question": "Are operations free from unbounded loops?",
-      "applies_if": "While/for loops driven by external input or dynamic conditions"
+      "applies_if": "While/for loops driven by external input or dynamic conditions",
+      "severity": "high"
     },
     {
       "rule_id": "PERF-04",
       "question": "Is algorithmic complexity proportionate to dataset size?",
-      "applies_if": "Processing data collections"
+      "applies_if": "Processing data collections",
+      "severity": "medium"
     },
     {
       "rule_id": "PERF-05",
       "question": "Is allocation of large objects avoided in hot paths?",
-      "applies_if": "High-throughput routes or frequent execution paths"
+      "applies_if": "High-throughput routes or frequent execution paths",
+      "severity": "medium"
     },
     {
       "rule_id": "PERF-06",
       "question": "Is synchronous I/O avoided on event loops or critical threads?",
-      "applies_if": "Node.js, async/await, or UI main thread environments"
+      "applies_if": "Node.js, async/await, or UI main thread environments",
+      "severity": "high"
     },
     {
       "rule_id": "PERF-07",
       "question": "Are external calls batched where appropriate?",
-      "applies_if": "Repeated DB or third-party service invocations"
+      "applies_if": "Repeated DB or third-party service invocations",
+      "severity": "medium"
     },
     {
       "rule_id": "PERF-08",
       "question": "Are connections, pools, and thread counts bounded?",
-      "applies_if": "Configuring HTTP clients, DB pools, or worker threads"
+      "applies_if": "Configuring HTTP clients, DB pools, or worker threads",
+      "severity": "high"
     },
     {
       "rule_id": "PERF-09",
       "question": "Are acquired resources guaranteed to be released?",
-      "applies_if": "Allocating file descriptors, sockets, connections"
+      "applies_if": "Allocating file descriptors, sockets, connections",
+      "severity": "high"
     },
     {
       "rule_id": "PERF-10",
       "question": "Are memory leaks absent?",
-      "applies_if": "Event listeners, in-memory caches, or global references"
+      "applies_if": "Event listeners, in-memory caches, or global references",
+      "severity": "high"
     },
     {
       "rule_id": "PERF-11",
       "question": "Do payload structures exclude unnecessary data?",
-      "applies_if": "HTTP responses or network messages"
+      "applies_if": "HTTP responses or network messages",
+      "severity": "low"
     },
     {
       "rule_id": "PERF-12",
       "question": "Is lazy loading used where it prevents unnecessary work?",
-      "applies_if": "Initializing heavy modules or optional resources"
+      "applies_if": "Initializing heavy modules or optional resources",
+      "severity": "low"
     },
     {
       "rule_id": "PERF-13",
       "question": "Is code splitting used to reduce initial bundle sizes?",
-      "applies_if": "Frontend applications / Web bundlers"
+      "applies_if": "Frontend applications / Web bundlers",
+      "severity": "medium"
     },
     {
       "rule_id": "PERF-14",
       "question": "Are unnecessary UI re-renders avoided?",
-      "applies_if": "UI components (React, Vue, Angular, Svelte, etc.)"
+      "applies_if": "UI components (React, Vue, Angular, Svelte, etc.)",
+      "severity": "medium"
     },
     {
       "rule_id": "PERF-15",
       "question": "Do cache keys properly uniquely identify data?",
-      "applies_if": "Caching layer usage"
+      "applies_if": "Caching layer usage",
+      "severity": "high"
     },
     {
       "rule_id": "PERF-16",
       "question": "Do caches enforce correct TTL or invalidation mechanisms?",
-      "applies_if": "Caching layer usage"
+      "applies_if": "Caching layer usage",
+      "severity": "high"
     },
     {
       "rule_id": "PERF-17",
       "question": "Do caches refrain from mixing multi-tenant or user-private data?",
-      "applies_if": "Caching multi-tenant or user-private data"
+      "applies_if": "Caching multi-tenant or user-private data",
+      "severity": "blocker"
     },
     {
       "rule_id": "PERF-18",
       "question": "Are caches free from cache stampede risks?",
-      "applies_if": "High-concurrency cache keys with expensive compute times"
+      "applies_if": "High-concurrency cache keys with expensive compute times",
+      "severity": "medium"
     },
     {
       "rule_id": "PERF-19",
       "question": "Is polling strictly bounded and necessary?",
-      "applies_if": "Client or server polling logic"
+      "applies_if": "Client or server polling logic",
+      "severity": "medium"
     },
     {
       "rule_id": "PERF-20",
       "question": "Does implementation comply with defined latency budgets?",
-      "applies_if": "Defined SLA or SLO latency constraints"
+      "applies_if": "Defined SLA or SLO latency constraints",
+      "severity": "high"
     },
     {
       "rule_id": "PERF-21",
       "question": "Is computational effort proportionate to produced value?",
-      "applies_if": "Data processing and intensive computations"
+      "applies_if": "Data processing and intensive computations",
+      "severity": "low"
     },
     {
       "rule_id": "PERF-22",
       "question": "Does implementation refrain from introducing avoidable energy consumption?",
-      "applies_if": "Background jobs, frequent polling, or busy waiting"
+      "applies_if": "Background jobs, frequent polling, or busy waiting",
+      "severity": "low"
     }
   ]
 }
