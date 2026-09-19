@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { annotateHunks, chunkDiff, chunkPerFile, extraContext } from './diff.js';
+import { annotateHunks, chunkDiff, chunkPerFile } from './diff.js';
 
 const SMALL_DIFF = [
   'diff --git a/src/a.ts b/src/a.ts',
@@ -58,12 +58,6 @@ const bigFile = (path: string, spec?: string) =>
     ...Array.from({ length: 500 }, (_, i) => `+line ${i} ${'x'.repeat(40)}`),
   ].join('\n');
 
-function chunkOf(chunks: string[], path: string): string {
-  const chunk = chunks.find((c) => c.includes(`b/${path}\n`));
-  assert.ok(chunk, `expected a chunk containing ${path}`);
-  return chunk;
-}
-
 test('chunkDiff keeps every file whole: no duplication across chunks', () => {
   const diff = [
     bigFile('src/a.ts', './b'),
@@ -74,55 +68,6 @@ test('chunkDiff keeps every file whole: no duplication across chunks', () => {
   const chunks = chunkDiff(diff);
   const fileHeaders = chunks.reduce((sum, c) => sum + [...c.matchAll(/^diff --git /gm)].length, 0);
   assert.equal(fileHeaders, 4, 'every file appears exactly once');
-});
-
-test('extraContext pulls the file an import points at', () => {
-  const diff = [bigFile('src/a.ts', './b'), bigFile('src/c.ts'), bigFile('src/b.ts')].join('\n');
-  const chunks = chunkDiff(diff);
-  const extra = extraContext(diff, chunkOf(chunks, 'src/a.ts'));
-  assert.ok(extra.includes('b/src/b.ts\n'), 'b must be pulled next to a');
-  assert.ok(!extra.includes('b/src/c.ts\n'), 'unrelated files stay out');
-});
-
-test('extraContext keeps a test beside its source, both directions', () => {
-  const diff = [bigFile('src/foo.ts'), bigFile('src/other.ts'), bigFile('src/foo.test.ts')].join(
-    '\n',
-  );
-  const chunks = chunkDiff(diff);
-  assert.ok(extraContext(diff, chunkOf(chunks, 'src/foo.ts')).includes('b/src/foo.test.ts\n'));
-  assert.ok(extraContext(diff, chunkOf(chunks, 'src/foo.test.ts')).includes('b/src/foo.ts\n'));
-});
-
-test('extraContext fills the budget with importers of a hub', () => {
-  const dependents = ['a', 'b', 'c', 'd', 'e', 'f'].map((n) => bigFile(`src/${n}.ts`, './hub'));
-  const diff = [...dependents, bigFile('src/hub.ts')].join('\n');
-  const chunks = chunkDiff(diff);
-  const extra = extraContext(diff, chunkOf(chunks, 'src/hub.ts'));
-  assert.ok(extra.includes('b/src/a.ts\n'), 'an importer must be pulled');
-  assert.ok(extra.length <= 60_000, 'the pull stays inside the budget');
-});
-
-test('extraContext pulls a shared neighbor once', () => {
-  const diff = [bigFile('src/a.ts', './x'), bigFile('src/b.ts', './x'), bigFile('src/x.ts')].join(
-    '\n',
-  );
-  const chunks = chunkDiff(diff);
-  const extra = extraContext(diff, chunkOf(chunks, 'src/a.ts'));
-  const xCopies = [...extra.matchAll(/^diff --git /gm)].length;
-  assert.equal(xCopies, 1, 'the shared neighbor must appear exactly once');
-});
-
-test('extraContext ignores imports of files outside the diff', () => {
-  const diff = [bigFile('src/a.ts', './missing'), bigFile('src/b.ts'), bigFile('src/c.ts')].join(
-    '\n',
-  );
-  const chunks = chunkDiff(diff);
-  assert.equal(extraContext(diff, chunkOf(chunks, 'src/a.ts')), '');
-});
-
-test('extraContext returns nothing when the diff fits one chunk', () => {
-  const diff = [bigFile('src/a.ts', './b'), bigFile('src/b.ts')].join('\n');
-  assert.equal(extraContext(diff, diff), '');
 });
 
 test('chunkDiff packs unrelated files together', () => {
@@ -161,6 +106,20 @@ test('chunkPerFile makes one chunk per file in diff order', () => {
     assert.ok(chunk, `missing chunk for ${p}`);
     assert.match(chunk, new RegExp(`^diff --git a/${p.replaceAll('.', '\\.')} b/`));
   });
+});
+
+test('chunkPerFile pairs only a changed file with its changed test', () => {
+  const diff = [
+    bigFile('src/service.ts', './repository'),
+    bigFile('src/repository.ts'),
+    bigFile('src/service.test.ts'),
+  ].join('\n');
+  const chunks = chunkPerFile(diff);
+  assert.equal(chunks.length, 2);
+  const serviceChunk = chunks.find((chunk) => chunk.includes('b/src/service.ts\n'));
+  assert.ok(serviceChunk);
+  assert.ok(serviceChunk.includes('b/src/service.test.ts\n'));
+  assert.ok(!serviceChunk.includes('b/src/repository.ts\n'));
 });
 
 test('chunkPerFile splits an oversized file by lines', () => {

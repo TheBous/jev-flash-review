@@ -1,7 +1,6 @@
 // Diff parsing: splits a raw unified diff into file-sized review chunks inside
-// the request budget. Related files (imports either way, test pairs) are NOT
-// duplicated into every chunk — the engine's pull pass fetches them on demand
-// via extraContext when a judgment comes back borderline.
+// the request budget. Each chunk contains one changed file and, when present,
+// its changed test file — never imported modules.
 // Hunks are marked so the judge can point at evidence by id instead of
 // generating text.
 export interface Hunk {
@@ -22,8 +21,6 @@ export interface AnnotatedChunk {
 // inside the ~32k TypeSafe request budget shared with the questions
 const CHUNK_CHARS = 60_000;
 
-const EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs'];
-
 /** A contiguous per-file slice of the diff (header + hunks). */
 interface FileUnit {
   path: string;
@@ -35,9 +32,9 @@ export function chunkDiff(diff: string): string[] {
   return packUnits(splitFileUnits(diff));
 }
 
-/** One chunk per file, in diff order; oversized files are line-split. */
+/** One chunk per file, pairing only its changed test file; oversized chunks are line-split. */
 export function chunkPerFile(diff: string): string[] {
-  return splitFileUnits(diff)
+  return pairTestUnits(splitFileUnits(diff))
     .flatMap(expand)
     .map((u) => u.text);
 }
@@ -59,46 +56,27 @@ function splitFileUnits(diff: string): FileUnit[] {
   return units;
 }
 
-// ponytail: imports are extracted from changed lines with a regex and matched
-// by path suffix — a heuristic for grouping, not a resolver. Aliased imports
-// only match by suffix; exotic module systems simply don't couple.
-function importSpecs(unit: FileUnit): string[] {
-  const specs: string[] = [];
-  for (const line of unit.text.split('\n')) {
-    if (!line.startsWith('+') && !line.startsWith('-')) continue;
-    if (line.startsWith('+++') || line.startsWith('---')) continue;
-    for (const m of line.matchAll(/(?:from|require\(|import)\s*\(?\s*['"]([^'"]+)['"]/g)) {
-      const spec = m[1];
-      if (!spec) continue;
-      if (
-        spec.startsWith('./') ||
-        spec.startsWith('../') ||
-        spec.startsWith('@/') ||
-        spec.startsWith('~/')
-      ) {
-        specs.push(spec);
-      }
+function pairTestUnits(units: FileUnit[]): FileUnit[] {
+  // ponytail: O(n²) scan is enough for normal PR file counts; index test
+  // basenames if very large PRs make pairing measurable.
+  const used = new Set<FileUnit>();
+  const groups: FileUnit[] = [];
+  for (const unit of units) {
+    if (used.has(unit)) continue;
+    const pair = units.find(
+      (candidate) => !used.has(candidate) && testPaired(unit.path, candidate.path),
+    );
+    if (!pair) {
+      used.add(unit);
+      groups.push(unit);
+      continue;
     }
+    used.add(unit);
+    used.add(pair);
+    const members = [unit, pair].sort((a, b) => units.indexOf(a) - units.indexOf(b));
+    groups.push({ path: unit.path, text: members.map((member) => member.text).join('\n') });
   }
-  return specs;
-}
-
-/** Resolves a relative/alias import specifier to a repo path (extensionless). */
-function resolveSpec(spec: string, fromDir: string): string {
-  if (spec.startsWith('@/') || spec.startsWith('~/')) return spec.slice(2);
-  const parts = fromDir ? fromDir.split('/') : [];
-  for (const seg of spec.split('/')) {
-    if (seg === '.' || seg === '') continue;
-    if (seg === '..') parts.pop();
-    else parts.push(seg);
-  }
-  return parts.join('/');
-}
-
-function matchesPath(candidate: string, filePath: string): boolean {
-  const variants = [candidate];
-  for (const ext of EXTENSIONS) variants.push(candidate + ext, `${candidate}/index${ext}`);
-  return variants.some((v) => filePath === v || filePath.endsWith(`/${v}`));
+  return groups;
 }
 
 function testPaired(p1: string, p2: string): boolean {
@@ -112,51 +90,6 @@ function testPaired(p1: string, p2: string): boolean {
     test.startsWith(`${src}.test.`) ||
     test.startsWith(`${src}.spec.`)
   );
-}
-
-function dirOf(path: string): string {
-  const cut = path.lastIndexOf('/');
-  return cut === -1 ? '' : path.slice(0, cut);
-}
-
-/**
- * Files of the diff related to (but missing from) a chunk: its imports,
- * its importers, its test pair — in diff order, until the budget is full.
- * Empty when the chunk already carries everything (e.g. single-chunk diffs),
- * so the pull pass costs nothing where there is nothing new to see.
- */
-export function extraContext(diff: string, chunk: string, budget = CHUNK_CHARS): string {
-  const all = splitFileUnits(diff).filter((u) => u.path);
-  const chunkPaths = new Set(
-    [...chunk.matchAll(/^diff --git a\/(.+) b\/(.+)$/gm)].map((m) => m[2] ?? ''),
-  );
-  const meta = new Map(all.map((u) => [u, { specs: importSpecs(u), dir: dirOf(u.path) }]));
-  const related = (a: FileUnit, b: FileUnit): boolean => {
-    if (a === b) return false;
-    if (testPaired(a.path, b.path)) return true;
-    const ma = meta.get(a);
-    const mb = meta.get(b);
-    return (
-      !!ma &&
-      !!mb &&
-      (ma.specs.some((s) => matchesPath(resolveSpec(s, ma.dir), b.path)) ||
-        mb.specs.some((s) => matchesPath(resolveSpec(s, mb.dir), a.path)))
-    );
-  };
-  const chunkUnits = all.filter((u) => chunkPaths.has(u.path));
-  const missing = new Set(all.filter((u) => !chunkPaths.has(u.path)));
-  const out: string[] = [];
-  let size = 0;
-  for (const unit of chunkUnits) {
-    for (const other of missing) {
-      if (!related(unit, other)) continue;
-      if (size + other.text.length + 1 > budget) continue;
-      missing.delete(other);
-      out.push(other.text);
-      size += other.text.length + 1;
-    }
-  }
-  return out.join('\n');
 }
 
 /** Greedy packing of whole files under the budget; oversized files are line-split. */
@@ -203,7 +136,7 @@ function lineSplit(text: string): string[] {
 }
 
 // ponytail: chunks are cut on line boundaries, so a hunk straddling a chunk edge
-// loses its marker in one chunk; only oversized single files still line-split —
+// loses its marker in one chunk; oversized file/test chunks still line-split —
 // upgrade to hunk-aware splitting if evidence gaps show up
 export function annotateHunks(chunk: string): AnnotatedChunk {
   const out: string[] = [];

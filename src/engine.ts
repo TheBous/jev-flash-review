@@ -3,12 +3,11 @@
 // for evidence location and adjudication.
 // No driver imports here — effects cross the Judge port.
 import { adjudicateViolations } from './adjudicate.js';
-import { annotateHunks, chunkPerFile, extraContext } from './diff.js';
+import { annotateHunks, chunkPerFile } from './diff.js';
 import { locateEvidence } from './evidence.js';
 import type {
   ChoiceSpec,
   Judge,
-  JudgeAnswers,
   Outcome,
   PrState,
   Result,
@@ -44,12 +43,6 @@ async function pooled<T, R>(items: T[], limit: number, fn: (item: T) => Promise<
   );
   return out;
 }
-
-// ponytail: judgments in this probability band get one re-ask with the related
-// diff files appended (imports both ways, test pairs). Widen the band if
-// cross-file findings seem to miss context; narrow it if usage grows.
-const UNCERTAIN_LOW = 0.35;
-const UNCERTAIN_HIGH = 0.65;
 
 const ANSWER_CRITERIA = {
   YES: 'Compliant: the PR satisfies the rule.',
@@ -127,64 +120,6 @@ export async function reviewDiff(
     ),
   );
 
-  // Pull pass: a borderline judgment is re-asked once with the related diff
-  // files appended, so coupled rules are re-judged with both sides in view —
-  // paid only where the first look was uncertain.
-  const ruleIndexOf = new Map(rules.map((rule, i) => [sanitize(rule.rule_id), i]));
-  const enrichments = await pooled(
-    chunks.map((_, i) => i),
-    JUDGE_CONCURRENCY,
-    async (i) => {
-      const chunk = chunks.at(i);
-      if (!chunk) return null;
-      const uncertain = rules.filter((rule, r) => {
-        const response = responses[i]?.[Math.floor(r / RULES_PER_CALL)];
-        const answer = response?.answers[sanitize(rule.rule_id)];
-        if (!answer) return false;
-        const p = answer.probabilities[answer.choice] ?? 0;
-        return p > UNCERTAIN_LOW && p < UNCERTAIN_HIGH;
-      });
-      if (uncertain.length === 0) return null;
-      const extra = extraContext(input.diff, chunk.text);
-      if (!extra) return null;
-      const base = states[i];
-      if (!base) return null;
-      const state: PrState = { ...base, pr: { ...base.pr, diff: `${chunk.text}\n${extra}` } };
-      let usage: TokenUsage = { inputTokens: 0, outputTokens: 0 };
-      const answers: JudgeAnswers = {};
-      for (let off = 0; off < uncertain.length; off += RULES_PER_CALL) {
-        const res = await judge.ask(
-          state,
-          questionsFor(uncertain.slice(off, off + RULES_PER_CALL)),
-        );
-        Object.assign(answers, res.answers);
-        usage = sumUsage(usage, res.usage);
-      }
-      return { index: i, answers, usage };
-    },
-  );
-  const enrichmentUsage = enrichments.reduce<TokenUsage>(
-    (total, e) => (e ? sumUsage(total, e.usage) : total),
-    { inputTokens: 0, outputTokens: 0 },
-  );
-  for (const e of enrichments) {
-    if (!e) continue;
-    for (const [key, answer] of Object.entries(e.answers)) {
-      const ruleIndex = ruleIndexOf.get(key);
-      const response =
-        ruleIndex === undefined
-          ? undefined
-          : responses[e.index]?.[Math.floor(ruleIndex / RULES_PER_CALL)];
-      if (response) response.answers[key] = answer;
-    }
-  }
-
-  // ponytail: evidence still locates against the original chunk state, so a
-  // violation whose support lives in the pulled context cannot point outside
-  // the chunk and may be dropped at confirm (conservative false negative).
-  // Upgrade path: rebuild the worst chunk's state with `extra` included, or
-  // extend its evidence options with the extra files' hunks.
-
   // Merge across chunks: a rule takes its most severe outcome (NO beats N/A beats YES).
   const outcomes: Outcome[] = rules.map((rule, ruleIndex) => {
     const key = sanitize(rule.rule_id);
@@ -218,7 +153,6 @@ export async function reviewDiff(
     .flat()
     .map((r) => r.usage)
     .reduce(sumUsage, { inputTokens: 0, outputTokens: 0 });
-  sumUsage(usage, enrichmentUsage);
   const questions = new Map(rules.map((rule) => [rule.rule_id, rule.question]));
   const located = await locateEvidence(outcomes, questions, chunks, states, judge);
   sumUsage(usage, located);

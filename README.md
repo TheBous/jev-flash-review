@@ -17,14 +17,14 @@ agent curates input → review_diff tool → structured JSON → agent acts
    business purpose, boundaries ("fence") and invariants of the task. The diff
    alone judges hygiene; the fence lets the engine judge business-logic fit.
 2. **The engine evaluates every rule in `src/rules/`**: the diff is chunked
-   one file per chunk (no duplication — every file is judged exactly once,
-   oversized files are line-split); each rule becomes a typed Choice question
+   one changed file per chunk, optionally with its changed test file (no
+   duplication — every file is judged exactly once, oversized chunks are
+   line-split); each rule becomes a typed Choice question
    (`YES` / `NO` / `N/A` with `applies_if`), questions are batched per
    (chunk × rule set) and run in parallel.
-3. **Pull pass**: a borderline judgment (probability in the 0.35–0.65 band) is
-   re-asked once with the related diff files appended (files it imports or
-   that import it, plus its test pair), so coupled rules are re-judged with
-   both sides in view — paid only where the first look was uncertain.
+3. **Test pairing**: when a changed source file has its changed `.test` or
+   `.spec` counterpart in the PR, both files are reviewed in the same chunk.
+   Imported modules and importers are never added to that chunk.
 4. **Merge**: a rule takes its most severe outcome across chunks (worst wins).
 5. **Evidence**: for each violation, a second Choice over the diff's hunk
    markers ("select instead of generate") — the engine picks the location,

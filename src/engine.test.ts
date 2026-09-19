@@ -84,17 +84,18 @@ const bigFile = (path: string, spec?: string) =>
     ...Array.from({ length: 500 }, (_, i) => `+line ${i} ${'x'.repeat(40)}`),
   ].join('\n');
 
-test('reviewDiff re-asks borderline rules with the missing counterpart', async () => {
+test('reviewDiff keeps each file with only its changed test file', async () => {
   assert.ok(CONFIG.ok);
   let ruleAsks = 0;
   const ruleDiffs: string[] = [];
-  const diff = [bigFile('src/a.ts', './b'), bigFile('src/c.ts'), bigFile('src/b.ts')].join('\n');
+  const diff = [bigFile('src/a.ts', './b'), bigFile('src/a.test.ts'), bigFile('src/b.ts')].join(
+    '\n',
+  );
   const judge = fakeJudge((state, key, spec) => {
     switch (kindOf(spec)) {
       case 'rule':
         ruleAsks += 1;
         ruleDiffs.push(state.pr.diff);
-        if (state.pr.diff.includes('b/src/b.ts\n')) return key === 'R1' ? NO(0.9) : YES(0.95);
         return key === 'R1' ? NO(0.5) : YES(0.95);
       case 'evidence':
         return AT('hunk_001', 0.72);
@@ -106,37 +107,20 @@ test('reviewDiff re-asks borderline rules with the missing counterpart', async (
   });
   const reviewed = await reviewDiff({ diff }, CONFIG.value, judge);
   assert.ok(reviewed.ok);
-  assert.equal(ruleAsks, 7, 'pass 1 asks 3 files × 2 rules, the pull re-asks R1 only for a.ts');
+  assert.equal(ruleAsks, 4, 'two chunks × two rules; no import-based re-ask');
   assert.ok(
-    ruleDiffs.some((d) => d.includes('b/src/a.ts\n') && d.includes('b/src/b.ts\n')),
-    'the pull state must carry both sides of the import',
+    ruleDiffs
+      .filter((d) => d.includes('b/src/a.ts\n'))
+      .every((d) => d.includes('b/src/a.test.ts\n') && !d.includes('b/src/b.ts\n')),
+  );
+  assert.ok(
+    ruleDiffs
+      .filter((d) => d.includes('b/src/b.ts\n'))
+      .every((d) => !d.includes('b/src/a.ts\n') && !d.includes('b/src/a.test.ts\n')),
   );
   const r1 = reviewed.value.violations.find((v) => v.rule_id === 'R1');
   assert.ok(r1);
-  assert.equal(r1.probability, 0.9, 'the re-ask replaces the borderline answer');
-});
-
-test('reviewDiff skips the pull pass for confident answers', async () => {
-  assert.ok(CONFIG.ok);
-  let ruleAsks = 0;
-  const diff = [bigFile('src/a.ts', './b'), bigFile('src/c.ts'), bigFile('src/b.ts')].join('\n');
-  const judge = fakeJudge((_state, key, spec) => {
-    switch (kindOf(spec)) {
-      case 'rule':
-        ruleAsks += 1;
-        return key === 'R1' ? NO(0.81) : YES(0.9);
-      case 'evidence':
-        return AT('hunk_001', 0.72);
-      case 'confirm':
-        return SUPPORTED;
-      case 'impact':
-        return SIGNIFICANT;
-    }
-  });
-  const reviewed = await reviewDiff({ diff }, CONFIG.value, judge);
-  assert.ok(reviewed.ok);
-  assert.equal(ruleAsks, 6, 'pass 1 only: 3 files × 2 rules, no re-ask when confident');
-  assert.equal(reviewed.value.summary.no, 1);
+  assert.equal(r1.probability, 0.5, 'the borderline answer is not re-asked');
 });
 
 test('reviewDiff rejects an empty diff', async () => {
