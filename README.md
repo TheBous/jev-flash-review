@@ -198,6 +198,8 @@ the model:
 skills/<name>/SKILL.md     canonical agent workflows (review-pr, review-free, review-loop)
 commands/<name>.md          thin command adapters
 src/engine.ts               review workflow: chunk, ask, merge (pure domain, no drivers)
+src/analysis/                experimental TypeScript symbols, calls, imports, and diff coverage
+src/evaluation.ts             dataset parsing and precision/recall evaluation metrics
 src/evidence.ts             evidence location over hunk markers
 src/adjudicate.ts           confidence gate, noIssue-style confirm, impact rating
 src/judge.ts                TypeSafe adapter implementing the Judge port

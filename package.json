@@ -36,7 +36,6 @@
     "lint-staged": "^17.5.1",
     "release-it": "^21.0.3",
     "tsx": "^4.23.13",
-    "typescript": "^7.0.2",
     "wrangler": "^4.134.0"
   },
   "allowScripts": {
@@ -45,6 +44,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
     "@typesafe-ai/sdk": "^0.6.0",
+    "typescript": "^5.9.3",
     "zod": "^4.6.5"
   },
   "files": [
