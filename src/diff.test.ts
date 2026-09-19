@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { annotateHunks, chunkPerFile } from './diff.js';
+import { annotateHunks } from './engine/hunks.js';
+import { chunkPerFile } from './engine/prepare.js';
 
 const SMALL_DIFF = [
   'diff --git a/src/a.ts b/src/a.ts',

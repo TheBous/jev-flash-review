@@ -58,7 +58,7 @@ export interface RuleOutcome {
 export type ImpactLevel = 'none' | 'minor' | 'significant' | 'critical';
 export type Severity = 'blocker' | 'high' | 'medium' | 'low' | 'info' | 'advisory';
 
-/** Working outcome inside the workflow: carries the worst chunk for evidence. */
+/** Working outcome inside the workflow: aggregate result plus per-chunk evidence context. */
 export interface Outcome extends RuleOutcome {
   worstChunkIndex: number;
 }

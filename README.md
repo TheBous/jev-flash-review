@@ -202,12 +202,15 @@ the model:
 ```
 skills/<name>/SKILL.md     canonical agent workflows (review-pr, review-free, review-loop)
 commands/<name>.md          thin command adapters
-src/engine.ts               review workflow: chunk, ask, merge (pure domain, no drivers)
-src/evidence.ts             evidence location over hunk markers
-src/adjudicate.ts           confidence gate, impact and severity rating
+src/engine.ts               thin review orchestrator
+src/engine/prepare.ts       input preparation and chunking
+src/engine/hunks.ts         hunk annotation helper
+src/engine/step-1.ts        rule evaluation and cross-chunk merge
+src/engine/step-2.ts        evidence selection and unsupported gate
+src/engine/step-3.ts        confidence gate, impact and severity rating
+src/engine/shared.ts        shared domain helpers
 src/judge.ts                TypeSafe adapter implementing the Judge port
 src/types.ts                domain contracts (Result, ReviewInput/Output, ChoiceSpec)
-src/diff.ts                 chunking + hunk annotation
 src/rules.ts                boundary parser, merges src/rules/*.json
 src/index.ts                CLI shell (gh + text report)
 src/mcp/server.ts           MCP stdio server (thin handler)

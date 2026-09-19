@@ -1,37 +1,44 @@
-// Diff parsing: splits a raw unified diff into file-sized review chunks inside
-// the request budget. Each chunk contains one changed file and, when present,
-// its changed test file — never imported modules.
-// Hunks are marked so the judge can point at evidence by id instead of
-// generating text.
-export interface Hunk {
-  id: string;
-  file: string;
-  start: string;
-  count: string;
-  /** Body lines of the hunk (without the @@ header), for evidence context. */
-  lines: string[];
-}
+// Prepare the review input into bounded, self-contained chunks before Jev steps.
 
-export interface AnnotatedChunk {
-  text: string;
-  hunks: Hunk[];
-}
+import type { PrState, Result, ReviewError, ReviewInput, RuleConfig } from '../types.js';
+import { type AnnotatedChunk, annotateHunks } from './hunks.js';
 
-// ~20k tokens worst case (code diffs tokenize at ~3 chars/token), leaving headroom
-// inside the ~32k TypeSafe request budget shared with the questions
 const CHUNK_CHARS = 60_000;
 
-/** A contiguous per-file slice of the diff (header + hunks). */
 interface FileUnit {
   path: string;
   text: string;
 }
 
-/** One chunk per file, pairing only its changed test file; oversized chunks are hunk-split. */
+export interface PreparedReview {
+  chunks: AnnotatedChunk[];
+  states: PrState[];
+}
+
+export function prepareReview(
+  input: ReviewInput,
+  config: RuleConfig,
+): Result<PreparedReview, ReviewError> {
+  if (input.diff.trim().length === 0) return { ok: false, error: 'empty-diff' };
+  const chunks = chunkPerFile(input.diff).map((chunk) => annotateHunks(chunk));
+  const states = chunks.map(({ text }, index) => ({
+    pr: {
+      title: input.title ?? '',
+      description: input.description ?? '',
+      part: `${index + 1} of ${chunks.length}`,
+      diff: text,
+    },
+    task_context: input.taskContext ?? '',
+    answer_rules: config.contract.rules,
+  }));
+  return { ok: true, value: { chunks, states } };
+}
+
+/** One review unit per file, pairing only its changed test file. */
 export function chunkPerFile(diff: string): string[] {
   return pairTestUnits(splitFileUnits(diff))
     .flatMap((unit) => expand(unit))
-    .map((u) => u.text);
+    .map((unit) => unit.text);
 }
 
 function splitFileUnits(diff: string): FileUnit[] {
@@ -75,7 +82,7 @@ function pairTestUnits(units: FileUnit[]): FileUnit[] {
 }
 
 function testPaired(p1: string, p2: string): boolean {
-  const strip = (p: string) => p.replace(/\.[^.]+$/, '');
+  const strip = (path: string) => path.replace(/\.[^.]+$/, '');
   const b1 = strip(p1);
   const b2 = strip(p2);
   const [src, test] = b1.length <= b2.length ? [b1, b2] : [b2, b1];
@@ -161,17 +168,13 @@ function splitByHunks(text: string, limit = CHUNK_CHARS): string[] {
       body.push(line);
       bodySize += line.length + 1;
     }
-    if (body.length > 0) {
-      chunks.push([...header, hunkHeader, ...body].join('\n'));
-    }
+    if (body.length > 0) chunks.push([...header, hunkHeader, ...body].join('\n'));
   }
 
   if (current.length > 0) chunks.push([...header, ...current].join('\n'));
   return chunks;
 }
 
-// Fallback for malformed or header-only diffs. Normal review diffs go through
-// splitByHunks, which preserves the file and hunk headers on every piece.
 function lineSplit(text: string, limit = CHUNK_CHARS): string[] {
   const chunks: string[] = [];
   let lines: string[] = [];
@@ -187,28 +190,4 @@ function lineSplit(text: string, limit = CHUNK_CHARS): string[] {
   }
   if (lines.length > 0) chunks.push(lines.join('\n'));
   return chunks;
-}
-
-export function annotateHunks(chunk: string): AnnotatedChunk {
-  const out: string[] = [];
-  const hunks: Hunk[] = [];
-  let file = '';
-  let current: Hunk | null = null;
-  for (const line of chunk.split('\n')) {
-    if (line.startsWith('diff --git ')) {
-      file = /^diff --git a\/(.+) b\/(.+)$/.exec(line)?.[2] ?? file;
-      current = null;
-    }
-    if (line.startsWith('@@')) {
-      const id = `hunk_${String(hunks.length + 1).padStart(3, '0')}`;
-      const m = /^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@/.exec(line);
-      current = { id, file, start: m?.[1] ?? '?', count: m?.[2] ?? '?', lines: [] };
-      hunks.push(current);
-      out.push(`[${id}] ${line}`);
-    } else {
-      current?.lines.push(line);
-      out.push(line);
-    }
-  }
-  return { text: out.join('\n'), hunks };
 }

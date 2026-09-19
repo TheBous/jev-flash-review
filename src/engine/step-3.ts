@@ -1,7 +1,7 @@
-// Adjudication: confidence gate and impact/severity rating. Evidence selection
-// already has an `unsupported` outcome, so there is no confirmation call here.
-import { EVIDENCE_PER_CALL, groupByChunk, need, sanitize } from './evidence.js';
+// Step 3: discard weak evidence and rate surviving findings.
+
 import type {
+  ChoiceSpec,
   EvidenceHit,
   ImpactLevel,
   Judge,
@@ -9,14 +9,11 @@ import type {
   PrState,
   Severity,
   TokenUsage,
-} from './types.js';
+} from '../types.js';
+import { need, sanitize } from './shared.js';
+import { EVIDENCE_PER_CALL, groupByChunk } from './step-2.js';
 
-// Minimum top-location confidence for a violation to survive. Mirrors
-// devagrawal09's MIN_LOCATION_CONFIDENCE; tune from field data, not theory.
 const MIN_LOCATION_CONFIDENCE = 0.55;
-
-// Minimum lead of the best location over the runner-up. A 0.56-vs-0.54
-// pointer is a shrug, not evidence; tune from field data, not theory.
 const MIN_EVIDENCE_MARGIN = 0.1;
 
 function hasStrongEvidence(evidence: EvidenceHit[]): boolean {
@@ -37,7 +34,6 @@ function hasStrongEvidence(evidence: EvidenceHit[]): boolean {
 
 const IMPACT_INSTRUCTION =
   'Assuming the location exhibits the violation, rate the likely production impact.';
-
 const IMPACT_CRITERIA = {
   none: 'No meaningful impact even if the violation is real.',
   minor: 'Minor or narrowly limited impact.',
@@ -48,7 +44,6 @@ const IMPACT_CRITERIA = {
 const SEVERITY_INSTRUCTION =
   'Rate the confirmed violation by likely production severity, considering the evidence, impact, ' +
   'task context, blast radius, reversibility, and available workarounds.';
-
 const SEVERITY_CRITERIA = {
   blocker:
     'Critical security issue, data loss/corruption, widespread outage, or unrecoverable contract break.',
@@ -65,22 +60,16 @@ export async function adjudicateViolations(
   states: PrState[],
   judge: Judge,
 ): Promise<{ violations: Outcome[]; dropped: number; usage: TokenUsage }> {
-  const usage: TokenUsage = { inputTokens: 0, outputTokens: 0 };
   const flagged = outcomes.filter((outcome) => outcome.answer === 'NO');
   const candidates = flagged.filter((outcome) => hasStrongEvidence(outcome.evidence));
-
-  // Impact and severity are requested together to avoid an extra network call
-  // per confirmed finding while keeping them as separate model decisions.
-  const ratings = await rateConfirmed(candidates, states, judge);
-  for (const { violation, impact, severity, usage: callUsage } of ratings) {
-    usage.inputTokens += callUsage.inputTokens;
-    usage.outputTokens += callUsage.outputTokens;
+  const rated = await rateFindings(candidates, states, judge);
+  const usage = rated.reduce(sumRatingUsage, { inputTokens: 0, outputTokens: 0 });
+  for (const { violation, impact, severity } of rated) {
     violation.impact = impact.choice as ImpactLevel;
     violation.impactConfidence = impact.confidence;
     violation.severity = severity.choice as Severity;
     violation.severityConfidence = severity.confidence;
   }
-
   return { violations: candidates, dropped: flagged.length - candidates.length, usage };
 }
 
@@ -97,7 +86,7 @@ interface RatedViolation {
   usage: TokenUsage;
 }
 
-async function rateConfirmed(
+async function rateFindings(
   violations: Outcome[],
   states: PrState[],
   judge: Judge,
@@ -125,14 +114,14 @@ async function rateConfirmed(
                     {
                       input: { ...input, instruction: IMPACT_INSTRUCTION },
                       options: IMPACT_CRITERIA,
-                    },
+                    } satisfies ChoiceSpec,
                   ],
                   [
                     `${base}_severity`,
                     {
                       input: { ...input, instruction: SEVERITY_INSTRUCTION },
                       options: SEVERITY_CRITERIA,
-                    },
+                    } satisfies ChoiceSpec,
                   ],
                 ];
               }),
@@ -153,4 +142,10 @@ async function rateConfirmed(
     }
   }
   return (await Promise.all(calls)).flat();
+}
+
+function sumRatingUsage(total: TokenUsage, rating: RatedViolation): TokenUsage {
+  total.inputTokens += rating.usage.inputTokens;
+  total.outputTokens += rating.usage.outputTokens;
+  return total;
 }

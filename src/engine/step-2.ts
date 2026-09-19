@@ -1,31 +1,17 @@
-// Evidence location and validation: one Choice per NO result over the hunks
-// of its chunk. `unsupported` replaces a separate confirmation pass.
+// Step 2: choose and validate evidence for every NO result in every chunk.
 
-import type { Hunk } from './diff.js';
-import type { ChoiceSpec, EvidenceHit, Judge, Outcome, PrState, TokenUsage } from './types.js';
+import type { ChoiceSpec, EvidenceHit, Judge, Outcome, PrState, TokenUsage } from '../types.js';
+import type { Hunk } from './hunks.js';
+import { need, sanitize } from './shared.js';
 
-// evidence questions carry every hunk of the chunk as options (~25 tokens each);
-// 8 × 60 hunks × 25t ≈ 12k on top of the chunk state stays inside the budget
 export const EVIDENCE_PER_CALL = 8;
 
 const ABSENT =
   'The violation is not tied to one hunk: it is an absence (missing tests, docs, config, handling) or a PR-level issue.';
 const UNSUPPORTED =
   'The diff does not support a concrete violation of this rule; discard this result.';
-
 const EVIDENCE_INSTRUCTION =
   'Choose the `[hunk_*]` marker in `pr.diff` that directly shows the violation. Choose `absent` when the violation is real but not tied to a specific hunk. Choose `unsupported` when the diff does not support a concrete violation.';
-
-export function sanitize(id: string): string {
-  return id.replace(/[^a-zA-Z0-9_]/g, '_');
-}
-
-/** Missing or malformed judge answers are a broken judge contract, not an expected error. */
-export function need<T>(map: Record<string, T>, key: string): T {
-  const value = map[key];
-  if (value === undefined) throw new Error(`Missing answer for question "${key}"`);
-  return value;
-}
 
 export function groupByChunk(violations: Outcome[]): Map<number, Outcome[]> {
   const groups = new Map<number, Outcome[]>();
@@ -44,8 +30,6 @@ interface EvidenceTarget {
   chunkResult: Outcome['chunkResults'][number];
 }
 
-// Evidence pass: for each NO result, one Choice over the hunks of its chunk
-// ("select instead of generate" — the judge picks the location or rejects it).
 export async function locateEvidence(
   outcomes: Outcome[],
   questions: Map<string, string>,
@@ -68,7 +52,10 @@ export async function locateEvidence(
     const state = states[chunkIndex];
     if (!chunk || chunk.hunks.length === 0 || !state) continue;
     const options: Record<string, string> = Object.fromEntries(
-      chunk.hunks.map((h) => [h.id, `${h.file}:${h.start} (${h.count} changed-line block)`]),
+      chunk.hunks.map((hunk) => [
+        hunk.id,
+        `${hunk.file}:${hunk.start} (${hunk.count} changed-line block)`,
+      ]),
     );
     options.absent = ABSENT;
     options.unsupported = UNSUPPORTED;
@@ -124,15 +111,15 @@ function topEvidence(
   return Object.entries(probabilities)
     .sort((a, b) => b[1] - a[1])
     .filter(([label]) => label !== 'unsupported')
-    .filter(([, p]) => p >= 0.05)
+    .filter(([, probability]) => probability >= 0.05)
     .slice(0, 2)
-    .map(([label, p]) => {
-      const hunk = hunks.find((h) => h.id === label);
+    .map(([label, probability]) => {
+      const hunk = hunks.find((candidate) => candidate.id === label);
       return {
         location: hunk
           ? `${hunk.file}:${hunk.start} (+${hunk.count} lines)`
           : 'absence / PR-level (not tied to a hunk)',
-        probability: p,
+        probability,
         chunkIndex,
       };
     });
