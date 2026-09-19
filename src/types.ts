@@ -6,7 +6,6 @@ export interface Rule {
   rule_id: string;
   question: string;
   applies_if: string;
-  severity: string;
 }
 
 export interface RuleConfig {
@@ -36,7 +35,8 @@ export interface EvidenceHit {
 export interface RuleOutcome {
   rule_id: string;
   question: string;
-  severity: string;
+  severity: Severity | null;
+  severityConfidence: number | null;
   answer: 'YES' | 'NO' | 'N/A';
   probability: number;
   confidence: number;
@@ -47,6 +47,7 @@ export interface RuleOutcome {
 }
 
 export type ImpactLevel = 'none' | 'minor' | 'significant' | 'critical';
+export type Severity = 'blocker' | 'high' | 'medium' | 'low' | 'info' | 'advisory';
 
 /** Working outcome inside the workflow: carries the worst chunk for evidence. */
 export interface Outcome extends RuleOutcome {

@@ -29,13 +29,13 @@ interface FileUnit {
 
 export function chunkDiff(diff: string): string[] {
   if (diff.length <= CHUNK_CHARS) return [diff];
-  return packUnits(splitFileUnits(diff));
+  return packUnits(splitFileUnits(diff), false);
 }
 
-/** One chunk per file, pairing only its changed test file; oversized chunks are line-split. */
+/** One chunk per file, pairing only its changed test file; oversized chunks are hunk-split. */
 export function chunkPerFile(diff: string): string[] {
   return pairTestUnits(splitFileUnits(diff))
-    .flatMap(expand)
+    .flatMap((unit) => expand(unit, true))
     .map((u) => u.text);
 }
 
@@ -92,13 +92,13 @@ function testPaired(p1: string, p2: string): boolean {
   );
 }
 
-/** Greedy packing of whole files under the budget; oversized files are line-split. */
-function packUnits(units: FileUnit[]): string[] {
+/** Greedy packing of whole files under the budget; oversized units are hunk-split. */
+function packUnits(units: FileUnit[], selfContained: boolean): string[] {
   const chunks: string[] = [];
   let buf: FileUnit[] = [];
   let size = 0;
   for (const unit of units) {
-    for (const u of expand(unit)) {
+    for (const u of expand(unit, selfContained)) {
       if (buf.length > 0 && size + u.text.length + 1 > CHUNK_CHARS) {
         chunks.push(buf.map((v) => v.text).join('\n'));
         buf = [];
@@ -112,12 +112,82 @@ function packUnits(units: FileUnit[]): string[] {
   return chunks;
 }
 
-function expand(unit: FileUnit): FileUnit[] {
-  return unit.text.length > CHUNK_CHARS
-    ? lineSplit(unit.text).map((text) => ({ path: unit.path, text }))
-    : [unit];
+function expand(unit: FileUnit, selfContained: boolean): FileUnit[] {
+  if (unit.text.length <= CHUNK_CHARS) return [unit];
+  if (!selfContained) return lineSplit(unit.text).map((text) => ({ path: unit.path, text }));
+
+  // A paired source+test unit can be larger than the budget. Split its
+  // members independently, but keep every resulting piece self-contained and
+  // never mix it with an unrelated file.
+  const members = splitFileUnits(unit.text);
+  return members.flatMap((member) =>
+    splitByHunks(member.text).map((text) => ({ path: member.path, text })),
+  );
 }
 
+function splitByHunks(text: string): string[] {
+  const lines = text.split('\n');
+  const firstHunk = lines.findIndex((line) => line.startsWith('@@'));
+  if (firstHunk < 0) return lineSplit(text);
+
+  const header = lines.slice(0, firstHunk);
+  const sections: string[][] = [];
+  let section: string[] = [];
+  for (const line of lines.slice(firstHunk)) {
+    if (line.startsWith('@@') && section.length > 0) {
+      sections.push(section);
+      section = [];
+    }
+    section.push(line);
+  }
+  if (section.length > 0) sections.push(section);
+
+  const chunks: string[] = [];
+  let current: string[] = [];
+  let size = header.join('\n').length + 1;
+  for (const hunk of sections) {
+    const hunkText = hunk.join('\n');
+    if (current.length > 0 && size + hunkText.length + 1 > CHUNK_CHARS) {
+      chunks.push([...header, ...current].join('\n'));
+      current = [];
+      size = header.join('\n').length + 1;
+    }
+
+    if (header.join('\n').length + hunkText.length + 1 <= CHUNK_CHARS) {
+      current.push(...hunk);
+      size += hunkText.length + 1;
+      continue;
+    }
+
+    if (current.length > 0) {
+      chunks.push([...header, ...current].join('\n'));
+      current = [];
+      size = header.join('\n').length + 1;
+    }
+
+    const hunkHeader = hunk[0] ?? '';
+    let body: string[] = [];
+    let bodySize = header.join('\n').length + hunkHeader.length + 2;
+    for (const line of hunk.slice(1)) {
+      if (body.length > 0 && bodySize + line.length + 1 > CHUNK_CHARS) {
+        chunks.push([...header, hunkHeader, ...body].join('\n'));
+        body = [];
+        bodySize = header.join('\n').length + hunkHeader.length + 2;
+      }
+      body.push(line);
+      bodySize += line.length + 1;
+    }
+    if (body.length > 0) {
+      chunks.push([...header, hunkHeader, ...body].join('\n'));
+    }
+  }
+
+  if (current.length > 0) chunks.push([...header, ...current].join('\n'));
+  return chunks;
+}
+
+// Fallback for malformed or header-only diffs. Normal review diffs go through
+// splitByHunks, which preserves the file and hunk headers on every piece.
 function lineSplit(text: string): string[] {
   const chunks: string[] = [];
   let lines: string[] = [];

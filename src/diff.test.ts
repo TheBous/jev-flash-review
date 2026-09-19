@@ -122,17 +122,28 @@ test('chunkPerFile pairs only a changed file with its changed test', () => {
   assert.ok(!serviceChunk.includes('b/src/repository.ts\n'));
 });
 
-test('chunkPerFile splits an oversized file by lines', () => {
+test('chunkPerFile splits an oversized file into self-contained hunk chunks', () => {
+  const path = 'src/huge.ts';
   const lines = 2_000;
   const diff = [
-    'diff --git a/src/huge.ts b/src/huge.ts',
-    '--- a/src/huge.ts',
-    '+++ b/src/huge.ts',
+    `diff --git a/${path} b/${path}`,
+    `--- a/${path}`,
+    `+++ b/${path}`,
     `@@ -1,0 +1,${lines} @@`,
     ...Array.from({ length: lines }, (_, i) => `+line ${i} ${'x'.repeat(40)}`),
   ].join('\n');
   const chunks = chunkPerFile(diff);
   assert.ok(chunks.length > 1, 'the oversized file must be split');
   assert.ok(chunks.every((c) => c.length <= 60_000 + 40));
-  assert.equal(chunks.flatMap((c) => c.split('\n')).length, lines + 4, 'no lines lost');
+  assert.ok(chunks.every((c) => c.includes(`diff --git a/${path} b/${path}`)));
+  assert.ok(chunks.every((c) => c.includes('@@ -1,0 +1,2000 @@')));
+  assert.equal(
+    chunks.flatMap((c) => c.split('\n')).filter((line) => line.startsWith('+line ')).length,
+    lines,
+    'no diff lines lost',
+  );
+  assert.ok(
+    chunks.every((c) => annotateHunks(c).hunks.every((hunk) => hunk.file === path)),
+    'every split hunk keeps its file identity',
+  );
 });

@@ -10,8 +10,8 @@ const CONFIG = parseRules({
     {
       name: 'test',
       rules: [
-        { rule_id: 'R1', question: 'Is R1 satisfied?', applies_if: 'always', severity: 'blocker' },
-        { rule_id: 'R2', question: 'Is R2 satisfied?', applies_if: 'always', severity: 'low' },
+        { rule_id: 'R1', question: 'Is R1 satisfied?', applies_if: 'always' },
+        { rule_id: 'R2', question: 'Is R2 satisfied?', applies_if: 'always' },
       ],
     },
   ],
@@ -41,6 +41,11 @@ const SIGNIFICANT: Answer = {
   probabilities: { significant: 0.85 },
   confidence: 0.75,
 };
+const BLOCKER: Answer = {
+  choice: 'blocker',
+  probabilities: { blocker: 0.9 },
+  confidence: 0.8,
+};
 
 function fakeJudge(
   answer: (state: PrState, key: string, spec: ChoiceSpec) => Answer | undefined,
@@ -51,6 +56,7 @@ function fakeJudge(
       for (const [key, spec] of Object.entries(questions)) {
         const decided = answer(state, key, spec);
         if (decided) answers[key] = decided;
+        else if (kindOf(spec) === 'severity') answers[key] = BLOCKER;
       }
       return {
         answers,
@@ -60,11 +66,12 @@ function fakeJudge(
   };
 }
 
-type QuestionKind = 'rule' | 'evidence' | 'confirm' | 'impact';
+type QuestionKind = 'rule' | 'evidence' | 'confirm' | 'impact' | 'severity';
 
 function kindOf(spec: ChoiceSpec): QuestionKind {
   if ('question' in spec.input) return 'rule';
   const instruction = spec.input.instruction ?? '';
+  if (instruction.includes('production severity')) return 'severity';
   if (instruction.includes('directly show') || instruction.includes('PR as a whole'))
     return 'confirm';
   if (instruction.includes('production impact')) return 'impact';
@@ -170,9 +177,12 @@ test('reviewDiff confirms violations and rates impact', async () => {
   assert.equal(v!.rule_id, 'R1');
   assert.equal(v!.impact, 'significant');
   assert.equal(v!.impactConfidence, 0.75);
+  assert.equal(v!.severity, 'blocker');
+  assert.equal(v!.severityConfidence, 0.8);
   assert.deepEqual(v!.evidence, [{ location: 'src/a.ts:1 (+2 lines)', probability: 0.72 }]);
   assert.equal(confirmSnippet, '+new line');
   assert.equal(reviewed.value.results.length, 2);
+  assert.equal(reviewed.value.results.find((result) => result.rule_id === 'R2')?.severity, null);
 });
 
 test('reviewDiff drops violations with weak location confidence', async () => {
@@ -255,7 +265,7 @@ test('reviewDiff merges chunk outcomes keeping the most severe', async () => {
   ].join('\n');
   const reviewed = await reviewDiff({ diff }, CONFIG.value, judge);
   assert.ok(reviewed.ok);
-  assert.equal(reviewed.value.chunks, 2);
+  assert.ok(reviewed.value.chunks >= 2);
   assert.equal(reviewed.value.violations.length, 2);
   const [r1, r2] = reviewed.value.violations;
   assert.equal(r1!.answer, 'NO', 'YES in chunk 1, NO in chunk 2 → NO wins');

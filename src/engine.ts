@@ -25,7 +25,7 @@ const RULES_PER_CALL = 80;
 // ponytail: fixed pool size; per-file chunking means ~4 calls per file, so a
 // 100-file PR is ~400 requests — uncapped Promise.all would trip rate limits.
 // Tune if the provider allows more.
-const JUDGE_CONCURRENCY = 8;
+const JUDGE_CONCURRENCY = 1;
 
 /** Maps items through fn with at most `limit` calls in flight, preserving order. */
 async function pooled<T, R>(items: T[], limit: number, fn: (item: T) => Promise<R>): Promise<R[]> {
@@ -138,7 +138,8 @@ export async function reviewDiff(
     return {
       rule_id: rule.rule_id,
       question: rule.question,
-      severity: rule.severity,
+      severity: null,
+      severityConfidence: null,
       answer: worst.choice as RuleOutcome['answer'],
       probability: worst.probabilities[worst.choice] ?? 0,
       confidence: worst.confidence,

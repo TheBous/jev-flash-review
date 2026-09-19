@@ -4,122 +4,102 @@
     {
       "rule_id": "REV-01",
       "question": "Is the review process report-only unless explicit write/edit authorization is granted?",
-      "applies_if": "Code review system orchestration",
-      "severity": "blocker"
+      "applies_if": "Code review system orchestration"
     },
     {
       "rule_id": "REV-02",
       "question": "Does the automated reviewer refrain from merging, pushing, or creating PRs without permission?",
-      "applies_if": "Code review system orchestration",
-      "severity": "blocker"
+      "applies_if": "Code review system orchestration"
     },
     {
       "rule_id": "REV-03",
       "question": "Does the change risk level dictate reviewer agent allocation?",
-      "applies_if": "Review pipeline planning",
-      "severity": "medium"
+      "applies_if": "Review pipeline planning"
     },
     {
       "rule_id": "REV-04",
       "question": "Is every reviewer agent assigned a single specialized review lens?",
-      "applies_if": "Prompt/role assignment for review models",
-      "severity": "medium"
+      "applies_if": "Prompt/role assignment for review models"
     },
     {
       "rule_id": "REV-05",
       "question": "Are overlapping review lenses consolidated into a single pass?",
-      "applies_if": "Review pipeline planning",
-      "severity": "low"
+      "applies_if": "Review pipeline planning"
     },
     {
       "rule_id": "REV-06",
       "question": "Is the adversarial review lens triggered for critical flows that might fail silently?",
-      "applies_if": "Critical modifications to auth, crypto, or security logic",
-      "severity": "high"
+      "applies_if": "Critical modifications to auth, crypto, or security logic"
     },
     {
       "rule_id": "REV-07",
       "question": "Do reviewer agents operate independently in the initial pass?",
-      "applies_if": "Multi-agent review execution",
-      "severity": "medium"
+      "applies_if": "Multi-agent review execution"
     },
     {
       "rule_id": "REV-08",
       "question": "Are reported findings treated as candidates until explicit validation?",
-      "applies_if": "Finding triage and processing",
-      "severity": "medium"
+      "applies_if": "Finding triage and processing"
     },
     {
       "rule_id": "REV-09",
       "question": "Does every finding contain category, impact, evidence, fix, and confidence score?",
-      "applies_if": "Finding formatting and reporting",
-      "severity": "high"
+      "applies_if": "Finding formatting and reporting"
     },
     {
       "rule_id": "REV-10",
       "question": "Is a finding without a precise code anchor rejected from confirmed status?",
-      "applies_if": "Review finding validation",
-      "severity": "high"
+      "applies_if": "Review finding validation"
     },
     {
       "rule_id": "REV-11",
       "question": "Are P0/P1 findings aggressively challenged for disconfirmation?",
-      "applies_if": "De-aliasing and verification of high-severity findings",
-      "severity": "high"
+      "applies_if": "De-aliasing and verification of high-severity findings"
     },
     {
       "rule_id": "REV-12",
       "question": "Are duplicate findings merged by root cause?",
-      "applies_if": "Consolidating final review reports",
-      "severity": "low"
+      "applies_if": "Consolidating final review reports"
     },
     {
       "rule_id": "REV-13",
       "question": "Are completed reviewer sub-processes properly collected and joined?",
-      "applies_if": "Managing concurrent review job lifecycles",
-      "severity": "medium"
+      "applies_if": "Managing concurrent review job lifecycles"
     },
     {
       "rule_id": "REV-14",
       "question": "Is a reviewer prevented from being marked successful based solely on an ack response?",
-      "applies_if": "Parsing review model responses",
-      "severity": "high"
+      "applies_if": "Parsing review model responses"
     },
     {
       "rule_id": "REV-15",
       "question": "Is an AI agent prevented from approving its own generated code without an independent reviewer pass?",
-      "applies_if": "Autonomous code generation and review loops",
-      "severity": "blocker"
+      "applies_if": "Autonomous code generation and review loops"
     },
     {
       "rule_id": "REV-16",
       "question": "Are non-applicable review lenses explicitly recorded as skipped rather than passed?",
-      "applies_if": "Review metrics and reporting",
-      "severity": "low"
+      "applies_if": "Review metrics and reporting"
     },
     {
       "rule_id": "REV-17",
       "question": "Does the final report explicitly detail coverage gaps and residual risks?",
-      "applies_if": "Final review verdict generation",
-      "severity": "high"
+      "applies_if": "Final review verdict generation"
     },
     {
       "rule_id": "REV-18",
       "question": "Does the verdict clearly distinguish between Not Ready, Ready With Fixes, and Ready To Merge?",
-      "applies_if": "Final review verdict generation",
-      "severity": "blocker"
+      "applies_if": "Final review verdict generation"
     },
     {
       "rule_id": "REV-19",
       "question": "Does the review refrain from generating artificial findings just to meet quota targets?",
-      "applies_if": "Review quality assessment",
-      "severity": "medium"
+      "applies_if": "Review quality assessment"
     },
     {
       "rule_id": "REV-20",
       "question": "Does concrete technical evidence override subjective reviewer preferences?",
-      "applies_if": "Conflict resolution across review findings",
-      "severity": "high"
+      "applies_if": "Conflict resolution across review findings"
     }
   ]
 }

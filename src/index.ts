@@ -53,7 +53,7 @@ function formatReport(output: ReviewOutput, meta: PrMeta): string {
   for (const result of output.results) {
     const mark = result.answer === 'YES' ? '✓' : result.answer === 'NO' ? '✗' : '–';
     lines.push(
-      `  ${mark} ${result.rule_id} [${result.severity}] ${result.answer} ` +
+      `  ${mark} ${result.rule_id} [${result.severity ?? 'unrated'}] ${result.answer} ` +
         `(p ${result.probability.toFixed(2)}, conf ${result.confidence.toFixed(2)})`,
     );
   }
@@ -117,7 +117,9 @@ async function main(): Promise<number> {
     return 2;
   }
   console.log(formatReport(reviewed.value, meta.value));
-  return reviewed.value.violations.some((result) => FAIL_SEVERITIES.has(result.severity)) ? 1 : 0;
+  return reviewed.value.violations.some((result) => FAIL_SEVERITIES.has(result.severity ?? ''))
+    ? 1
+    : 0;
 }
 
 main()

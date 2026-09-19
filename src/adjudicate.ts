@@ -9,6 +9,7 @@ import type {
   Judge,
   Outcome,
   PrState,
+  Severity,
   TokenUsage,
 } from './types.js';
 
@@ -48,6 +49,21 @@ const IMPACT_CRITERIA = {
   minor: 'Minor or narrowly limited impact.',
   significant: 'Significant correctness, reliability, compatibility, or security impact.',
   critical: 'Critical security, data-loss, or widespread outage impact.',
+} as const;
+
+const SEVERITY_INSTRUCTION =
+  'Rate the confirmed violation by likely production severity, considering the evidence, impact, ' +
+  'task context, blast radius, reversibility, and available workarounds.';
+
+const SEVERITY_CRITERIA = {
+  blocker:
+    'Critical security issue, data loss/corruption, widespread outage, or unrecoverable contract break.',
+  high: 'Major user-facing failure, significant security/reliability risk, or no safe workaround.',
+  medium:
+    'Bounded correctness, reliability, or compatibility impact with a workaround or limited blast radius.',
+  low: 'Localized non-critical defect with limited operational or user impact.',
+  info: 'Informational issue without a concrete production risk.',
+  advisory: 'Optional improvement or maintainability concern, not a required fix.',
 } as const;
 
 export async function adjudicateViolations(
@@ -92,26 +108,16 @@ export async function adjudicateViolations(
     usage.outputTokens += callUsage.outputTokens;
   }
 
-  const ratings = await batchedAsk(confirmed, states, judge, (batch) =>
-    Object.fromEntries(
-      batch.map((violation) => [
-        sanitize(violation.rule_id),
-        {
-          input: {
-            violation: violation.question,
-            location: violation.evidence[0]?.location ?? '',
-            instruction: IMPACT_INSTRUCTION,
-          },
-          options: IMPACT_CRITERIA,
-        } satisfies ChoiceSpec,
-      ]),
-    ),
-  );
-  for (const { violation, answer, usage: callUsage } of ratings) {
+  // Impact and severity are requested together to avoid an extra network call
+  // per confirmed finding while keeping them as separate model decisions.
+  const ratings = await rateConfirmed(confirmed, states, judge);
+  for (const { violation, impact, severity, usage: callUsage } of ratings) {
     usage.inputTokens += callUsage.inputTokens;
     usage.outputTokens += callUsage.outputTokens;
-    violation.impact = answer.choice as ImpactLevel;
-    violation.impactConfidence = answer.confidence;
+    violation.impact = impact.choice as ImpactLevel;
+    violation.impactConfidence = impact.confidence;
+    violation.severity = severity.choice as Severity;
+    violation.severityConfidence = severity.confidence;
   }
 
   return { violations: confirmed, dropped: flagged.length - confirmed.length, usage };
@@ -121,6 +127,71 @@ interface AskedAnswer {
   violation: Outcome;
   answer: { choice: string; probabilities: Record<string, number>; confidence: number };
   usage: TokenUsage;
+}
+
+interface RatedViolation {
+  violation: Outcome;
+  impact: AskedAnswer['answer'];
+  severity: AskedAnswer['answer'];
+  usage: TokenUsage;
+}
+
+async function rateConfirmed(
+  violations: Outcome[],
+  states: PrState[],
+  judge: Judge,
+): Promise<RatedViolation[]> {
+  const calls: Promise<RatedViolation[]>[] = [];
+  for (const [chunkIndex, list] of groupByChunk(violations)) {
+    const state = states[chunkIndex];
+    if (!state) continue;
+    for (let i = 0; i < list.length; i += EVIDENCE_PER_CALL) {
+      const batch = list.slice(i, i + EVIDENCE_PER_CALL);
+      calls.push(
+        judge
+          .ask(
+            state,
+            Object.fromEntries(
+              batch.flatMap((violation) => {
+                const base = sanitize(violation.rule_id);
+                const input = {
+                  violation: violation.question,
+                  location: violation.evidence[0]?.location ?? '',
+                };
+                return [
+                  [
+                    `${base}_impact`,
+                    {
+                      input: { ...input, instruction: IMPACT_INSTRUCTION },
+                      options: IMPACT_CRITERIA,
+                    },
+                  ],
+                  [
+                    `${base}_severity`,
+                    {
+                      input: { ...input, instruction: SEVERITY_INSTRUCTION },
+                      options: SEVERITY_CRITERIA,
+                    },
+                  ],
+                ];
+              }),
+            ),
+          )
+          .then(({ answers, usage }) =>
+            batch.map((violation) => {
+              const base = sanitize(violation.rule_id);
+              return {
+                violation,
+                impact: need(answers, `${base}_impact`),
+                severity: need(answers, `${base}_severity`),
+                usage,
+              };
+            }),
+          ),
+      );
+    }
+  }
+  return (await Promise.all(calls)).flat();
 }
 
 async function batchedAsk(
