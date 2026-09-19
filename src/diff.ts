@@ -8,7 +8,7 @@ export interface Hunk {
   file: string;
   start: string;
   count: string;
-  /** Body lines of the hunk (without the @@ header), for confirm quotes. */
+  /** Body lines of the hunk (without the @@ header), for evidence context. */
   lines: string[];
 }
 
@@ -90,19 +90,29 @@ function testPaired(p1: string, p2: string): boolean {
 function expand(unit: FileUnit): FileUnit[] {
   if (unit.text.length <= CHUNK_CHARS) return [unit];
 
-  // A paired source+test unit can be larger than the budget. Split its members
-  // independently, but keep every resulting piece self-contained and never
-  // mix it with an unrelated file.
   const members = splitFileUnits(unit.text);
+  const [sourceMember, testMember] = members;
+  if (sourceMember && testMember && testPaired(sourceMember.path, testMember.path)) {
+    const pairLimit = Math.floor(CHUNK_CHARS / 2);
+    const sourceParts = splitByHunks(sourceMember.text, pairLimit);
+    const testParts = splitByHunks(testMember.text, pairLimit);
+    const count = Math.max(sourceParts.length, testParts.length);
+    return Array.from({ length: count }, (_, index) => {
+      const source = sourceParts[index] ?? sourceParts.at(-1) ?? '';
+      const test = testParts[index] ?? testParts.at(-1) ?? '';
+      return { path: sourceMember.path, text: `${source}\n${test}` };
+    });
+  }
+
   return members.flatMap((member) =>
     splitByHunks(member.text).map((text) => ({ path: member.path, text })),
   );
 }
 
-function splitByHunks(text: string): string[] {
+function splitByHunks(text: string, limit = CHUNK_CHARS): string[] {
   const lines = text.split('\n');
   const firstHunk = lines.findIndex((line) => line.startsWith('@@'));
-  if (firstHunk < 0) return lineSplit(text);
+  if (firstHunk < 0) return lineSplit(text, limit);
 
   const header = lines.slice(0, firstHunk);
   const sections: string[][] = [];
@@ -121,13 +131,13 @@ function splitByHunks(text: string): string[] {
   let size = header.join('\n').length + 1;
   for (const hunk of sections) {
     const hunkText = hunk.join('\n');
-    if (current.length > 0 && size + hunkText.length + 1 > CHUNK_CHARS) {
+    if (current.length > 0 && size + hunkText.length + 1 > limit) {
       chunks.push([...header, ...current].join('\n'));
       current = [];
       size = header.join('\n').length + 1;
     }
 
-    if (header.join('\n').length + hunkText.length + 1 <= CHUNK_CHARS) {
+    if (header.join('\n').length + hunkText.length + 1 <= limit) {
       current.push(...hunk);
       size += hunkText.length + 1;
       continue;
@@ -143,7 +153,7 @@ function splitByHunks(text: string): string[] {
     let body: string[] = [];
     let bodySize = header.join('\n').length + hunkHeader.length + 2;
     for (const line of hunk.slice(1)) {
-      if (body.length > 0 && bodySize + line.length + 1 > CHUNK_CHARS) {
+      if (body.length > 0 && bodySize + line.length + 1 > limit) {
         chunks.push([...header, hunkHeader, ...body].join('\n'));
         body = [];
         bodySize = header.join('\n').length + hunkHeader.length + 2;
@@ -162,12 +172,12 @@ function splitByHunks(text: string): string[] {
 
 // Fallback for malformed or header-only diffs. Normal review diffs go through
 // splitByHunks, which preserves the file and hunk headers on every piece.
-function lineSplit(text: string): string[] {
+function lineSplit(text: string, limit = CHUNK_CHARS): string[] {
   const chunks: string[] = [];
   let lines: string[] = [];
   let size = 0;
   for (const line of text.split('\n')) {
-    if (size + line.length + 1 > CHUNK_CHARS && lines.length > 0) {
+    if (size + line.length + 1 > limit && lines.length > 0) {
       chunks.push(lines.join('\n'));
       lines = [];
       size = 0;
@@ -179,9 +189,6 @@ function lineSplit(text: string): string[] {
   return chunks;
 }
 
-// ponytail: chunks are cut on line boundaries, so a hunk straddling a chunk edge
-// loses its marker in one chunk; oversized file/test chunks still line-split —
-// upgrade to hunk-aware splitting if evidence gaps show up
 export function annotateHunks(chunk: string): AnnotatedChunk {
   const out: string[] = [];
   const hunks: Hunk[] = [];

@@ -28,8 +28,15 @@ export type ReviewError = 'empty-diff';
 export interface EvidenceHit {
   location: string;
   probability: number;
-  /** Quoted hunk body for the confirm pass; stripped from public output. */
-  snippet?: string;
+  chunkIndex: number;
+}
+
+export interface ChunkOutcome {
+  chunkIndex: number;
+  answer: 'YES' | 'NO' | 'N/A';
+  probability: number;
+  confidence: number;
+  evidence: EvidenceHit[];
 }
 
 export interface RuleOutcome {
@@ -41,6 +48,8 @@ export interface RuleOutcome {
   probability: number;
   confidence: number;
   evidence: EvidenceHit[];
+  /** Per-chunk decisions and evidence before the top-level worst result. */
+  chunkResults: ChunkOutcome[];
   /** Impact rated against the selected evidence; null unless a confirmed violation. */
   impact: ImpactLevel | null;
   impactConfidence: number | null;

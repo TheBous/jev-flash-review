@@ -66,6 +66,39 @@ test('chunkPerFile pairs only a changed file with its changed test', () => {
   assert.ok(!serviceChunk.includes('b/src/repository.ts\n'));
 });
 
+test('chunkPerFile keeps an oversized source paired with its test', () => {
+  const hugeFile = (path: string) =>
+    [
+      `diff --git a/${path} b/${path}`,
+      `--- a/${path}`,
+      `+++ b/${path}`,
+      '@@ -1,0 +1,1500 @@',
+      ...Array.from({ length: 1500 }, (_, i) => `+line ${i} ${'x'.repeat(40)}`),
+    ].join('\n');
+  const source = hugeFile('src/component.tsx');
+  const testFile = hugeFile('src/component.test.tsx');
+  const chunks = chunkPerFile([source, testFile].join('\n'));
+
+  assert.ok(chunks.length > 1);
+  assert.ok(
+    chunks.every(
+      (chunk) =>
+        chunk.includes('b/src/component.tsx\n') && chunk.includes('b/src/component.test.tsx\n'),
+    ),
+  );
+  assert.ok(chunks.every((chunk) => chunk.length <= 60_000));
+});
+
+test('chunkPerFile pairs jsx files with their test files', () => {
+  const chunks = chunkPerFile(
+    [bigFile('src/component.jsx'), bigFile('src/component.test.jsx')].join('\n'),
+  );
+
+  assert.equal(chunks.length, 1);
+  assert.ok(chunks[0]?.includes('b/src/component.jsx\n'));
+  assert.ok(chunks[0]?.includes('b/src/component.test.jsx\n'));
+});
+
 test('chunkPerFile splits an oversized file into self-contained hunk chunks', () => {
   const path = 'src/huge.ts';
   const lines = 2_000;

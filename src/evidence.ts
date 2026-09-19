@@ -1,5 +1,5 @@
-// Evidence location: one Choice per violation over the hunks of its worst
-// chunk. Pure domain logic; effects cross the Judge port.
+// Evidence location and validation: one Choice per NO result over the hunks
+// of its chunk. `unsupported` replaces a separate confirmation pass.
 
 import type { Hunk } from './diff.js';
 import type { ChoiceSpec, EvidenceHit, Judge, Outcome, PrState, TokenUsage } from './types.js';
@@ -10,9 +10,11 @@ export const EVIDENCE_PER_CALL = 8;
 
 const ABSENT =
   'The violation is not tied to one hunk: it is an absence (missing tests, docs, config, handling) or a PR-level issue.';
+const UNSUPPORTED =
+  'The diff does not support a concrete violation of this rule; discard this result.';
 
 const EVIDENCE_INSTRUCTION =
-  'Which `[hunk_*]` marker in `pr.diff` marks the primary evidence of this violation? Choose `absent` when the violation is not tied to a specific hunk.';
+  'Choose the `[hunk_*]` marker in `pr.diff` that directly shows the violation. Choose `absent` when the violation is real but not tied to a specific hunk. Choose `unsupported` when the diff does not support a concrete violation.';
 
 export function sanitize(id: string): string {
   return id.replace(/[^a-zA-Z0-9_]/g, '_');
@@ -28,15 +30,22 @@ export function need<T>(map: Record<string, T>, key: string): T {
 export function groupByChunk(violations: Outcome[]): Map<number, Outcome[]> {
   const groups = new Map<number, Outcome[]>();
   for (const violation of violations) {
-    const list = groups.get(violation.worstChunkIndex) ?? [];
+    const chunkIndex = violation.evidence[0]?.chunkIndex ?? violation.worstChunkIndex;
+    const list = groups.get(chunkIndex) ?? [];
     list.push(violation);
-    groups.set(violation.worstChunkIndex, list);
+    groups.set(chunkIndex, list);
   }
   return groups;
 }
 
-// Evidence pass: for each violation, one Choice over the hunks of its worst chunk
-// ("select instead of generate" — the judge picks the location, code prints file:line).
+interface EvidenceTarget {
+  violation: Outcome;
+  chunkIndex: number;
+  chunkResult: Outcome['chunkResults'][number];
+}
+
+// Evidence pass: for each NO result, one Choice over the hunks of its chunk
+// ("select instead of generate" — the judge picks the location or rejects it).
 export async function locateEvidence(
   outcomes: Outcome[],
   questions: Map<string, string>,
@@ -44,10 +53,17 @@ export async function locateEvidence(
   states: PrState[],
   judge: Judge,
 ): Promise<TokenUsage> {
-  const calls: { violations: Outcome[]; promise: ReturnType<Judge['ask']> }[] = [];
-  for (const [chunkIndex, list] of groupByChunk(
-    outcomes.filter((outcome) => outcome.answer === 'NO'),
-  )) {
+  const targetsByChunk = new Map<number, EvidenceTarget[]>();
+  for (const violation of outcomes.filter((outcome) => outcome.answer === 'NO')) {
+    for (const chunkResult of violation.chunkResults.filter((chunk) => chunk.answer === 'NO')) {
+      const list = targetsByChunk.get(chunkResult.chunkIndex) ?? [];
+      list.push({ violation, chunkIndex: chunkResult.chunkIndex, chunkResult });
+      targetsByChunk.set(chunkResult.chunkIndex, list);
+    }
+  }
+
+  const calls: { targets: EvidenceTarget[]; promise: ReturnType<Judge['ask']> }[] = [];
+  for (const [chunkIndex, list] of targetsByChunk) {
     const chunk = chunks[chunkIndex];
     const state = states[chunkIndex];
     if (!chunk || chunk.hunks.length === 0 || !state) continue;
@@ -55,14 +71,15 @@ export async function locateEvidence(
       chunk.hunks.map((h) => [h.id, `${h.file}:${h.start} (${h.count} changed-line block)`]),
     );
     options.absent = ABSENT;
+    options.unsupported = UNSUPPORTED;
     for (let i = 0; i < list.length; i += EVIDENCE_PER_CALL) {
       const batch = list.slice(i, i + EVIDENCE_PER_CALL);
       calls.push({
-        violations: batch,
+        targets: batch,
         promise: judge.ask(
           state,
           Object.fromEntries(
-            batch.map((violation) => [
+            batch.map(({ violation }) => [
               sanitize(violation.rule_id),
               {
                 input: {
@@ -79,33 +96,34 @@ export async function locateEvidence(
   }
 
   const usage: TokenUsage = { inputTokens: 0, outputTokens: 0 };
-  for (const { violations, promise } of calls) {
+  for (const { targets, promise } of calls) {
     const { answers, usage: callUsage } = await promise;
     usage.inputTokens += callUsage.inputTokens;
     usage.outputTokens += callUsage.outputTokens;
-    for (const violation of violations) {
-      violation.evidence = topEvidence(
-        need(answers, sanitize(violation.rule_id)).probabilities,
-        chunks[violation.worstChunkIndex]?.hunks ?? [],
-      );
+    for (const { violation, chunkIndex, chunkResult } of targets) {
+      const answer = need(answers, sanitize(violation.rule_id));
+      chunkResult.evidence =
+        answer.choice === 'unsupported'
+          ? []
+          : topEvidence(answer.probabilities, chunkIndex, chunks[chunkIndex]?.hunks ?? []);
     }
+  }
+  for (const outcome of outcomes) {
+    outcome.evidence = outcome.chunkResults
+      .flatMap((chunk) => chunk.evidence)
+      .sort((a, b) => b.probability - a.probability);
   }
   return usage;
 }
 
-// Confirm questions quote the hunk body so the judge verifies against code,
-// not a pointer. Capped: the full diff already travels in the call state.
-const SNIPPET_LINES = 60;
-
-function snippetOf(hunk: Hunk | undefined): string {
-  if (!hunk) return '';
-  const quoted = hunk.lines.slice(0, SNIPPET_LINES).join('\n');
-  return hunk.lines.length > SNIPPET_LINES ? `${quoted}\n…(truncated)` : quoted;
-}
-
-function topEvidence(probabilities: Record<string, number>, hunks: Hunk[]): EvidenceHit[] {
+function topEvidence(
+  probabilities: Record<string, number>,
+  chunkIndex: number,
+  hunks: Hunk[],
+): EvidenceHit[] {
   return Object.entries(probabilities)
     .sort((a, b) => b[1] - a[1])
+    .filter(([label]) => label !== 'unsupported')
     .filter(([, p]) => p >= 0.05)
     .slice(0, 2)
     .map(([label, p]) => {
@@ -115,7 +133,7 @@ function topEvidence(probabilities: Record<string, number>, hunks: Hunk[]): Evid
           ? `${hunk.file}:${hunk.start} (+${hunk.count} lines)`
           : 'absence / PR-level (not tied to a hunk)',
         probability: p,
-        snippet: snippetOf(hunk),
+        chunkIndex,
       };
     });
 }

@@ -124,7 +124,18 @@ export async function reviewDiff(
   const outcomes: Outcome[] = rules.map((rule, ruleIndex) => {
     const key = sanitize(rule.rule_id);
     const batch = Math.floor(ruleIndex / RULES_PER_CALL);
-    const perChunk = responses.map((perBatch) => need(perBatch[batch]!.answers, key));
+    const perChunk = responses.map((perBatch) => {
+      const response = perBatch[batch];
+      if (!response) throw new Error(`Missing batch ${batch} for rule ${rule.rule_id}`);
+      return need(response.answers, key);
+    });
+    const chunkResults = perChunk.map((answer, chunkIndex) => ({
+      chunkIndex,
+      answer: answer.choice as RuleOutcome['answer'],
+      probability: answer.probabilities[answer.choice] ?? 0,
+      confidence: answer.confidence,
+      evidence: [],
+    }));
     let worst = perChunk[0];
     let worstIndex = 0;
     for (let i = 1; i < perChunk.length; i++) {
@@ -144,6 +155,7 @@ export async function reviewDiff(
       probability: worst.probabilities[worst.choice] ?? 0,
       confidence: worst.confidence,
       evidence: [],
+      chunkResults,
       impact: null,
       impactConfidence: null,
       worstChunkIndex: worstIndex,
@@ -189,6 +201,5 @@ function sumUsage(total: TokenUsage, usage: TokenUsage): TokenUsage {
 }
 
 function toPublic({ worstChunkIndex, ...outcome }: Outcome): RuleOutcome {
-  // snippets are working material for the confirm pass, not public output
-  return { ...outcome, evidence: outcome.evidence.map(({ snippet, ...hit }) => hit) };
+  return outcome;
 }

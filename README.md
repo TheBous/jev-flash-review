@@ -26,15 +26,15 @@ agent curates input → review_diff tool → structured JSON → agent acts
    `.spec` counterpart in the PR, both files are reviewed in the same chunk.
    Imported modules and importers are never added to that chunk.
 4. **Merge**: a rule takes its most severe outcome across chunks (worst wins).
-5. **Evidence**: for each violation, a second Choice over the diff's hunk
-   markers ("select instead of generate") — the engine picks the location,
-   the code prints `file:line`. Violations with no hunk are reported as
-   `absence` (missing tests, docs, handling) or PR-level issues.
+5. **Evidence**: for each `NO` result, a Choice over the diff's hunk markers
+   ("select instead of generate") — the engine picks the location, `absent`,
+   or `unsupported`; the code prints `file:line`. Violations with no hunk are
+   reported as `absence` (missing tests, docs, handling) or PR-level issues.
 6. **Adjudication**: weak locations (top confidence < 0.55) are dropped, not
-   reported. Survivors pass a confirm Choice ("does this location actually
-   show the violation?") — `unsupported` kills them. Confirmed violations get
-   an impact rating (`none` / `minor` / `significant` / `critical`) scored
-   against the selected evidence.
+   reported. The evidence Choice also accepts `unsupported`, which drops a
+   location when the diff does not show a concrete violation. Surviving
+   violations get an impact rating (`none` / `minor` / `significant` /
+   `critical`) scored against the selected evidence.
 7. **Output** (JSON): `results` holds the full matrix (every rule, including
    dropped ones); `violations` holds confirmed findings only. Each outcome
    carries answer, probability, confidence, severity, question text, evidence
@@ -204,7 +204,7 @@ skills/<name>/SKILL.md     canonical agent workflows (review-pr, review-free, re
 commands/<name>.md          thin command adapters
 src/engine.ts               review workflow: chunk, ask, merge (pure domain, no drivers)
 src/evidence.ts             evidence location over hunk markers
-src/adjudicate.ts           confidence gate, noIssue-style confirm, impact rating
+src/adjudicate.ts           confidence gate, impact and severity rating
 src/judge.ts                TypeSafe adapter implementing the Judge port
 src/types.ts                domain contracts (Result, ReviewInput/Output, ChoiceSpec)
 src/diff.ts                 chunking + hunk annotation

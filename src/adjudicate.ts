@@ -1,9 +1,7 @@
-// Adjudication: confidence gate, noIssue-style confirm, impact rating.
-// A NO whose best location is weak, or whose location does not support the
-// violation on second look, is dropped — never reported as a finding.
+// Adjudication: confidence gate and impact/severity rating. Evidence selection
+// already has an `unsupported` outcome, so there is no confirmation call here.
 import { EVIDENCE_PER_CALL, groupByChunk, need, sanitize } from './evidence.js';
 import type {
-  ChoiceSpec,
   EvidenceHit,
   ImpactLevel,
   Judge,
@@ -21,25 +19,21 @@ const MIN_LOCATION_CONFIDENCE = 0.55;
 // pointer is a shrug, not evidence; tune from field data, not theory.
 const MIN_EVIDENCE_MARGIN = 0.1;
 
-function evidenceProb(evidence: EvidenceHit[], index: number): number {
-  return evidence[index]?.probability ?? 0;
+function hasStrongEvidence(evidence: EvidenceHit[]): boolean {
+  const byChunk = new Map<number, EvidenceHit[]>();
+  for (const hit of evidence) {
+    const list = byChunk.get(hit.chunkIndex) ?? [];
+    list.push(hit);
+    byChunk.set(hit.chunkIndex, list);
+  }
+  return [...byChunk.values()].some((hits) => {
+    hits.sort((a, b) => b.probability - a.probability);
+    return (
+      (hits[0]?.probability ?? 0) >= MIN_LOCATION_CONFIDENCE &&
+      (hits[0]?.probability ?? 0) - (hits[1]?.probability ?? 0) >= MIN_EVIDENCE_MARGIN
+    );
+  });
 }
-
-const CONFIRM_INSTRUCTION =
-  'Does the quoted code directly show the rule being broken? Choose `unsupported` when the quoted code does not support a concrete violation.';
-
-const CONFIRM_CRITERIA = {
-  supported: 'The quoted code directly shows the rule being broken.',
-  unsupported: 'The quoted code does not support a concrete violation of this rule.',
-} as const;
-
-const CONFIRM_ABSENT_INSTRUCTION =
-  'Does the PR as a whole show the rule being broken? Choose `unsupported` when the diff does not support a concrete violation.';
-
-const CONFIRM_ABSENT_CRITERIA = {
-  supported: 'The PR as a whole shows the rule being broken.',
-  unsupported: 'The diff does not support a concrete violation of this rule.',
-} as const;
 
 const IMPACT_INSTRUCTION =
   'Assuming the location exhibits the violation, rate the likely production impact.';
@@ -73,44 +67,11 @@ export async function adjudicateViolations(
 ): Promise<{ violations: Outcome[]; dropped: number; usage: TokenUsage }> {
   const usage: TokenUsage = { inputTokens: 0, outputTokens: 0 };
   const flagged = outcomes.filter((outcome) => outcome.answer === 'NO');
-  const candidates = flagged.filter(
-    (outcome) =>
-      evidenceProb(outcome.evidence, 0) >= MIN_LOCATION_CONFIDENCE &&
-      evidenceProb(outcome.evidence, 0) - evidenceProb(outcome.evidence, 1) >= MIN_EVIDENCE_MARGIN,
-  );
-
-  const confirmations = await batchedAsk(candidates, states, judge, (batch) =>
-    Object.fromEntries(
-      batch.map((violation) => {
-        // Absent evidence has no code to quote: ask about the PR, not the quote.
-        const quoted = violation.evidence[0]?.snippet ?? '';
-        const quotedConfirm = quoted.length > 0;
-        return [
-          sanitize(violation.rule_id),
-          {
-            input: {
-              violation: violation.question,
-              location: violation.evidence[0]?.location ?? '',
-              snippet: quoted,
-              instruction: quotedConfirm ? CONFIRM_INSTRUCTION : CONFIRM_ABSENT_INSTRUCTION,
-            },
-            options: quotedConfirm ? CONFIRM_CRITERIA : CONFIRM_ABSENT_CRITERIA,
-          } satisfies ChoiceSpec,
-        ];
-      }),
-    ),
-  );
-  const confirmed = confirmations
-    .filter(({ answer }) => answer.choice === 'supported')
-    .map(({ violation }) => violation);
-  for (const { usage: callUsage } of confirmations) {
-    usage.inputTokens += callUsage.inputTokens;
-    usage.outputTokens += callUsage.outputTokens;
-  }
+  const candidates = flagged.filter((outcome) => hasStrongEvidence(outcome.evidence));
 
   // Impact and severity are requested together to avoid an extra network call
   // per confirmed finding while keeping them as separate model decisions.
-  const ratings = await rateConfirmed(confirmed, states, judge);
+  const ratings = await rateConfirmed(candidates, states, judge);
   for (const { violation, impact, severity, usage: callUsage } of ratings) {
     usage.inputTokens += callUsage.inputTokens;
     usage.outputTokens += callUsage.outputTokens;
@@ -120,19 +81,19 @@ export async function adjudicateViolations(
     violation.severityConfidence = severity.confidence;
   }
 
-  return { violations: confirmed, dropped: flagged.length - confirmed.length, usage };
+  return { violations: candidates, dropped: flagged.length - candidates.length, usage };
 }
 
-interface AskedAnswer {
-  violation: Outcome;
-  answer: { choice: string; probabilities: Record<string, number>; confidence: number };
-  usage: TokenUsage;
-}
+type JudgeAnswer = {
+  choice: string;
+  probabilities: Record<string, number>;
+  confidence: number;
+};
 
 interface RatedViolation {
   violation: Outcome;
-  impact: AskedAnswer['answer'];
-  severity: AskedAnswer['answer'];
+  impact: JudgeAnswer;
+  severity: JudgeAnswer;
   usage: TokenUsage;
 }
 
@@ -188,32 +149,6 @@ async function rateConfirmed(
               };
             }),
           ),
-      );
-    }
-  }
-  return (await Promise.all(calls)).flat();
-}
-
-async function batchedAsk(
-  violations: Outcome[],
-  states: PrState[],
-  judge: Judge,
-  buildQuestions: (batch: Outcome[]) => Record<string, ChoiceSpec>,
-): Promise<AskedAnswer[]> {
-  const calls: Promise<AskedAnswer[]>[] = [];
-  for (const [chunkIndex, list] of groupByChunk(violations)) {
-    const state = states[chunkIndex];
-    if (!state) continue;
-    for (let i = 0; i < list.length; i += EVIDENCE_PER_CALL) {
-      const batch = list.slice(i, i + EVIDENCE_PER_CALL);
-      calls.push(
-        judge.ask(state, buildQuestions(batch)).then(({ answers, usage }) =>
-          batch.map((violation) => ({
-            violation,
-            answer: need(answers, sanitize(violation.rule_id)),
-            usage,
-          })),
-        ),
       );
     }
   }
